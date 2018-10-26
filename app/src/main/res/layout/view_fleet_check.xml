@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:alpha="0.8">
+
+    <LinearLayout
+        android:layout_width="@dimen/popup_t4_width"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:orientation="vertical"
+        android:padding="@dimen/popup_padding">
+
+        <LinearLayout
+            android:id="@+id/view_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/view_fchk_head"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:paddingBottom="2dp">
+
+                <TextView
+                    android:id="@+id/view_fchk_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/fleetcheckview_title"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_large" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_weight="1"
+                    android:alwaysDrawnWithCache="true"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/fleet_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="6dp"
+                        android:background="@color/colorAccent"
+                        android:gravity="top"
+                        android:paddingBottom="2dp"
+                        android:paddingEnd="6dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        android:paddingStart="6dp"
+                        android:paddingTop="2dp"
+                        android:text="\#1"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/popup_text_small" />
+
+                    <TextView
+                        android:id="@+id/fleet_2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="6dp"
+                        android:background="@color/colorFleetInfoBtn"
+                        android:gravity="top"
+                        android:paddingBottom="2dp"
+                        android:paddingEnd="6dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        android:paddingStart="6dp"
+                        android:paddingTop="2dp"
+                        android:text="\#2"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/popup_text_small" />
+
+                    <TextView
+                        android:id="@+id/fleet_3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="6dp"
+                        android:background="@color/colorFleetInfoBtn"
+                        android:gravity="top"
+                        android:paddingBottom="2dp"
+                        android:paddingEnd="6dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        android:paddingStart="6dp"
+                        android:paddingTop="2dp"
+                        android:text="\#3"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/popup_text_small" />
+
+                    <TextView
+                        android:id="@+id/fleet_4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="6dp"
+                        android:background="@color/colorFleetInfoBtn"
+                        android:gravity="top"
+                        android:paddingBottom="2dp"
+                        android:paddingEnd="6dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        android:paddingStart="6dp"
+                        android:paddingTop="2dp"
+                        android:text="\#4"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/popup_text_small" />
+
+                    <TextView
+                        android:id="@+id/fleet_5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="6dp"
+                        android:background="@color/colorFleetInfoBtn"
+                        android:gravity="top"
+                        android:paddingBottom="2dp"
+                        android:paddingEnd="6dp"
+                        android:paddingLeft="6dp"
+                        android:paddingRight="6dp"
+                        android:paddingStart="6dp"
+                        android:paddingTop="2dp"
+                        android:text="@string/fleetview_combined"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/popup_text_small" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/view_cancel"
+                    android:layout_width="@dimen/popup_text_large"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@mipmap/ic_cancel" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="left|clip_vertical"
+                android:layout_marginBottom="1dp"
+                android:layout_marginTop="1dp"
+                android:layout_weight="1"
+                android:background="@android:color/darker_gray"
+                android:paddingBottom="0.5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="0dp"
+                android:scaleType="fitXY"
+                android:src="@android:drawable/divider_horizontal_bright" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="2dp"
+                android:layout_marginTop="2dp"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:id="@+id/view_fchk_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/fchk_btn_seektp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="4dp"
+                        android:layout_marginRight="4dp"
+                        android:background="@color/colorAccent"
+                        android:gravity="center"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="8dp"
+                        android:paddingRight="8dp"
+                        android:paddingTop="4dp"
+                        android:text="@string/fleetcheckview_btn_seeklos"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/popup_text_normal" />
+
+                    <TextView
+                        android:id="@+id/fchk_btn_airbattle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="4dp"
+                        android:layout_marginRight="4dp"
+                        android:background="@color/colorFleetInfoBtn"
+                        android:gravity="center"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="8dp"
+                        android:paddingRight="8dp"
+                        android:paddingTop="4dp"
+                        android:text="@string/fleetcheckview_btn_airbattle"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/popup_text_normal" />
+
+                    <TextView
+                        android:id="@+id/fchk_btn_fuelbull"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="4dp"
+                        android:layout_marginRight="4dp"
+                        android:background="@color/colorFleetInfoBtn"
+                        android:gravity="center"
+                        android:paddingBottom="4dp"
+                        android:paddingLeft="8dp"
+                        android:paddingRight="8dp"
+                        android:paddingTop="4dp"
+                        android:text="@string/fleetcheckview_btn_fuelbull"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/popup_text_normal"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:id="@+id/view_fchk_infobox"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/fchk_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="2dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:text="Fleet Values"
+                    android:textAlignment="textStart"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_normal" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

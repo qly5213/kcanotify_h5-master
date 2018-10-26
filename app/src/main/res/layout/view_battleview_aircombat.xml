@@ -1,0 +1,1279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:alpha="0.8">
+
+    <LinearLayout
+        android:layout_width="@dimen/popup_t4_width"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:orientation="vertical"
+        android:padding="@dimen/popup_padding">
+
+        <LinearLayout
+            android:id="@+id/view_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/view_ac_head"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:paddingBottom="2dp">
+
+                <TextView
+                    android:id="@+id/view_ac_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:text="@string/battleview_menu0"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_large" />
+
+                <ImageView
+                    android:id="@+id/view_cancel"
+                    android:layout_width="@dimen/popup_text_large"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:src="@mipmap/ic_cancel" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="left|clip_vertical"
+                android:layout_marginBottom="1dp"
+                android:layout_marginTop="1dp"
+                android:layout_weight="1"
+                android:background="@android:color/darker_gray"
+                android:paddingBottom="0.5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="0dp"
+                android:scaleType="fitXY"
+                android:src="@android:drawable/divider_horizontal_bright" />
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="148dp"
+                android:paddingTop="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/view_ac_abinj"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/view_ac_abinj_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="AB JET INJ"
+                            android:textAlignment="center"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/popup_text_normal" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/view_ac_abinj_1_f"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_abinj_1_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:minWidth="60dp"
+                                android:text="-"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_abinj_1_e"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/view_ac_abinj_2_f"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_abinj_2_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:minWidth="60dp"
+                                android:text="-"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_abinj_2_e"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/view_ac_inj"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/view_ac_inj_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="JET INJ"
+                            android:textAlignment="center"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/popup_text_normal" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/view_ac_inj_1_f"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_inj_1_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:minWidth="60dp"
+                                android:text="-"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_inj_1_e"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/view_ac_inj_2_f"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_inj_2_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:minWidth="60dp"
+                                android:text="-"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_inj_2_e"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/view_ac_aba"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:id="@+id/view_ac_aba_0"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="4dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/view_ac_aba_0_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="AB PHASE #1"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_normal" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_0_1_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_0_1_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_0_1_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_0_2_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_0_2_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_0_2_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/view_ac_aba_1"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="4dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/view_ac_aba_1_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="AB PHASE #2"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_normal" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_1_1_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_1_1_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_1_1_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_1_2_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_1_2_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_1_2_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/view_ac_aba_2"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="4dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/view_ac_aba_2_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="AB PHASE #3"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_normal" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_2_1_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_2_1_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_2_1_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_2_2_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_2_2_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_2_2_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/view_ac_aba_3"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="4dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/view_ac_aba_3_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="AB PHASE #4"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_normal" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_3_1_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_3_1_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_3_1_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_3_2_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_3_2_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_3_2_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/view_ac_aba_4"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="4dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/view_ac_aba_4_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="AB PHASE #5"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_normal" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_4_1_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_4_1_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_4_1_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_4_2_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_4_2_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_4_2_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/view_ac_aba_5"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="4dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/view_ac_aba_5_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="AB PHASE #6"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_normal" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_5_1_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_5_1_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_5_1_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_5_2_f"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_5_2_msg"
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:minWidth="60dp"
+                                    android:text="TextView"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+
+                                <TextView
+                                    android:id="@+id/view_ac_aba_5_2_e"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="TextView"
+                                    android:textAlignment="viewStart"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_small" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/view_ac_phase1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/view_ac_phase1_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Phase #1"
+                            android:textAlignment="center"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/popup_text_normal" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_weight="1"
+                                    android:orientation="horizontal"
+                                    android:weightSum="1">
+
+                                    <TextView
+                                        android:id="@+id/view_ac_phase1_0_f"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="right|center_vertical"
+                                        android:layout_weight="1"
+                                        android:ellipsize="end"
+                                        android:gravity="right"
+                                        android:maxLines="1"
+                                        android:singleLine="true"
+                                        android:text="TextView"
+                                        android:textAlignment="textEnd"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_xsmall" />
+
+                                    <ImageView
+                                        android:id="@+id/view_ac_phase1_0_f_icon"
+                                        android:layout_width="@dimen/aircombat_text_mid"
+                                        android:layout_height="@dimen/aircombat_text_mid"
+                                        android:layout_gravity="center_vertical"
+                                        android:layout_marginLeft="2dp"
+                                        android:layout_marginStart="2dp"
+                                        android:layout_weight="0"
+                                        android:src="@mipmap/item_8"
+                                        app:srcCompat="@mipmap/item_8" />
+
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/view_ac_phase1_0_f_dm"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_weight="1"
+                                    android:alpha="0.8"
+                                    android:ellipsize="end"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:text="Damage Modifier: 112%"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/lightgray"
+                                    android:textSize="@dimen/popup_text_xsmall" />
+
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/view_ac_phase1_0_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:minWidth="60dp"
+                                android:text="TextView"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/aircombat_text_mid" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_weight="1"
+                                    android:orientation="horizontal">
+
+                                    <ImageView
+                                        android:id="@+id/view_ac_phase1_0_e_icon"
+                                        android:layout_width="@dimen/aircombat_text_mid"
+                                        android:layout_height="@dimen/aircombat_text_mid"
+                                        android:layout_gravity="center_vertical"
+                                        android:layout_marginEnd="2dp"
+                                        android:layout_marginRight="2dp"
+                                        android:layout_weight="0"
+                                        android:src="@mipmap/item_8"
+                                        app:srcCompat="@mipmap/item_8" />
+
+                                    <TextView
+                                        android:id="@+id/view_ac_phase1_0_e"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center_vertical"
+                                        android:layout_weight="1"
+                                        android:ellipsize="end"
+                                        android:maxLines="1"
+                                        android:singleLine="true"
+                                        android:text="TextView"
+                                        android:textAlignment="textStart"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_xsmall" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/view_ac_phase1_0_e_dm"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_weight="1"
+                                    android:alpha="0.8"
+                                    android:ellipsize="end"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:text="Damage Modifier: 112%"
+                                    android:textAlignment="textStart"
+                                    android:textColor="@color/lightgray"
+                                    android:textSize="@dimen/popup_text_xsmall" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/view_ac_phase1_1_f"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_phase1_1_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:minWidth="60dp"
+                                android:text="TextView"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_phase1_1_e"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/view_ac_phase1_2_f"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_phase1_2_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:minWidth="60dp"
+                                android:text="TextView"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_phase1_2_e"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/view_ac_phase2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginBottom="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/view_ac_phase2_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Phase #2"
+                            android:textAlignment="center"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/popup_text_normal" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="1"
+                                    android:gravity="right"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/view_ac_phase2_0_f"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="right|center_vertical"
+                                        android:layout_weight="1"
+                                        android:ellipsize="end"
+                                        android:gravity="right"
+                                        android:maxLines="1"
+                                        android:maxWidth="80dp"
+                                        android:singleLine="true"
+                                        android:text="TextView"
+                                        android:textAlignment="textEnd"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_xsmall" />
+
+                                    <ImageView
+                                        android:id="@+id/view_ac_phase2_0_f_icon"
+                                        android:layout_width="@dimen/aircombat_text_mid"
+                                        android:layout_height="@dimen/aircombat_text_mid"
+                                        android:layout_gravity="center_vertical"
+                                        android:layout_marginLeft="2dp"
+                                        android:layout_marginStart="2dp"
+                                        android:layout_weight="0"
+                                        android:src="@mipmap/item_8"
+                                        app:srcCompat="@mipmap/item_8" />
+
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/view_ac_phase2_0_f_dm"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="right|center_vertical"
+                                    android:layout_weight="1"
+                                    android:alpha="0.8"
+                                    android:ellipsize="end"
+                                    android:gravity="right"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:text="Damage Modifier: 112%"
+                                    android:textAlignment="textEnd"
+                                    android:textColor="@color/lightgray"
+                                    android:textSize="@dimen/popup_text_xsmall" />
+
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/view_ac_phase2_0_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:minWidth="60dp"
+                                android:text="TextView"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/aircombat_text_mid" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="1"
+                                    android:gravity="left"
+                                    android:orientation="horizontal">
+
+                                    <ImageView
+                                        android:id="@+id/view_ac_phase2_0_e_icon"
+                                        android:layout_width="@dimen/aircombat_text_mid"
+                                        android:layout_height="@dimen/aircombat_text_mid"
+                                        android:layout_gravity="center_vertical"
+                                        android:layout_marginEnd="2dp"
+                                        android:layout_marginRight="2dp"
+                                        android:layout_weight="0"
+                                        android:src="@mipmap/item_8"
+                                        app:srcCompat="@mipmap/item_8" />
+
+                                    <TextView
+                                        android:id="@+id/view_ac_phase2_0_e"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center_vertical"
+                                        android:layout_weight="1"
+                                        android:ellipsize="end"
+                                        android:maxLines="1"
+                                        android:maxWidth="80dp"
+                                        android:singleLine="true"
+                                        android:text="TextView"
+                                        android:textAlignment="textStart"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_xsmall" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/view_ac_phase2_0_e_dm"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="right|center_vertical"
+                                    android:layout_weight="1"
+                                    android:alpha="0.8"
+                                    android:ellipsize="end"
+                                    android:gravity="right"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:text="Damage Modifier: 112%"
+                                    android:textAlignment="textStart"
+                                    android:textColor="@color/lightgray"
+                                    android:textSize="@dimen/popup_text_xsmall" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/view_ac_phase2_1_f"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_phase2_1_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:minWidth="60dp"
+                                android:text="TextView"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_phase2_1_e"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/view_ac_phase2_2_f"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="textEnd"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_phase2_2_msg"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:minWidth="60dp"
+                                android:text="TextView"
+                                android:textAlignment="center"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+
+                            <TextView
+                                android:id="@+id/view_ac_phase2_2_e"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="TextView"
+                                android:textAlignment="viewStart"
+                                android:textColor="@color/white"
+                                android:textSize="@dimen/popup_text_small" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </ScrollView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

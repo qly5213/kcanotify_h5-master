@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/akashiviewlayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="false"
+    android:orientation="vertical"
+    android:padding="4dp"
+    android:visibility="visible">
+
+    <LinearLayout
+        android:id="@+id/akashiviewpanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:alpha="0.8"
+        android:background="@color/colorPrimaryDark"
+        android:orientation="vertical"
+        android:padding="@dimen/view_padding">
+
+        <LinearLayout
+            android:id="@+id/akashiview_head"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/akashiview_day"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:text="Mon"
+                android:textColor="@color/white"
+                android:textSize="20dp" />
+
+            <TextView
+                android:id="@+id/akashiview_gtd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="1dp"
+                android:paddingStart="10dp"
+                android:text="@string/aa_btn_safe_state0"
+                android:textColor="@color/white"
+                android:textSize="20dp" />
+
+            <TextView
+                android:id="@+id/akashiview_star"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="1dp"
+                android:paddingStart="10dp"
+                android:text="@string/aa_btn_star0"
+                android:textColor="@color/colorAccent"
+                android:textSize="20dp" />
+
+            <ImageView
+                android:id="@+id/akashi_exit"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
+                android:src="@mipmap/ic_cancel"
+                app:srcCompat="@mipmap/ic_cancel" />
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="2dp"
+            android:layout_weight="1"
+            android:background="@android:color/darker_gray"
+            android:paddingBottom="1dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:paddingTop="0dp"
+            android:scaleType="fitXY"
+            android:src="@android:drawable/divider_horizontal_bright" />
+
+        <ListView
+            android:id="@+id/akashiview_list"
+            android:layout_width="match_parent"
+            android:layout_height="275dp"
+            android:layout_margin="5dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
+

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.antest1.kcanotify.h5.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/layout_base"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.Toolbar xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:titleTextColor="@color/colorToolbarText"></android.support.v7.widget.Toolbar>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/background"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/activity_main_btn_size"
+                android:weightSum="1.0">
+
+                <ToggleButton
+                    android:id="@+id/vpnbtn"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_weight=".5"
+                    android:background="@drawable/togglebtn"
+                    android:stateListAnimator="@null"
+                    android:text="VPN BTN"
+                    android:textColor="@drawable/togglebtn_text"
+                    android:textOff="@string/ma_vpn_toggleoff"
+                    android:textOn="@string/ma_vpn_toggleon"
+                    android:textSize="@dimen/activity_main_btn_textsize" />
+
+                <ToggleButton
+                    android:id="@+id/svcbtn"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_weight=".5"
+                    android:background="@drawable/togglebtn"
+                    android:stateListAnimator="@null"
+                    android:text="SERVICE BTN"
+                    android:textColor="@drawable/togglebtn_text"
+                    android:textOff="@string/ma_svc_toggleoff"
+                    android:textOn="@string/ma_svc_toggleon"
+                    android:textSize="@dimen/activity_main_btn_textsize" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/activity_main_btn_size"
+                android:weightSum="1.0">
+
+                <Button
+                    android:id="@+id/kcbtn"
+
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.64"
+                    android:background="@color/colorGameStartBtn"
+                    android:stateListAnimator="@null"
+                    android:text="GAME START"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/activity_main_btn_textsize" />
+
+                <ImageButton
+                    android:id="@+id/kcafairybtn"
+
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.18"
+                    android:background="@color/colorFairyBtn"
+                    android:gravity="center"
+                    android:padding="@dimen/activity_main_btn_fairy_padding"
+                    android:scaleType="fitCenter"
+                    android:src="@mipmap/noti_icon_0"
+                    android:stateListAnimator="@null">
+
+
+                </ImageButton>
+
+                <ImageButton
+                    android:id="@+id/kcatoolbtn"
+
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.18"
+                    android:background="@color/colorToolsBtn"
+                    android:gravity="center"
+                    android:padding="@dimen/activity_main_btn_tools_padding"
+                    android:scaleType="fitCenter"
+                    android:src="@mipmap/ic_dashboard"
+                    android:stateListAnimator="@null">
+
+
+                </ImageButton>
+
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+
+                <TextView
+                    android:id="@+id/textDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="TextView"
+                    android:textColor="@color/colorActivityText"
+                    android:textSize="@dimen/activity_text_size" />
+
+                <TextView
+                    android:id="@+id/textMainWarn"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="6dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@color/colorWarn"
+                    android:maxLines="8"
+                    android:padding="4dp"
+                    android:scrollbars="vertical"
+                    android:text="화면 오버레이가 설정되지 않았습니다."
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/colorWarnText"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/textMainUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:layout_above="@+id/textMainWarn"
+                    android:layout_alignParentBottom="false"
+                    android:layout_alignWithParentIfMissing="true"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="6dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@color/colorUpdate"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:minLines="4"
+                    android:padding="4dp"
+                    android:text="업데이트 가능"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorUpdateText"
+                    android:textSize="14dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/textMainDataUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:layout_above="@+id/textMainUpdate"
+                    android:layout_alignParentBottom="false"
+                    android:layout_alignWithParentIfMissing="true"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="6dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@color/colorDataUpdate"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:minLines="4"
+                    android:padding="4dp"
+                    android:text="데이터 업데이트 가능"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorDataUpdateText"
+                    android:textSize="14dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/textSpecial"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:layout_above="@id/textMainDataUpdate"
+                    android:layout_alignParentBottom="false"
+                    android:layout_alignWithParentIfMissing="true"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="6dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@color/colorSpecial"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:minLines="4"
+                    android:padding="4dp"
+                    android:text="플레이 스토어 출시 1주년!"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorSpecialText"
+                    android:textSize="14dp"
+                    android:visibility="gone" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+    <!--
+    <ImageView
+        android:id="@+id/special_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:background="#A0000000"
+        android:padding="20dp"
+        android:src="@mipmap/special_image"
+        android:visibility="gone"
+        app:srcCompat="@mipmap/special_image" />-->
+
+</RelativeLayout>

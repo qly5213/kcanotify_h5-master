@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.antest1.kcanotify.h5">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" tools:node="replace"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.antest1.kcasniffer.contentprovider.READ_DATA"/>
+    <uses-permission
+        xmlns:tools="http://schemas.android.com/tools"
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions"/>
+
+    <application
+        android:name="KcaApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:largeHeap="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name="com.antest1.kcanotify.h5.MainActivity"
+            android:configChanges="locale|layoutDirection">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.SettingActivity"
+            android:configChanges="locale|layoutDirection">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.ErrorlogActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.ToolsActivity"
+            android:configChanges="locale|layoutDirection">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.FleetInfoActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.ShipInfoActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.ShipInfoSortActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ShipInfoActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.ShipInfoFilterActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ShipInfoActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.EquipmentInfoActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.EquipmentListFilterActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.EquipmentInfoActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.AkashiActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.AkashiDetailActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.AkashiActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.AkashiFilterActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.AkashiActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.ExpCalcActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.ExpeditionTableActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.DropLogActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.ResourceLogActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.KcaDataSyncActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.KcaFairySelectActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.SettingActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.KcaInspectorActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.SettingActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.KcaInspectorDetailActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.KcaInspectorActivity" />
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.UpdateCheckActivity"
+            android:configChanges="locale|layoutDirection">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.SettingActivity" />
+        </activity>
+
+        <activity
+            android:name="com.antest1.kcanotify.h5.KcaInfoActivity"
+            android:configChanges="locale|layoutDirection">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.SettingActivity" />
+        </activity>
+
+        <activity
+            android:name="com.antest1.kcanotify.h5.KcaFleetViewMenuOrderActivity"
+            android:configChanges="locale|layoutDirection|orientation|screenSize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.antest1.kcanotify.h5.SettingActivity" />
+        </activity>
+        <!--<activity
+            android:name="com.antest1.kcanotify.h5.InitStartActivity"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>-->
+        <activity
+            android:name=".ZxingActivity"
+            android:screenOrientation="fullSensor"
+            android:stateNotNeeded="true"
+            android:theme="@style/zxing_CaptureTheme"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+
+        <activity
+            android:name="com.antest1.kcanotify.h5.GameActivity"
+            android:screenOrientation="landscape"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleTask"
+            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation">
+        </activity>
+
+        <activity
+            android:name="com.antest1.kcanotify.h5.GameOOIActivity"
+            android:screenOrientation="landscape"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleTask"
+            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation">
+        </activity>
+
+
+        <service
+            android:name=".KcaService"
+            android:configChanges="locale|layoutDirection" >
+            <intent-filter>
+                <action android:name="com.antest1.kcasniffer.broadcast"/>
+            </intent-filter>
+        </service>
+        <service
+            android:name=".KcaAlarmService" />
+        <service
+            android:name=".KcaViewButtonService"
+            android:configChanges="locale|layoutDirection" />
+        <service
+            android:name=".KcaBattleViewService" />
+        <service
+            android:name=".KcaFleetViewService"
+            android:configChanges="locale|layoutDirection" />
+        <service
+            android:name=".KcaQuestViewService" />
+        <service
+            android:name=".KcaAkashiViewService" />
+        <service
+            android:name=".KcaDevelopPopupService" />
+        <service
+            android:name=".KcaConstructPopupService" />
+        <service
+            android:name=".KcaDockingPopupService" />
+        <service
+            android:name=".KcaLandAirBasePopupService" />
+        <service
+            android:name=".KcaFleetCheckPopupService" />
+        <service
+            android:name=".KcaMapHpPopupService" />
+        <service
+            android:name=".KcaExpeditionCheckViewService" />
+        <service
+            android:name=".KcaCustomToastService" />
+        <service
+            android:name=".KcaVpnService"
+            android:label="@string/app_vpn_name"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".KcaAutomationReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="Automation Receiver" >
+            <intent-filter>
+                <action android:name="sniffer_on" />
+                <action android:name="sniffer_off" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".KcaTimerWidget"
+            android:label="@string/widget_timer_name">
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widgetconfig_timer" />
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.antest1.kcanotify.h5.widget.menuchange1" />
+                <action android:name="com.antest1.kcanotify.h5.widget.menuchange2" />
+                <action android:name="com.antest1.kcanotify.h5.widget.menuchange3" />
+                <action android:name="com.antest1.kcanotify.h5.widget.dataupdate" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

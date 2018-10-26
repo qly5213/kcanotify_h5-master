@@ -1,0 +1,83 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion '28.0.3'
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jnilib']
+        }
+    }
+    defaultConfig {
+        applicationId "com.antest1.kcanotify.h5"
+        minSdkVersion 21
+        targetSdkVersion 27
+        versionCode 2641
+        versionName "2.6.4r1"
+
+        multiDexEnabled true
+        externalNativeBuild {
+            cmake {
+                cppFlags "-frtti -fexceptions -std=gnu++11"
+                arguments "-DANDROID_PLATFORM=android-27"
+                // https://developer.android.com/ndk/guides/cmake.html
+            }
+        }
+
+        ndk {
+            // https://developer.android.com/ndk/guides/abis.html#sa
+            abiFilters 'armeabi-v7a', 'x86'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            useProguard = true
+            shrinkResources true
+            proguardFiles.add(file('proguard-rules.pro'))
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.google.guava:guava:23.0-android'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:2.1.0'
+    implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+    implementation (group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1') {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+    implementation 'com.pixplicity.htmlcompat:library:1.1.1'
+    implementation 'ch.acra:acra-mail:5.1.1'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
+    implementation 'com.github.woxthebox:draglistview:1.5.2'
+    implementation 'com.github.bumptech.glide:glide:4.7.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
+
+    implementation "com.tonyodev.fetch2:fetch2:2.1.0-RC10"
+    implementation('com.journeyapps:zxing-android-embedded:3.6.0') { transitive = false }
+    implementation 'com.google.zxing:core:3.3.0'
+    // testCompile 'junit:junit:4.12'
+}

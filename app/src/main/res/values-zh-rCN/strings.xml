@@ -1,0 +1,651 @@
+<!--
+
+For Translators:
+Please check original strings.xml at Github:
+https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/strings.xml
+
+-->
+
+<resources>
+    <string name="locale_code">zh-CN</string>
+
+    <!-- Application Information -->
+    <string name="app_name">Kcanotify</string>
+    <string name="action_settings">设定</string>
+    <string name="action_download">下载</string>
+    <string name="action_check">检查</string>
+    <string name="backpress_msg">再按一次返回键退出应用程序</string>
+    <string name="notification_appinfo_title">Kcanotify通知</string>
+    <string name="app_vpn_name">Kcanotify Sniffer</string>
+
+    <!-- Common Text -->
+    <string name="dialog_ok">确认</string>
+    <string name="dialog_cancel">取消</string>
+
+    <string name="error_text">发生错误，请联系开发人员。</string>
+
+    <string name="heavy_damaged">有舰娘大破！</string>
+    <string name="heavy_damaged_damecon">有舰娘大破！（紧急修理可用）</string>
+    <string name="goback_left">点选左边按钮撤退</string>
+
+    <string name="seek_type_0">加总</string>
+    <string name="seek_type_1">33式/1</string>
+    <string name="seek_type_3">33式/3</string>
+    <string name="seek_type_4">33式/4</string>
+
+    <string name="seek_type_0_detail">总和</string>
+    <string name="seek_type_1_detail">33式/分歧係数1 (2&#45;5)</string>
+    <string name="seek_type_3_detail">33式/分歧係数3 (6&#45;2,6&#45;3)</string>
+    <string name="seek_type_4_detail">33式/分歧係数4 (3&#45;5,6&#45;1)</string>
+
+    <string name="speed_superfast">最速</string>
+    <string name="speed_fastplus">高速+</string>
+    <string name="speed_fast">高速</string>
+    <string name="speed_slow">低速</string>
+    <string name="speed_mixed_normal">(低速)混合</string>
+    <string name="speed_mixed_fast">(高速)混合</string>
+    <string name="speed_mixed_fastplus">(高速+)混合</string>
+    <string name="speed_none">\?\?</string>
+    <string name="speed_postfix">&#160;舰队</string>
+
+    <string name="opendb_failed_msg">向OpenDB网站传送资料时出现错误。</string>
+    <string name="process_battle_failed_msg">处理战斗数据时出现错误。</string>
+    <string name="service_failed_msg">处理数据时出现错误。\n建议重新启动Kcanotify</string>
+
+    <string name="node_info_noevent" formatted="false">%s (战斗迴避)</string>
+    <string name="node_info_obtain" formatted="false">%s (发现资源)</string>
+    <string name="node_info_loss" formatted="false">%s (遭遇漩涡)</string>
+    <string name="node_info_normal" formatted="false">%s</string>
+    <string name="node_info_normal_battle" formatted="false">%s (敌舰)</string>
+    <string name="node_info_boss" formatted="false">%s (Boss)</string>
+    <string name="node_info_boss_nightbattle" formatted="false">%s (Boss/夜战)</string>
+    <string name="node_info_boss_nightdaybattle" formatted="false">%s (Boss/夜转日)</string>
+    <string name="node_info_boss_ecbattle" formatted="false">%s (Boss/深海联合舰队)</string>
+    <string name="node_info_airbattle" formatted="false">%s (航空战)</string>
+    <string name="node_info_airsearch" formatted="false">%s (侦查)</string>
+    <string name="node_info_ldairbattle" formatted="false">%s (敌袭)</string>
+    <string name="node_info_nightbattle" formatted="false">%s (夜战)</string>
+    <string name="node_info_nightdaybattle" formatted="false">%s (夜转日)</string>
+    <string name="node_info_tpoint" formatted="false">%s (运输点)</string>
+    <string name="node_info_selectable" formatted="false">%s (能动分歧)</string>
+    <string name="node_info_sendan" formatted="false">%s (大型资源点)</string>
+    <string name="node_info_ecbattle" formatted="false">%s (深海联合舰队)</string>
+    <string name="node_info_practice" formatted="false">演习</string>
+    <!-- MainActivity Strings -->
+    <string name="ma_vpn_toggleon">Sniffer ON</string>
+    <string name="ma_vpn_toggleoff">Sniffer OFF</string>
+    <string name="ma_svc_toggleon">Service ON</string>
+    <string name="ma_svc_toggleoff">Service OFF</string>
+    <string name="ma_toast_kancolle_not_installed">Android版本的舰これ尚未安装</string>
+    <string name="ma_toast_overay_diabled">战斗剧透需要取得悬浮视窗权限  请至设定 > 允许悬浮视窗的相关设定</string>
+    <string name="ma_hasupdate" formatted="false">有可用的更新。 (%s)</string>
+    <string name="ma_hasdataupdate" formatted="false">有可用的游戏资料更新。 (%s)</string>
+    <string name="description"><b>Help</b>\n请启用VPN与SVC服务后再开启舰これ\n\n※ VPN是为了监测游戏数据 \n\n<b>主要功能</b>\n - 远征/入渠通知 \n - 大破警告\n - 索敌/制空/士气值显示\n - 罗盘预测\n - 战斗剧透 / 任务翻译\n - 装备改修表\n - 传送数据至OpenDB（可选）\n \n可至官网 http://swaytwig.com/kcanotify 了解详细资料（韩文）</string>
+
+    <!-- SettingActivity Strings -->
+    <string name="sa_checkupdate_latest" formatted="false">目前已是最新版本。 (%s)</string>
+    <string name="sa_checkupdate_hasupdate" formatted="false">有可用的更新。 (%s)\nDo 请问你想下载吗？</string>
+    <string name="sa_checkupdate_dialogtitle">检查更新</string>
+    <string name="sa_checkupdate_nodataerror">检查更新时出现问题</string>
+    <string name="sa_checkupdate_servererror">更新服务器出现错误</string>
+
+    <string name="sa_getupdate_finished">游戏资料全数下载完成</string>
+    <string name="sa_getupdate_started">下载游戏资料&#8230;</string>
+    <string name="sa_getupdate_servererror" formatted="false">服务器出错: %s</string>
+    <string name="sa_getupdate_ioexceptionerror">保存数据时出现错误</string>
+
+    <string name="sa_overlay_under_m">Android 6.0以下版本可以跳过该设定</string>
+    <string name="sa_overlay_appearontop">请于应用管理中给予Kcanotify「盖过其他应用程式」的权限。(以在其他应用程式之上显示内容)</string>
+    <string name="sa_overlay_ok">悬浮视窗权限：已取得</string>
+    <string name="sa_overlay_no">悬浮视窗权限：未取得（将无法使用战斗剧透功能）</string>
+    <string name="sa_usagestat_ok">允许存取使用信息</string>
+    <string name="sa_usagestat_no">禁止存取使用信息</string>
+    <string name="sa_usagestat_dialog_title">UsageStats存取权限</string>
+    <string name="sa_usagestat_dialog_desc">在Android 5.0+的装置上，你需要准许这个权限以使用此功能。这是用于检测舰これ是否启动于萤幕上的所需权限。</string>
+
+    <string name="sa_language_changed">请重新启动Kcanotify来套用新语言设定。</string>
+
+    <string name="sa_bypass_list_invalid">绕行地址列表有误，请检查及更正后重试。</string>
+
+    <!-- KcaService Strings -->
+    <string name="kca_init_title" formatted="false">%s 运作中</string>
+    <string name="kca_init_content">请从Kcanotify内开启游戏</string>
+
+    <string name="kca_noti_title_exp_canceled" formatted="false">远征 %s (%s) 已中止。</string>
+    <string name="kca_noti_content_exp_canceled" formatted="false">&lt;%s&gt; 已从远征%s中召回。</string>
+    <string name="kca_noti_title_exp_finished" formatted="false">远征 %s (%s) 已完成。</string>
+    <string name="kca_noti_content_exp_finished_normal" formatted="false">&lt;%s&gt; 从远征%s归还。</string>
+    <string name="kca_noti_content_exp_finished_canceled" formatted="false">&lt;%s&gt; 从远征%s归还（中止）。</string>
+
+    <string name="kca_noti_title_dock_finished" formatted="false">澡堂 %d: 入渠完成。</string>
+    <string name="kca_noti_content_dock_finished" formatted="false">澡堂 %d: %s 已入渠。</string>
+    <string name="kca_noti_content_dock_finished_nodata" formatted="false">澡堂 %d: 舰娘入渠完成。</string>
+
+    <string name="kca_noti_title_morale_recovered" formatted="false">第%d舰队：疲劳已恢復</string>
+    <string name="kca_noti_content_morale_recovered" formatted="false">&lt;%s&gt;的所有船隻的疲劳已经恢復。</string>
+    <string name="kca_noti_title_akashirepair_recovered">开始泊地修理</string>
+    <string name="kca_noti_content_akashirepair_recovered">舰队目前正在修理。</string>
+
+    <string name="kca_toast_airpower" formatted="false">制空: %d-%d</string>
+    <string name="kca_toast_seekvalue_d" formatted="false">索敌(%s): %d</string>
+    <string name="kca_toast_seekvalue_f" formatted="false">索敌(%s): %.2f</string>
+    <string name="kca_toast_tpvalue" formatted="false">输送: S%d/A%d</string>
+
+    <string name="kca_toast_restart_at_kcanotify">请以Kcanotify重启游戏</string>
+    <string name="kca_toast_get_data_at_settings">游戏资料载入不完全\\n如果一直没有完成载入，请手动于Kcanotify设定内下载游戏资料。</string>
+    <string name="kca_toast_get_data_at_settings_2">侦测到游戏资料错误\\\\n请手动于Kcanotify设定内下载游戏资料。</string>
+    <string name="kca_toast_loading_data">载入游戏资料</string>
+    <string name="kca_toast_inconsistent_data">Kcanotify伺服器中并没有目前API版本资料。\n请于10~20分钟后重新启动Kcanotify</string>
+    <string name="kca_toast_ioexceptionerror">写入资料时出现错误</string>
+    <string name="kca_toast_server_select">服务器选择（建议选择上部和左侧的服务器，尽量避免底部的两个）</string>
+
+    <string name="kca_view_activate_vpn">请启用VPN服务。</string>
+    <string name="kca_view_condition" formatted="false">士气： %s</string>
+    <string name="kca_view_condition_nformat" formatted="false">士气 #%d: %s</string>
+    <string name="kca_view_hdmg_damecon_format" formatted="false">[有舰娘大破！（紧急修理可用）] %s 运作中 %s</string>
+    <string name="kca_view_hdmg_format" formatted="false">[有舰娘大破！] %s 运作中 %s</string>
+    <string name="kca_view_normal_format" formatted="false">%s 运作中 %s</string>
+    <string name="kca_view_context_expand">向下滑动以显示资料</string>
+    <string name="kca_view_noexpedition">没有进行中的远征。</string>
+    <string name="kca_view_expedition_header">剩余时间：</string>
+
+    <!-- Setting Strings -->
+    <string name="setting_menu_kand_head">Kcanotify设定</string>
+    <string name="setting_menu_noti_title_alarm_delay">通知时间提前值（秒）</string>
+    <string name="setting_menu_kand_title_language">语言设定</string>
+    <string name="setting_menu_kand_title_saku_cal">选择索敌公式</string>
+    <string name="setting_menu_kand_title_sniffer_type">Sniffer模式</string>
+    <string name="setting_menu_kand_title_exp_realtime_show">展示远征时间</string>
+    <string name="setting_menu_kand_desc_exp_realtime_show">于装置的通知栏显示远征时间</string>
+    <string name="setting_menu_kand_title_exp_type">远征时间显示类型</string>
+    <string name="setting_menu_kand_title_set_noti_priority">高优先度通知</string>
+    <string name="setting_menu_kand_desc_set_noti_priority">选中时通知将始终位于通知栏顶部</string>
+    <string name="setting_menu_kand_title_game_data_down">下载游戏资料和资源</string>
+    <string name="setting_menu_kand_desc_game_data_down">请于游戏资料未自动载入时使用</string>
+    <string name="setting_menu_kand_desc_fairy_select">选择辅助妖精</string>
+    <string name="setting_menu_kand_title_fairy_select">选择你想要携带的妖精</string>
+    <string name="setting_menu_kand_title_fairy_auto_hide">使妖精只显示在舰これ屏幕上</string>
+    <string name="setting_menu_kand_desc_fairy_auto_hide">在显示/隐藏妖精时有短暂的延迟</string>
+    <string name="current_fairy_changed_in_next">※妖精会于战斗剧透/任务浏览结束后更换</string>
+    <string name="action_fairy_rev">颠倒</string>
+    <string name="setting_menu_kand_title_adv_network">高级网络设置</string>
+    <string name="setting_menu_kand_warn_adv_network">警告：错误的设定可能会让VPN失效。请在你清楚确定每个选项的作用时更改设定！更改设定后你需要重新启用VPN来使设定生效</string>
+    <string name="setting_menu_kand_title_socks5_enable">启用SOCKS5代理</string>
+    <string name="setting_menu_kand_title_socks5_onlykc">只应用于舰队收藏/DMM登入</string>
+    <string name="setting_menu_kand_title_socks5_address">SOCKS5代理服务器地址</string>
+    <string name="setting_menu_kand_title_socks5_port">SOCKS5代理服务器端口</string>
+    <string name="setting_menu_kand_title_socks5_username">用户名（可选）</string>
+    <string name="setting_menu_kand_title_socks5_password">密码（可选）</string>
+    <string name="settings_menu_kand_title_bypass_address">绕行地址（代理）</string>
+    <string name="setting_menu_kand_desc_bypass_address">使用CIDR来叙述代理的地址，使用逗号来分隔各个CIDR。</string>
+    <string name="setting_menu_kand_title_record_droplog">记录掉落日志</string>
+    <string name="setting_menu_kand_title_record_resourcelog">记录资源日志</string>
+    <string name="setting_menu_kand_title_fleetview_button_order">舰队信息选单顺序</string>
+    <string name="setting_menu_kand_desc_fleetview_button_order">为舰队信息右方的功能表中的按钮设定顺序</string>
+    <string name="fleetview_button_order_change_when_restart">重启应用以套用设定</string>
+    <string name="record_storage_warning">会占用设备部分的储存空间</string>
+
+    <string name="setting_menu_view_head">功能设定</string>
+    <string name="setting_menu_view_title_accessibility_setting">辅助功能设置</string>
+    <string name="setting_menu_view_desc_accessibility_setting">选择并开启Kcanotify服务（以检测舰これ客户端）</string>
+    <string name="setting_menu_view_title_overlay_setting">悬浮视窗设定</string>
+    <string name="setting_menu_view_desc_overlay_setting">取得悬浮视窗权限（以使用战斗剧透功能）</string>
+    <string name="setting_menu_view_title_battlenode_use">预知罗盘娘的阴谋</string>
+    <string name="setting_menu_view_desc_battlenode_use">进击时显示下一个会进入的路线</string>
+    <string name="setting_menu_view_title_battleview_use">预知战况</string>
+    <string name="setting_menu_view_desc_battleview_use">战斗时显示最终结果</string>
+    <string name="setting_menu_view_title_drop_visible">显示掉落舰娘</string>
+    <string name="setting_menu_view_desc_drop_visible">于预知战报中显示掉落舰娘的名称</string>
+    <string name="setting_menu_view_title_questview_use">任务浏览</string>
+    <string name="setting_menu_view_desc_questview_use">显示任务内容与翻译</string>
+    <string name="setting_menu_view_title_show_constrship">显示建造中的船舰名称</string>
+    <string name="setting_menu_view_desc_show_constrship">于舰队信息中显示建造中的船舰名称</string>
+    <string name="setting_menu_view_title_fix_view">舰队信息/预知战况移动锁</string>
+    <string name="setting_menu_view_desc_fix_view">将悬浮介面锁定到目前位置</string>
+
+    <string name="setting_menu_noti_head">通知设定</string>
+    <string name="setting_menu_noti_title_exp">远征</string>
+    <string name="setting_menu_noti_desc_exp">远征结束通知</string>
+    <string name="setting_menu_noti_title_dock">入渠</string>
+    <string name="setting_menu_noti_desc_dock">入渠结束通知</string>
+    <string name="setting_menu_noti_title_morale">疲劳值提醒</string>
+    <string name="setting_menu_noti_desc_morale">舰队疲劳恢復时通知</string>
+    <string name="setting_menu_noti_title_morale_min">提醒最低值</string>
+    <string name="setting_menu_noti_title_akashirepair">泊地修理</string>
+    <string name="setting_menu_noti_desc_akashirepair">泊地修理开始时发出通知及提示</string>
+    <string name="setting_menu_noti_title_hdmg_vib">大破警告</string>
+    <string name="setting_menu_noti_desc_hdmg_vib">于舰娘大破时响铃/震动（即使不勾选也会弹出通知）</string>
+    <string name="setting_menu_noti_title_nspl_vib">未补给警告</string>
+    <string name="setting_menu_noti_desc_nspl_vib">于舰娘未补给时响铃/震动（即使不勾选也会弹出通知）</string>
+    <string name="setting_menu_noti_title_fairy_vib">隐藏妖精时震动</string>
+    <string name="setting_menu_noti_desc_fairy_vib">长按妖精以隐藏时是否发出一下振动</string>
+    <string name="setting_menu_noti_title_fairy_glow">任务完成时通过妖精通知</string>
+    <string name="setting_menu_noti_desc_fairy_glow">进行中的任务完成时妖精将闪耀并发出光芒</string>
+    <string name="setting_menu_noti_title_disable_customtoast">使用Custom Toast服务</string>
+    <string name="setting_menu_noti_desc_disable_customtoast">当罗盘预知或大破警告不显示时设置</string>
+
+    <string name="setting_menu_stat_head">插件设置</string>
+    <string name="setting_menu_stat_title_kcaqsync">启用KcaQSync(自动同步任务)</string>
+    <string name="setting_menu_stat_title_kcaqsync_pass">KcaQSync密码</string>
+    <string name="setting_menu_stat_desc_kcaqsync_pass_emtpy">将于设定密码后启动。</string>
+    <string name="setting_menu_stat_desc_kcaqsync_pass">警告：切勿使用与DMM相同的密码！</string>
+    <string name="setting_menu_stat_title_opendb">向OpenDB传送游戏数据</string>
+    <string name="setting_menu_stat_title_poidb">向poi-statistics传送游戏数据</string>
+
+    <string name="setting_menu_app_head">应用程式资讯</string>
+    <string name="setting_menu_app_title_current">目前版本</string>
+    <string name="setting_menu_app_title_updatecheck">检查更新</string>
+    <string name="setting_menu_app_title_updatecheckserver">选择更新检查的服务器</string>
+    <string name="setting_menu_app_title_down">APK下载来源</string>
+    <string name="setting_menu_app_title_contact">提交建议/回报错误</string>
+    <string name="setting_menu_app_desc_contact">传送邮件给开发人员</string>
+    <string name="setting_menu_app_desc_inspector">查询资料库及选项数据</string>
+    <string name="setting_menu_app_info">关于Kcanotify</string>
+
+    <!-- BattleView Strings -->
+    <string name="battleview_error">处理战斗资料时出现错误</string>
+    <string name="battleview_menu_head">选单</string>
+    <string name="battleview_menu0">航空战信息</string>
+    <string name="battleview_menu1">任务浏览</string>
+    <string name="battleview_menu2">舰队信息</string>
+    <string name="battleview_expview" formatted="false">战果: %.2f/%.2f</string>
+
+    <string name="formation_lineahead">单纵</string>
+    <string name="formation_doubleline">複纵</string>
+    <string name="formation_diamond">轮型</string>
+    <string name="formation_echelon">梯形</string>
+    <string name="formation_lineabreast">单横</string>
+    <string name="formation_defensive">警戒</string>
+    <string name="formation_c1">第一警戒航行序列(对潜警戒)</string>
+    <string name="formation_c2">第二警戒航行序列(前方警戒)</string>
+    <string name="formation_c3">第三警戒航行序列(轮型阵)</string>
+    <string name="formation_c4">第四警戒航行序列(战斗队形)</string>
+    <string name="formation_c1_short">对潜警戒</string>
+    <string name="formation_c2_short">前方警戒</string>
+    <string name="formation_c3_short">轮型阵</string>
+    <string name="formation_c4_short">战斗队形</string>
+
+    <string name="engagement_label">双方航向</string>
+    <string name="engagement_t_advantage">T字有利</string>
+    <string name="engagement_parallel">同航战</string>
+    <string name="engagement_headon">反航战</string>
+    <string name="engagement_t_disadvantage">T字不利</string>
+
+    <string name="air_label">航空战结果</string>
+    <string name="air_supermacy">制空确保</string>
+    <string name="air_superiority">制空优势</string>
+    <string name="air_parity">制空均衡</string>
+    <string name="air_denial">制空劣势</string>
+    <string name="air_incapability">制空权丧失</string>
+
+    <string name="air_supermacy_abbr">确保</string>
+    <string name="air_superiority_abbr">优势</string>
+
+    <string name="enemy_fleet_name">敌方舰队</string>
+    <string name="enemy_main_fleet_name">敌方主力舰队</string>
+    <string name="enemy_combined_fleet_name">敌方护卫舰队</string>
+
+    <string name="yomi_flagship">flagship</string>
+    <string name="yomi_elite">elite</string>
+    <string name="yomi_flagship_short">F</string>
+    <string name="yomi_elite_short">E</string>
+
+    <string name="rank_ss">SS</string>
+    <string name="rank_s">S</string>
+    <string name="rank_a">A</string>
+    <string name="rank_b">B</string>
+    <string name="rank_c">C</string>
+    <string name="rank_d">D</string>
+    <string name="rank_e">E</string>
+
+    <string name="maprank_1">丁</string>
+    <string name="maprank_2">丙</string>
+    <string name="maprank_3">乙</string>
+    <string name="maprank_4">甲</string>
+	
+    <string name="item_fuel">燃料</string>
+    <string name="item_ammo">弹药</string>
+    <string name="item_stel">钢材</string>
+    <string name="item_baux">铝土</string>
+    <string name="item_brnr">高速建造材</string>
+    <string name="item_bgtz">高速修復材</string>
+    <string name="item_mmat">开发资材</string>
+    <string name="item_kmat">改修资材</string>
+    <string name="item_boxs">家具箱(小)</string>
+    <string name="item_boxm">家具箱(中)</string>
+    <string name="item_boxl">家具箱(大)</string>
+    <string name="setting_menu_noti_title_ringtone">铃声</string>
+    <string name="setting_menu_noti_desc_ringtone">选择铃声</string>
+    <string name="settings_string_silent">无铃声</string>
+    <string name="setting_menu_noti_title_kind">响铃模式</string>
+    <string name="sound_kind_normal">音效</string>
+    <string name="sound_kind_vibrate">震动</string>
+    <string name="sound_kind_mute">静音</string>
+    <string name="ma_permission_external_confirmed">读取外部存储空间的权限：允许</string>
+    <string name="ma_permission_external_denied">读取外部存储空间：不允许（只能使用系统铃声/无法生成错误日誌）</string>
+    <string name="airbase_term">基地航空队</string>
+    <string name="contact_term">触接</string>
+    <string name="contact_none">(无)</string>
+    <string name="contact_dm" formatted="false">攻撃力补正：%d%%</string>
+    <string name="phase_term" formatted="false">阶段%d</string>
+    <string name="injection_term">喷气式强袭</string>
+    <string name="raid_type1">资源损失</string>
+    <string name="raid_type2">资源损失/基地航空队损害</string>
+    <string name="raid_type3">基地航空队损害</string>
+    <string name="raid_type4">防空完全胜利</string>
+    <string name="getship_label">掉落</string>
+    <string name="getship_none">(无)</string>
+    <string name="getship_max">(船位已满)</string>
+    <string name="kca_view_tpvalue" formatted="false">运输：%d~%d</string>
+    <string name="ship_name_class">船型</string>
+
+    <string name="kca_view_condition_1" formatted="false">士气 #1: %s</string>
+    <string name="kca_view_condition_2" formatted="false">士气 #2: %s</string>
+    <string name="not_supplied" formatted="false">舰队 %d 未补给!</string>
+    <string name="slot_empty">(没有装备)</string>
+    <string name="sound_kind_mixed">响铃+震动</string>
+    <string name="viewbutton_hide">妖精：再见的说！</string>
+    <string name="fairy_hidden_notification_title">隐藏妖精</string>
+    <string name="fairy_hidden_notification_text">下滑以选择操作</string>
+    <string name="fairy_hidden_notification_bigtext">选择操作</string>
+    <string name="fairy_hidden_notification_action_return">再次显示</string>
+    <string name="fairy_hidden_notification_action_remove">移除</string>
+    <string name="battleview_text_retreated">退避</string>
+
+    <string name="quest_category_1">编</string>
+    <string name="quest_category_2">出</string>
+    <string name="quest_category_3">演</string>
+    <string name="quest_category_4">远</string>
+    <string name="quest_category_5">补</string>
+    <string name="quest_category_6">工</string>
+    <string name="quest_category_7">改</string>
+    <string name="quest_category_8">出</string>
+    <string name="quest_category_9">他</string>
+
+    <string name="quest_type_1">日</string>
+    <string name="quest_type_2">周</string>
+    <string name="quest_type_3">月</string>
+    <string name="quest_type_4">单</string>
+    <string name="quest_type_5">他</string>
+
+    <string name="questview_page" formatted="false">第 %d/%d 页</string>
+
+    <string name="action_tools">实用工具</string>
+    <string name="action_save_msg">处理中</string>
+
+    <string name="action_akashi">明石改修表</string>
+    <string name="action_akashi_detail">装备改修详情</string>
+    <string name="action_akashi_filter">过滤设定</string>
+    <string name="aa_btn_safe_state1">确保</string>
+    <string name="aa_btn_safe_state0">通常</string>
+    <string name="aa_btn_filter">过滤</string>
+    <string name="recon_failed">侦查失败</string>
+    <string name="akashi_term_equip">装备</string>
+    <string name="akashi_term_resource">F/A/S/B</string>
+    <string name="akashi_term_support">支持</string>
+    <string name="akashi_term_detail1">改修详情(1)</string>
+    <string name="akashi_term_detail2">改修详情(2)</string>
+    <string name="akashi_term_default">初始装备舰娘</string>
+    <string name="akashi_term_day_0">週日</string>
+    <string name="akashi_term_day_1">週一</string>
+    <string name="akashi_term_day_2">週二</string>
+    <string name="akashi_term_day_3">週三</string>
+    <string name="akashi_term_day_4">週四</string>
+    <string name="akashi_term_day_5">週五</string>
+    <string name="akashi_term_day_6">週六</string>
+
+    <string name="filter_equip_title">以装备类型过滤</string>
+    <string name="filter_equip_all">全部</string>
+    <string name="filter_equip_none">清空</string>
+    <string name="filter_equip_rev">反序</string>
+    <string name="language_system">使用系统设置</string>
+    <string name="item_engine">Ne式喷射发动机</string>
+    <string name="item_gmi_material">新型火炮兵装资材</string>
+    <string name="item_skilled_crew">熟练搭乘员</string>
+    <string name="item_kouku_material">新型航空兵装资材</string>
+    <string name="item_action_report">战斗详报</string>
+    <string name="setting_menu_noti_title_notiatsvcoff">当Service服务关闭时启用通知</string>
+    <string name="setting_menu_noti_desc_notiatsvcoff">当Service服务关闭时仍然启用远征/入渠等通知</string>
+    <string name="kca_toast_renew_currentportdeck">于游戏内返回母港并刷新相关数据</string>
+    <string name="questview_nopage">没有任务</string>
+
+    <string name="action_fleetlist">舰队配置</string>
+    <string name="fleetlist_combined_fleet">联合舰队</string>
+    <string name="fleetlist_loading">加载中</string>
+
+    <string name="action_shipinfo">舰船目录</string>
+    <string name="shipinfo_btn_sort">排序</string>
+    <string name="shipinfo_btn_filter">过滤</string>
+    <string name="shipinfo_btn_total_format" formatted="false">总计船舰数目：%d</string>
+    <string name="shipinfo_btn_total_exp_format" formatted="false">总计经验：%,d</string>
+    <string name="shipinfo_sort_asc">升序</string>
+    <string name="shipinfo_sort_desc">降序</string>
+    <string name="ship_stat_sort_key_0">序号</string>
+    <string name="ship_stat_sort_key_1">等级</string>
+    <string name="ship_stat_sort_key_2">舰种</string>
+    <string name="ship_stat_sort_key_3">士气</string>
+    <string name="ship_stat_sort_key_4">锁定</string>
+    <string name="ship_stat_sort_key_5">舰队</string>
+    <string name="ship_stat_sort_key_6">入渠</string>
+    <string name="ship_stat_sort_key_7">损伤</string>
+    <string name="ship_stat_sort_key_8">修理</string>
+    <string name="ship_stat_sort_key_9">遠征</string>
+    <string name="ship_stat_sort_key_10">増設</string>
+    <string name="ship_stat_sort_key_11">火力</string>
+    <string name="ship_stat_sort_key_12">雷装</string>
+    <string name="ship_stat_sort_key_13">对空</string>
+    <string name="ship_stat_sort_key_14">装甲</string>
+    <string name="ship_stat_sort_key_15">夜战</string>
+    <string name="ship_stat_sort_key_16">对潜</string>
+    <string name="ship_stat_sort_key_17">迴避</string>
+    <string name="ship_stat_sort_key_18">索敌</string>
+    <string name="ship_stat_sort_key_19">运</string>
+    <string name="ship_stat_sort_key_20">速度</string>
+    <string name="ship_stat_sort_key_21">标贴</string>
+
+    <string name="shipinfo_filt_list_dialog_title">选择</string>
+    <string name="shipinfo_criteria_count" formatted="false">已应用标签：%d</string>
+
+    <string name="ship_tag_0">没有</string>
+    <string name="ship_tag_1">警戒部队</string>
+    <string name="ship_tag_2">海峡派遣舰队</string>
+    <string name="ship_tag_3">西方作戦部队</string>
+    <string name="ship_tag_4">欧洲特务舰队</string>
+    <string name="ship_tag_5">Force H</string>
+    <string name="ship_tag_6">莱茵演习作战部队</string>
+
+    <string name="ship_fleet_0">没有</string>
+
+    <string name="ship_hp_0">健在</string>
+    <string name="ship_hp_1">小破</string>
+    <string name="ship_hp_2">中破</string>
+    <string name="ship_hp_3">大破</string>
+
+    <string name="action_equipmentinfo">装备目录</string>
+    <string name="equipinfo_summary" formatted="false">合计 %d（%d 装备中, %d 閒置）</string>
+    <string name="equipinfo_filter">过滤</string>
+
+    <string name="action_expcalc">经验值计算器</string>
+    <string name="expcalc_shipname">舰娘</string>
+    <string name="expcalc_currentlv">现在等级</string>
+    <string name="expcalc_targetlv">目标等级</string>
+    <string name="expcalc_map">海域</string>
+    <string name="expcalc_baseexp">基本经验值</string>
+    <string name="expcalc_rank">评价</string>
+    <string name="expcalc_flagship">旗舰</string>
+    <string name="expcalc_mvp">MVP</string>
+    <string name="expcalc_mapexp">海域经验值</string>
+    <string name="expcalc_remainexp">剩余经验值</string>
+    <string name="expcalc_battle">战斗</string>
+
+    <string name="action_expdtable">远征资讯</string>
+    <string name="expdtable_btn_w0">所有海域</string>
+    <string name="expdtable_btn_w1">镇守府</string>
+    <string name="expdtable_btn_w2">南西诸岛</string>
+    <string name="expdtable_btn_w3">北方</string>
+    <string name="expdtable_btn_w4">西方</string>
+    <string name="expdtable_btn_w5">南方</string>
+    <string name="expdtable_btn_s1">一般</string>
+    <string name="expdtable_btn_s2">大成功</string>
+    <string name="expdtable_label_no">编号</string>
+    <string name="expdtable_label_name">远征名称</string>
+    <string name="expdtable_label_time">耗时</string>
+    <string name="expdtable_label_item">奖励</string>
+    <string name="expdtable_label_item1">奖励1</string>
+    <string name="expdtable_label_item2">奖励2</string>
+    <string name="expdtable_label_hq_exp">提督</string>
+    <string name="expdtable_label_ship_exp">舰娘</string>
+    <string name="expdtable_label_condition">要求的条件</string>
+
+    <string name="action_droplog">掉落纪录</string>
+    <string name="droplog_search">搜索</string>
+    <string name="droplog_clear">清除掉落纪录出</string>
+    <string name="droplog_export">以.csv档案汇出</string>
+    <string name="droplog_label_date">日期</string>
+    <string name="droplog_label_area">海域</string>
+    <string name="droplog_label_level">难易度</string>
+    <string name="droplog_label_isboss">王点</string>
+    <string name="droplog_label_rank">评价</string>
+    <string name="droplog_item_label_no">数</string>
+    <string name="droplog_item_label_time">时间</string>
+    <string name="droplog_item_label_area">海域</string>
+    <string name="droplog_item_label_isboss">王</string>
+    <string name="droplog_item_label_rank">級</string>
+    <string name="droplog_item_label_name">名称</string>
+    <string name="droplog_ship_none">(没有)</string>
+    <string name="droplog_ship_full">(已满)</string>
+    <string name="droplog_total_format" formatted="false">总数: %d</string>
+    <string name="droplog_clear_dialog_message">你想清空所有掉落纪录吗？</string>
+    <string name="droplog_sort_asc">升序</string>
+    <string name="droplog_sort_desc">降序</string>
+
+    <string name="action_reslog">资源记录</string>
+    <string name="reslog_clear">清除资源纪录出</string>
+    <string name="reslog_export">以.csv档案汇出</string>
+    <string name="reslog_label_date">日期</string>
+    <string name="reslog_label_time">时间</string>
+    <string name="reslog_label_interval">间隔</string>
+    <string name="reslog_interval_1hour">1小时</string>
+    <string name="reslog_interval_3hour">3小时</string>
+    <string name="reslog_interval_6hour">6小时</string>
+    <string name="reslog_interval_12hour">12小时</string>
+    <string name="reslog_interval_1day">1日</string>
+    <string name="reslog_interval_3day">3日</string>
+    <string name="reslog_interval_1week">1周</string>
+    <string name="reslog_interval_2week">2周</string>
+    <string name="reslog_interval_1month">1个月</string>
+    <string name="reslog_interval_day">日</string>
+    <string name="reslog_interval_week">周</string>
+    <string name="reslog_interval_month">月</string>
+    <string name="reslog_label_resource">资源</string>
+    <string name="reslog_label_consumable">消耗品</string>
+    <string name="reslog_clear_dialog_message">你想清空所有资源记录吗？</string>
+
+    <string name="action_datasync">数据同步</string>
+    <string name="datasync_quest_title">任务计数器同步</string>
+    <string name="datasync_quest_code">编码</string>
+    <string name="datasync_mode_add">加成</string>
+    <string name="datasync_mode_overwrite">覆盖</string>
+    <string name="datasync_quest_check">检查</string>
+    <string name="datasync_quest_sync">同步</string>
+    <string name="datasync_quest_copy">复制</string>
+    <string name="datasync_current_label">現在編碼</string>
+    <string name="datasync_success">同步成功</string>
+    <string name="datasync_failed">同步失敗</string>
+
+    <string name="fleetview_title">舰队信息</string>
+    <string name="fleetview_combined">联合</string>
+    <string name="fleetview_switch_1">第１舰队</string>
+    <string name="fleetview_switch_2">第２舰队</string>
+    <string name="fleetview_expview" formatted="false">［现在］%.2f・［今天］%.2f</string>
+    <string name="fleetview_seekvalue_d" formatted="false">索敌: %d</string>
+    <string name="fleetview_seekvalue_f" formatted="false">索敌: %.2f</string>
+    <string name="fleetview_contactvalue" formatted="false">接%s/选%s</string>
+    <string name="viewmenu_battle">战斗</string>
+    <string name="viewmenu_quest">任务</string>
+    <string name="viewmenu_excheck">远征</string>
+    <string name="viewmenu_akashi">改修</string>
+    <string name="viewmenu_develop">开发</string>
+    <string name="viewmenu_construction">建造</string>
+    <string name="viewmenu_docking">入渠</string>
+    <string name="viewmenu_labinfo">基航</string>
+    <string name="viewmenu_maphp">海域</string>
+    <string name="viewmenu_fchk">详细</string>
+    <string name="viewmenu_develop_title">开发信息</string>
+    <string name="viewmenu_construction_title">建造信息</string>
+    <string name="viewmenu_docking_title">入渠信息</string>
+    <string name="viewmenu_docking_list">目录</string>
+    <string name="viewmenu_airbase_title">基地航空队</string>
+    <string name="viewmenu_maphp_title">海域HP信息</string>
+    <string name="develop_failed_text">企鹅玩偶</string>
+    <string name="excheckview_title">远征检查</string>
+    <string name="excheckview_flag_info">旗舰</string>
+    <string name="excheckview_total_info">编成</string>
+    <string name="excheckview_drum_info">运输桶</string>
+    <string name="excheckview_asw_info">对潜</string>
+    <string name="excheckview_fp_info">对空</string>
+    <string name="excheckview_los_info">索敌</string>
+    <string name="excheckview_firepower_info">火力</string>
+    <string name="excheckview_flag_lv_format" formatted="false">等级：%d+</string>
+    <string name="excheckview_total_num_format" formatted="false">最低舰数：%d</string>
+    <string name="excheckview_total_lv_format" formatted="false">总等级：%d+</string>
+    <string name="excheckview_drum_ship_format" formatted="false">至少装备于%d个舰娘上</string>
+    <string name="excheckview_drum_num_format" formatted="false">总数%d个以上</string>
+    <string name="excheckview_total_format" formatted="false">总合：%d+</string>
+    <string name="excheckview_bonus_asw" formatted="false">对潜：%d</string>
+    <string name="excheckview_bonus_los" formatted="false">索敌：%d</string>
+    <string name="excheckview_bonus_kinu">鬼怒改二</string>
+    <string name="excheckview_bonus_drum" formatted="false">运输桶：%d</string>
+    <string name="excheckview_bonus_dlc" formatted="false">大发：%d</string>
+    <string name="excheckview_bonus_tank" formatted="false">中战车：%d</string>
+    <string name="excheckview_bonus_amp" formatted="false">内火艇：%d</string>
+    <string name="excheckview_bonus_toku" formatted="false">特大发：%d</string>
+    <string name="excheckview_bonus_result" formatted="false">（收益：%.1f%%）</string>
+    <string name="excheckview_ship_cvs">空母系</string>
+    <string name="labinfoview_status_standby">待机</string>
+    <string name="labinfoview_status_sortie">出击</string>
+    <string name="labinfoview_status_defense">防空</string>
+    <string name="labinfoview_status_retreat">退避</string>
+    <string name="labinfoview_status_rest">休息</string>
+    <string name="labinfoview_fp_format" formatted="false">制空 %d</string>
+    <string name="labinfoview_dist_format" formatted="false">作战半径 %d</string>
+    <string name="action_errorlog">错误日志</string>
+    <string name="errlog_dialog_message">你想清空所有错误日志吗？</string>
+    <string name="copied_to_clipboard">已复制文本到剪贴板</string>
+    <string name="expedition_type_value_0">剩下时间</string>
+    <string name="expedition_type_value_1">结束时间</string>
+    <string name="expedition_type_value_2">经过时间</string>
+    <string name="fleetcheckview_title">舰队详细</string>
+    <string name="fleetcheckview_btn_seeklos">索敌/输送</string>
+    <string name="fleetcheckview_content_seeklos" formatted="false">舰队索敌值加总: %d\n33式/1: %.2f (2&#45;5, 33+)\n33式/3: %.2f (6&#45;2, 6&#45;3)\n33式/4: %.2f (3&#45;5, 6&#45;1)\n───────────────\nTP 运输搭载量:\n%d(S) /%d(A)</string>
+    <string name="fleetcheckview_btn_airbattle">航空战</string>
+    <string name="fleetcheckview_content_airbattle" formatted="false">制空总值: %d ~ %d\n───────────────\n接触成功机率\n[AS+] 开始率: %.1f%%, 选择率: %.1f%%\n[AS] 开始率: %.1f%%, 选择率: %.1f%%\n</string>
+    <string name="fleetcheckview_btn_fuelbull">燃弾</string>
+
+    <string name="fleetview_18spring_rice" formatted="false">米 %02d</string>
+    <string name="fleetview_18spring_umeboshi" formatted="false">梅 %02d</string>
+    <string name="fleetview_18spring_nori" formatted="false">苔 %02d</string>
+    <string name="fleetview_18spring_tea" formatted="false">茶 %02d</string>
+
+    <string name="special_playstore_1st">一周年紀念！</string>
+
+    <string name="widget_timer_name">Kcanotify计时Widget</string>
+    <string name="fleet_format">第%d舰队</string>
+
+    <string name="download_title">存在可用更新</string>
+    <string name="download_description_head">若果不更新资料，Kcanotify可能无法正常运作。</string>
+    <string name="download_appdata">应用资料</string>
+    <string name="download_skip">跳过</string>
+    <string name="download_gamedata">游戏资料</string>
+    <string name="download_questinfo">任务资讯</string>
+    <string name="download_shipinfo">船舰翻译</string>
+    <string name="download_iteminfo">装备翻译 </string>
+    <string name="download_akashi">改修工厂</string>
+    <string name="download_fairy">妖精酱~</string>
+    <string name="download_progress">正在下载中...</string>
+    <string name="download_reset">初始化资源</string>
+    <string name="download_reset_message">初始化应用程序资源。</string>
+    <string name="download_check_error">从装置加载时出现错误(使用预设资料)</string>
+    <string name="download_setting_checkatstart">检查应用程序启动时的更新</string>
+    <string name="download_use_internal_data">使用内置资源</string>
+</resources>

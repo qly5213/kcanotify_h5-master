@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/setting_menu_kand_head">
+        <ListPreference
+            android:id="@+id/language_value"
+            android:defaultValue="@string/default_locale"
+            android:entries="@array/languageOption"
+            android:entryValues="@array/languageOptionValue"
+            android:key="kca_language"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/setting_menu_kand_title_language" />
+
+        <ListPreference
+            android:id="@+id/sniffer_mode_value"
+            android:defaultValue="0"
+            android:entries="@array/snifferOption"
+            android:entryValues="@array/snifferOptionValue"
+            android:key="kca_sniffer_mode"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/setting_menu_kand_title_sniffer_type" />
+
+        <ListPreference
+            android:id="@+id/seek_type_value"
+            android:defaultValue="1"
+            android:entries="@array/seekTypeOption"
+            android:entryValues="@array/seekTypeOptionValue"
+            android:key="kca_seek_cn"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/setting_menu_kand_title_saku_cal" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="expedition_view"
+            android:summary="@string/setting_menu_kand_desc_exp_realtime_show"
+            android:title="@string/setting_menu_kand_title_exp_realtime_show" />
+
+        <ListPreference
+            android:id="@+id/expedition_type_value"
+            android:defaultValue="0"
+            android:entries="@array/expeditionTypeOption"
+            android:entryValues="@array/expeditionTypeOptionValue"
+            android:key="expedition_type"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/setting_menu_kand_title_exp_type" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="set_priority"
+            android:summary="@string/setting_menu_kand_desc_set_noti_priority"
+            android:title="@string/setting_menu_kand_title_set_noti_priority" />
+
+        <Preference
+            android:defaultValue=""
+            android:key="fairy_select"
+            android:summary="@string/setting_menu_kand_desc_fairy_select"
+            android:title="@string/setting_menu_kand_title_fairy_select">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.antest1.kcanotify.h5"
+                android:targetClass="com.antest1.kcanotify.h5.KcaFairySelectActivity" />
+        </Preference>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="fairy_auto_hide"
+            android:summary="@string/setting_menu_kand_desc_fairy_auto_hide"
+            android:title="@string/setting_menu_kand_title_fairy_auto_hide" />
+
+        <Preference
+            android:defaultValue=""
+            android:key="fleetview_menu_order"
+            android:summary="@string/setting_menu_kand_desc_fleetview_button_order"
+            android:title="@string/setting_menu_kand_title_fleetview_button_order">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.antest1.kcanotify.h5"
+                android:targetClass="com.antest1.kcanotify.h5.KcaFleetViewMenuOrderActivity" />
+        </Preference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="activate_droplog"
+            android:summary="@string/record_storage_warning"
+            android:title="@string/setting_menu_kand_title_record_droplog" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="activate_resourcelog"
+            android:summary="@string/record_storage_warning"
+            android:title="@string/setting_menu_kand_title_record_resourcelog" />
+
+        <Preference
+            android:defaultValue=""
+            android:key="data_update_check"
+            android:summary="@string/setting_menu_kand_desc_game_data_down"
+            android:title="@string/setting_menu_kand_title_game_data_down">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.antest1.kcanotify.h5"
+                android:targetClass="com.antest1.kcanotify.h5.UpdateCheckActivity" />
+        </Preference>
+
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="background_play"
+            android:summary="保持游戏在后台继续运行动画，会增加耗电量"
+            android:title="开启后台运行" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="hardware_accelerated"
+            android:summary="@string/hardware_accelerated_summary"
+            android:title="@string/hardware_accelerated_title" />
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/gamePageType"
+            android:entryValues="@array/gamePageTypeOptionValue"
+            android:key="game_page_type"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/game_page_type_title" />
+        <EditTextPreference
+            android:key="ooi_host_name"
+            android:summary="OOI模式时可以自定义游戏服务器域名，例如ooi.moe"
+            android:title="自定义OOI游戏域名" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="clear_cookie_start"
+            android:summary="@string/clear_cookie_start_summary"
+            android:title="@string/clear_cookie_start_title" />
+        <!--
+        <Preference
+        android:defaultValue=""
+        android:key="download_data"
+        android:summary="@string/setting_menu_kand_desc_game_data_down"
+        android:title="@string/setting_menu_kand_title_game_data_down" />
+         </Preference>
+        -->
+        <Preference
+        android:defaultValue=""
+        android:persistent="false"
+        android:key="adv_network_setting"
+        android:title="@string/setting_menu_kand_title_adv_network" />
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/setting_menu_view_head">
+        <Preference
+            android:defaultValue=""
+            android:key="overlay_setting"
+            android:summary="@string/setting_menu_view_desc_overlay_setting"
+            android:title="@string/setting_menu_view_title_overlay_setting" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="battlenode_use"
+            android:summary="@string/setting_menu_view_desc_battlenode_use"
+            android:title="@string/setting_menu_view_title_battlenode_use" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="battleview_use"
+            android:summary="@string/setting_menu_view_desc_battleview_use"
+            android:title="@string/setting_menu_view_title_battleview_use" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="battleview_use"
+            android:key="showdrop_setting"
+            android:summary="@string/setting_menu_view_desc_drop_visible"
+            android:title="@string/setting_menu_view_title_drop_visible" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="show_constrship_name"
+            android:summary="@string/setting_menu_view_desc_show_constrship"
+            android:title="@string/setting_menu_view_title_show_constrship" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="fix_view_loc"
+            android:summary="@string/setting_menu_view_desc_fix_view"
+            android:title="@string/setting_menu_view_title_fix_view" />
+
+
+        <!--
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="questview_use"
+            android:summary="@string/setting_menu_view_desc_questview_use"
+            android:title="@string/setting_menu_view_title_questview_use" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="fullmorale_setting"
+            android:summary="@string/setting_menu_view_desc_fullmorale_setting"
+            android:title="@string/setting_menu_view_title_fullmorale_setting" />
+        -->
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="pref_noti_category"
+        android:title="@string/setting_menu_noti_head">
+        <ListPreference
+            android:defaultValue="@string/sound_kind_value_vibrate"
+            android:entries="@array/soundOption"
+            android:entryValues="@array/soundOptionValue"
+            android:key="notify_sound_kind"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/setting_menu_noti_title_kind" />
+
+        <RingtonePreference
+            android:summary="@string/setting_menu_noti_desc_ringtone"
+            android:title="@string/setting_menu_noti_title_ringtone"
+            android:key="notify_ringtone"
+            android:ringtoneType="notification"
+            android:showDefault="true"
+            android:showSilent="true"
+            android:defaultValue="DEFAULT_NOTIFICATION_URI"/>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="notify_at_svc_off"
+            android:summary="@string/setting_menu_noti_desc_notiatsvcoff"
+            android:title="@string/setting_menu_noti_title_notiatsvcoff" />
+
+        <EditTextPreference
+            android:defaultValue="61"
+            android:key="alarm_delay"
+            android:numeric="integer|signed"
+            android:title="@string/setting_menu_noti_title_alarm_delay" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="notify_expedition"
+            android:summary="@string/setting_menu_noti_desc_exp"
+            android:title="@string/setting_menu_noti_title_exp" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="notify_docking"
+            android:summary="@string/setting_menu_noti_desc_dock"
+            android:title="@string/setting_menu_noti_title_dock" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="notify_morale"
+            android:summary="@string/setting_menu_noti_desc_morale"
+            android:title="@string/setting_menu_noti_title_morale" />
+
+        <EditTextPreference
+            android:defaultValue="40"
+            android:dependency="notify_morale"
+            android:key="morale_min"
+            android:numeric="integer"
+            android:title="@string/setting_menu_noti_title_morale_min" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="notify_akashi"
+            android:summary="@string/setting_menu_noti_desc_akashirepair"
+            android:title="@string/setting_menu_noti_title_akashirepair" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="notify_vibrate_heavydamaged"
+            android:summary="@string/setting_menu_noti_desc_hdmg_vib"
+            android:title="@string/setting_menu_noti_title_hdmg_vib" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="notify_vibrate_notsupplied"
+            android:summary="@string/setting_menu_noti_desc_nspl_vib"
+            android:title="@string/setting_menu_noti_title_nspl_vib" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="noti_quest_fairy_glow"
+            android:summary="@string/setting_menu_noti_desc_fairy_glow"
+            android:title="@string/setting_menu_noti_title_fairy_glow" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="notify_fairy_longclick"
+            android:summary="@string/setting_menu_noti_desc_fairy_vib"
+            android:title="@string/setting_menu_noti_title_fairy_vib" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="disable_customtoast"
+            android:summary="@string/setting_menu_noti_desc_disable_customtoast"
+            android:title="@string/setting_menu_noti_title_disable_customtoast" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/setting_menu_stat_head">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="opendb_api_use"
+            android:summary="@string/setting_menu_stat_desc_opendb"
+            android:title="@string/setting_menu_stat_title_opendb" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="poidb_api_use"
+            android:summary="@string/setting_menu_stat_desc_poidb"
+            android:title="@string/setting_menu_stat_title_poidb" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="kcaqsync_use"
+            android:summary="@string/setting_menu_stat_desc_kcaqsync"
+            android:title="@string/setting_menu_stat_title_kcaqsync" />
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="kcaqsync_use"
+            android:key="kcaqsync_pass"
+            android:summary="@string/setting_menu_stat_desc_kcaqsync_pass"
+            android:title="@string/setting_menu_stat_title_kcaqsync_pass" />
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/setting_menu_app_head">
+        <Preference
+            android:defaultValue=" "
+            android:key="kca_version"
+            android:summary="@string/app_version"
+            android:title="@string/setting_menu_app_title_current" />
+        <ListPreference
+            android:id="@+id/updateserver_value"
+            android:defaultValue="@string/default_locale"
+            android:entries="@array/ServerLocation"
+            android:entryValues="@array/ServerLocationValue"
+            android:key="check_update_server"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/setting_menu_app_title_updatecheckserver" />
+        <Preference
+            android:defaultValue=""
+            android:key="check_update"
+            android:summary="@string/setting_menu_app_desc_updatecheck"
+            android:title="@string/setting_menu_app_title_updatecheck" />
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/downloadSiteOption"
+            android:entryValues="@array/downloadSiteOptionValue"
+            android:key="apk_download_site"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/setting_menu_app_title_down" />
+        <Preference
+            android:summary="@string/setting_menu_app_desc_contact"
+            android:title="@string/setting_menu_app_title_contact">
+            <intent
+                android:action="android.intent.action.SENDTO"
+                android:data="mailto:kcanotify@gmail.com" />
+        </Preference>
+        <Preference
+            android:defaultValue=""
+            android:key="app_inspector"
+            android:summary="@string/setting_menu_app_desc_inspector"
+            android:title="@string/action_inspector">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.antest1.kcanotify.h5"
+                android:targetClass="com.antest1.kcanotify.h5.KcaInspectorActivity" />
+        </Preference>
+        <Preference
+            android:defaultValue=""
+            android:key="app_information"
+            android:title="@string/setting_menu_app_info">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.antest1.kcanotify.h5"
+                android:targetClass="com.antest1.kcanotify.h5.KcaInfoActivity" />
+        </Preference>
+    </PreferenceCategory>
+</PreferenceScreen>

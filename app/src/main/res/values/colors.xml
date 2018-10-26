@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#2c3e50</color>
+    <color name="colorPrimaryDark">#1d2935</color>
+    <color name="colorAccent">#03a9f4</color>
+    <color name="colorActivityBack">#ffffff</color>
+    <color name="colorActivityText">#888888</color>
+    <color name="colorToolbarText">#ffffff</color>
+    <color name="colorBtn">#d6d6d6</color>
+    <color name="colorBtnText">#000000</color>
+    <color name="colorBtnTextAccent">#ffffff</color>
+    <color name="colorFleetInfoBtn">#2c3e50</color>
+
+    <color name="colorGameStartBtn">#2a5aac</color>
+    <color name="colorFairyShowBtn">#009688</color>
+    <color name="colorToolsBtn">#5c6bc0</color>
+
+    <color name="colorUpdate">#e8f5e9</color>
+    <color name="colorUpdateText">#1b5e20</color>
+    <color name="colorDataUpdate">#e8e9f5</color>
+    <color name="colorDataUpdateText">#1b1d5e</color>
+    <color name="colorSpecial">#fff8d2</color>
+    <color name="colorSpecialText">#a76400</color>
+    <color name="colorWarn">#ffcdd2</color>
+    <color name="colorWarnText">#68000a</color>
+    <color name="colorMenuBack">#80ffffff</color>
+    <color name="black">#000000</color>
+    <color name="lightgray">#d6d6d6</color>
+    <color name="grey">#888888</color>
+    <color name="darkgray">#212121</color>
+    <color name="white">#ffffff</color>
+    <color name="transparent">#00ffffff</color>
+
+    <color name="colorBattle">#ff0000</color>
+    <color name="colorBossBattle">#d50000</color>
+    <color name="colorItem">#6bc613</color>
+    <color name="colorItemSpecial">#388e3c</color>
+    <color name="colorReconFailed">#d50000</color>
+    <color name="colorNone">#60c1d4</color>
+    <color name="colorVortex">#af85e8</color>
+    <color name="colorSelectable">#4e7bff</color>
+    <color name="colorNightBattle">#651fff</color>
+    <color name="colorAirBattle">#4e342e</color>
+    <color name="colorPlaneWipedText">#ff5252</color>
+
+    <color name="colorProgressBack">#d6d6d6</color>
+    <color name="colorNormalState">#64dd17</color>
+    <color name="colorLightDmgState">#fdd835</color>
+    <color name="colorModerateDmgState">#f9a825</color>
+    <color name="colorHeavyDmgState">#ff5252</color>
+    <color name="colorHeavyDmgStateWarn">#ff5252</color>
+
+    <color name="colorHeavyDmgStatePanel">#7e2424</color>
+    <color name="colorWarningPanel">#ae6000</color>
+
+    <color name="colorElite">#d50000</color>
+    <color name="colorFlagship">#fbc02d</color>
+
+    <color name="colorRankS">#fbc02d</color>
+    <color name="colorRankA">#d50000</color>
+    <color name="colorRankB">#f98b25</color>
+    <color name="colorRankC">#c7b623</color>
+    <color name="colorRankD">#4c9308</color>
+    <color name="colorRankE">#1a9cb6</color>
+
+    <color name="colorMVP">#fbc02d</color>
+
+    <color name="colorRaidNoDamaged">#ffffff</color>
+    <color name="colorRaidDamaged">#f98b25</color>
+    <color name="colorRaidHeavyDamaged">#ff5252</color>
+
+    <color name="itemlevel">#16a085</color>
+    <color name="itemalv1">#64b5f6</color>
+    <color name="itemalv2">#fbc02d</color>
+
+    <color name="colorNightTargetFleet">#64b5f6</color>
+    <color name="colorItemDrop">#64b5f6</color>
+    <color name="colorRetreated">#757575</color>
+
+    <color name="colorQuestViewMemo">#64b5f6</color>
+    <color name="colorQuestCategory0">#616161</color>
+    <color name="colorQuestCategory1">#388e3c</color>
+    <color name="colorQuestCategory2">#d50000</color>
+    <color name="colorQuestCategory3">#6bc613</color>
+    <color name="colorQuestCategory4">#60c1d4</color>
+    <color name="colorQuestCategory5">#c7b623</color>
+    <color name="colorQuestCategory6">#6d4c41</color>
+    <color name="colorQuestCategory7">#af85e8</color>
+    <color name="colorQuestCategory8">#d50000</color>
+    <color name="colorQuestCategory9">#757575</color>
+
+    <color name="colorQuestType0">#616161</color>
+    <color name="colorQuestType1">#6ebbf6</color>
+    <color name="colorQuestType2">#77dde9</color>
+    <color name="colorQuestType3">#b5dd60</color>
+    <color name="colorQuestType4">#fbc02e</color>
+    <color name="colorQuestType5">#f98c27</color>
+
+    <color name="colorQuestProgress1">#6bc613</color>
+    <color name="colorQuestProgress2">#31834c</color>
+
+    <color name="colorQuestState0">#e0e0e0</color>
+    <color name="colorQuestState1">#ffffff</color>
+    <color name="colorQuestState2">#f98c27</color>
+    <color name="colorQuestState3">#4fc3f7</color>
+
+    <color name="colorQuestCheckedTrue">#69f0ae</color>
+    <color name="colorQuestCheckedFalse">#ff8a80</color>
+
+    <color name="colorAkashiNormalScrew">#aaaaaa</color>
+    <color name="colorAkashiGtdScrew">#ff5252</color>
+    <color name="colorAkashiNormalMaterial">#00acc1</color>
+    <color name="colorAkashiGtdMaterial">#b71c1c</color>
+    <color name="colorAkashiTableBack">#f5f5f5</color>
+    <color name="colorAkashiUpgradeEquip">#4e7bff</color>
+
+    <color name="colorFairySelectPanel">#f5f5f5</color>
+    <color name="colorAkashiEquipFilterPanel">#f5f5f5</color>
+
+    <color name="colorQuestTrackProgress">#4e7bff</color>
+
+    <color name="colorFleetInfoNormal">#16a085</color>
+    <color name="colorFleetInfoHeavyDamaged">#ff0000</color>
+    <color name="colorFleetInfoNotGoodStatus">#f98d29</color>
+    <color name="colorFleetInfoExpedition">#4f7cff</color>
+    <color name="colorFleetInfoNoShip">#aaaaaa</color>
+
+    <color name="colorFleetInfoHeavyDamagedBtn">#d50000</color>
+    <color name="colorFleetInfoNotGoodStatusBtn">#ae7a00</color>
+    <color name="colorFleetInfoExpeditionBtn">#5c6bc0</color>
+
+    <color name="colorFleetSwitchBtn">#9e9d24</color>
+    <color name="colorFleetAirStatBtn">#303f9f</color>
+    <color name="colorFleetSeekCnBtn">#673ab7</color>
+    <color name="colorFleetAkashiTimerBtnActive">#ff4081</color>
+    <color name="colorFleetAkashiTimerBtnDeactive">#424242</color>
+    <color name="colorFleetShipKira">#ffff8d</color>
+    <color name="colorFleetShipNormal">#c0d6d6d6</color>
+    <color name="colorFleetShipFatigue1">#f98b25</color>
+    <color name="colorFleetShipFatigue2">#ff5252</color>
+    <color name="colorFleetWarning">#7e2424</color>
+    <color name="colorFleetInRepair">#1b5e20</color>
+    <color name="colorFullState">#4fc3f7</color>
+    <color name="colorHqCheckEventCondFailed">#ff5252</color>
+
+    <color name="colorExpeditionBtnFailBack">#e91e63</color>
+    <color name="colorExpeditionBtnFailText">#f8bbd0</color>
+    <color name="colorExpeditionBtnGoodBack">#009688</color>
+    <color name="colorExpeditionBtnGoodText">#b2dfdb</color>
+
+    <color name="colorExpCalcFlagship">#16a085</color>
+    <color name="colorExpCalcMVP">#ffa000</color>
+
+    <color name="colorLabsStatusSortie">#ff0000</color>
+    <color name="colorLabsStatusDefense">#f98c27</color>
+    <color name="colorLabsStatusRetreat">#673ab7</color>
+    <color name="colorLabsStatusRest">#31834c</color>
+    <color name="colorLabsStatusStandby">#000000</color>
+
+    <color name="colorLabsStatusFP">#009688</color>
+    <color name="colorLabsStatusDist">#af85e8</color>
+    <color name="colorLabsPlaneInChange">#c8fbc02d</color>
+
+    <color name="colorStatNormal">#212121</color>
+    <color name="colorStatMarried">#e91e63</color>
+    <color name="colorStatExpleft">#616161</color>
+    <color name="colorStatRemodel">#283593</color>
+    <color name="colorStatKaryoku">#c62828</color>
+    <color name="colorStatRaisou">#3f51b5</color>
+    <color name="colorStatTaiku">#ff5722</color>
+    <color name="colorStatSoukou">#f9a825</color>
+    <color name="colorStatYasen">#212121</color>
+    <color name="colorStatTaisen">#03a9f4</color>
+    <color name="colorStatKaihi">#673ab7</color>
+    <color name="colorStatSakuteki">#f9a825</color>
+    <color name="colorStatLuck">#64dd17</color>
+    <color name="colorStatEquipSlot">#212121</color>
+    <color name="colorStatEquipSlotBack">#40f9f9f9</color>
+    <color name="colorStatEquipReinforcement">#e0e0e0</color>
+    <color name="colorStatFleetNo">#009688</color>
+    <color name="colorStatInDock">#bbdefb</color>
+    <color name="colorStatInExpedition">#7fd1c4e9</color>
+
+    <color name="colorStatNotLocked">#bdbdbd</color>
+    <color name="colorStatLocked">#4e7bff</color>
+
+    <color name="colorStatSallyArea0">#FFFFFF</color>
+    <color name="colorStatSallyArea1">#bdbdbd</color>
+    <color name="colorStatSallyArea2">#aed581</color>
+    <color name="colorStatSallyArea3">#388e3c</color>
+    <color name="colorStatSallyArea4">#f9a825</color>
+    <color name="colorStatSallyArea5">#00acc1</color>
+    <color name="colorStatSallyArea6">#673AB7</color>
+
+    <color name="colorStatFighterPower">#16a085</color>
+    <color name="colorStatSortCurrentBack">#c0bdbdbd</color>
+
+
+    <color name="colorListItemBack">#7ff5f5f5</color>
+    <color name="colorListItemBackAccent">#7fe1e1e1</color>
+    <color name="colorListItemDetailPanelBack">#7fdcdcdc</color>
+
+    <color name="colorPanelBack">#7ff5f5f5</color>
+    <color name="colorDataArea">#e0e0e0</color>
+    <color name="colorPanelWarning">#ff5252</color>
+
+    <color name="colorExpeditionTable1">#607D8B</color>
+    <color name="colorExpeditionTable2">#AFB42B</color>
+    <color name="colorExpeditionTable3">#03A9F4</color>
+    <color name="colorExpeditionTable4">#4CAF50</color>
+    <color name="colorExpeditionTable5">#AB47BC</color>
+    <color name="colorExpeditionTable99">#e53935</color>
+    <color name="colorExpeditionGreatSuccess">#ff5252</color>
+    <color name="colorExpeditionItemBack">#c0f5f5f5</color>
+
+    <color name="colorResourceFuel">#43a047</color>
+    <color name="colorResourceAmmo">#6d4c41</color>
+    <color name="colorResourceSteel">#757575</color>
+    <color name="colorResourceBauxite">#f57c00</color>
+
+    <color name="colorConsumableBucket">#7cb342</color>
+    <color name="colorConsumableDevmat">#00acc1</color>
+    <color name="colorConsumableScrew">#9e9e9e</color>
+    <color name="colorConsumableTorch">#f57c00</color>
+    <color name="colorEventRice">#dfd7c5</color>
+    <color name="colorEventNori">#ddc8e3</color>
+    <color name="colorEventUmeboshi">#ffbcb7</color>
+    <color name="colorEventTea">#d4ffd8</color>
+
+    <color name="colorItemBack">#eeeeee</color>
+
+    <color name="colorWidgetAlert">#ff5252</color>
+    <color name="colorFairyBtn">#009688</color>
+</resources>
