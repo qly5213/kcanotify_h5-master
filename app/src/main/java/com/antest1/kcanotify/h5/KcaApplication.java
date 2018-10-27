@@ -16,10 +16,10 @@ import java.util.Locale;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 
 @AcraCore(buildConfigClass = BuildConfig.class)
-@AcraMailSender(
+/*@AcraMailSender(
         mailTo = "",
         reportAsFile = false
-)
+)*/
 
 public class KcaApplication extends MultiDexApplication {
     public static Locale defaultLocale;

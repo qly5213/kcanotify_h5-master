@@ -128,6 +128,14 @@ public class GameOOIActivity extends AppCompatActivity {
         }
         resetWebView(false);
 
+
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptThirdPartyCookies(mWebview, true);
+        cookieManager.setCookie(hostName, "vol_bgm=0; domain=" + hostName + "; path=/kcs2");
+        cookieManager.setCookie(hostName, "vol_se=0; domain=" + hostName + "; path=/kcs2");
+        cookieManager.setCookie(hostName, "vol_voice=0; domain=" + hostName + "; path=/kcs2");
+        cookieManager.flush();
+
         client = new OkHttpClient.Builder().build();
         mWebSettings = mWebview.getSettings();
         mWebSettings.setUserAgentString(USER_AGENT);
@@ -197,6 +205,9 @@ public class GameOOIActivity extends AppCompatActivity {
                 Log.d("KCVA", "Request  uri拦截路径uri：：" + uri);
                 if (request.getMethod().equals("GET") && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
 //                    if(!changeTouchEvent) changeTouchEvent = true;
+                    if(path.contains("version.json")){
+                        return null;
+                    }
                     try {
                         String version = "0";
                         if (uri.getQueryParameter("version") != null && !uri.getQueryParameter("version").equals("")) {

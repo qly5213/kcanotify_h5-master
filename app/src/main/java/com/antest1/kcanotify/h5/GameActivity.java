@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -50,6 +51,7 @@ public class GameActivity extends AppCompatActivity {
     WebView mWebview;
     WebSettings mWebSettings;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
+    private static final String[] SERVER_IP = new String[]{"203.104.209.71", "203.104.209.87", "125.6.184.215", "203.104.209.183", "203.104.209.150", "203.104.209.134", "203.104.209.167", "203.104.248.135", "125.6.189.7", "125.6.189.39", "125.6.189.71", "125.6.189.103", "125.6.189.135", "125.6.189.167", "125.6.189.215", "125.6.189.247", "203.104.209.23", "203.104.209.39", "203.104.209.55", "203.104.209.102"};
 
     private JSONObject jsonObj = null;
     private File cacheJsonFile = null;
@@ -108,6 +110,14 @@ public class GameActivity extends AppCompatActivity {
         }
         resetWebView(false);
 
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptThirdPartyCookies(mWebview, true);
+        for(String serverIp : SERVER_IP){
+            cookieManager.setCookie(serverIp, "vol_bgm=0; domain=" + serverIp + "; path=/kcs2");
+            cookieManager.setCookie(serverIp, "vol_se=0; domain=" + serverIp + "; path=/kcs2");
+            cookieManager.setCookie(serverIp, "vol_voice=0; domain=" + serverIp + "; path=/kcs2");
+        }
+        cookieManager.flush();
         client = new OkHttpClient.Builder().build();
         mWebSettings = mWebview.getSettings();
         mWebSettings.setUserAgentString(USER_AGENT);
@@ -173,6 +183,9 @@ public class GameActivity extends AppCompatActivity {
                 Log.d("KCVA", "Request  uri拦截路径uri：：" + uri);
                 if (request.getMethod().equals("GET") && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
 //                    if(!changeTouchEvent) changeTouchEvent = true;
+                    if(path.contains("version.json")){
+                        return null;
+                    }
                     try {
                         String version = "0";
                         if (uri.getQueryParameter("version") != null && !uri.getQueryParameter("version").equals("")) {
