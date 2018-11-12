@@ -246,7 +246,12 @@ public class KcaVpnData {
         //Log.e("KCA", uri + " " + String.valueOf(isKcaVer || isKcsApi));
         return (isKcaVer || isKcsApi);
     }
-
+    public static void renderToHander(String requestUri, String requestBody, String responseBody){
+        if (checkKcApi(requestUri)) {
+            KcaHandler k = new KcaHandler(handler, requestUri, requestBody.getBytes(), responseBody.getBytes());
+            executorService.execute(k);
+        }
+    }
     private static boolean checkKcRes(String uri) {
         boolean isKcsSwf = uri.contains("/kc") && uri.contains(".swf");
         boolean isKcaRes = uri.contains("/kc") && uri.contains("/resources");

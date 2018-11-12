@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -38,6 +39,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,11 +68,6 @@ public class GameActivity extends AppCompatActivity {
 
     public native int nativeInit(int version, boolean proxyEnable, String ip);
 
-    static {
-        AndHook.ensureNativeLibraryLoaded(null);
-        System.loadLibrary("xhook");
-        System.loadLibrary("native-lib");
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,7 +76,12 @@ public class GameActivity extends AppCompatActivity {
 
         boolean proxyEnable = prefs.getBoolean("host_proxy_enable", true);
         String proxyIP = prefs.getString("host_proxy_address", "106.186.27.62");
-        Log.e("KCAV", "onCreate: " + "native hook result-->" + (nativeInit(Build.VERSION.SDK_INT, proxyEnable, proxyIP) == 0));
+        if(proxyEnable) {
+            AndHook.ensureNativeLibraryLoaded(null);
+            System.loadLibrary("xhook");
+            System.loadLibrary("native-lib");
+            Log.e("KCAV", "onCreate: " + "native hook result-->" + (nativeInit(Build.VERSION.SDK_INT, proxyEnable, proxyIP) == 0));
+        }
         setContentView(R.layout.activity_game_webview);
         boolean hardSpeed = prefs.getBoolean("hardware_accelerated", true);
         if(hardSpeed) {
@@ -87,15 +90,19 @@ public class GameActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         GameActivity.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         mWebview = findViewById(R.id.webView1);
-
         try {
             String cacheJsonPathStr = Environment.getExternalStorageDirectory() + "/KanCollCache/cache.json";
+            String nomedia = Environment.getExternalStorageDirectory() + "/KanCollCache/.nomedia";
             cacheJsonFile = new File(cacheJsonPathStr);
             if (!cacheJsonFile.getParentFile().exists()) {
                 cacheJsonFile.getParentFile().mkdirs();
             }
             if (!cacheJsonFile.exists()) {
                 cacheJsonFile.createNewFile();
+            }
+            File nomediaFile = new File(nomedia);
+            if(!nomediaFile.exists()){
+                nomediaFile.createNewFile();
             }
             byte[] bytes = readFileToBytes(cacheJsonFile);
             String cacheJson = new String(bytes, "UTF-8");
@@ -165,6 +172,7 @@ public class GameActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
                     view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\'game_frame\'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector(\'meta[name=viewport]\'),t=0;vp||(vp=$.createElement(\'meta\'),vp.name=\'viewport\',$.querySelector(\'head\').appendChild(vp));vp.content=\'width=\'+gw;\'orientation\'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow=\'hidden\';$.body.style.cssText=\'min-width:0;padding:0;margin:0;overflow:hidden;margin:0\';$.querySelector(\'.dmm-ntgnavi\').style.display=\'none\';$.querySelector(\'.area-naviapp\').style.display=\'none\';$.getElementById(\'ntg-recommend\').style.display=\'none\';gs.position=\'fixed\';gs.marginRight=\'auto\';gs.marginLeft=\'auto\';gs.top=\'-16px\';gs.right=\'0\';gs.zIndex=\'100\';gs.transformOrigin=\'50%25%2016px\';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform=\'scale(\'+w/gw+\')\':gs.transform=\'scale(\'+h/gh+\')\';w<gw?gs.left=\'-\'+(gw-w)/2+\'px\':gs.left=\'0\'};_.addEventListener(\'resize\',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+//                    view.loadUrl("javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()");
                 }
             }
 
@@ -210,7 +218,13 @@ public class GameActivity extends AppCompatActivity {
                             }
                             ResponseBody serverResponse = requestServer(request);
                             if(serverResponse != null){
-                                byte[] respByte = serverResponse.bytes();
+                                byte[] respByte = null;
+                                if(path.contains("main.js")){
+                                    String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){console.log(xhr.xhr.responseURL);console.log(xhr.xhr.requestParam);console.log(xhr.responseText);window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
+                                    respByte = newRespStr.getBytes();
+                                } else {
+                                    respByte = serverResponse.bytes();
+                                }
                                 saveFile(path, respByte);
                                 return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                             } else {
@@ -226,7 +240,13 @@ public class GameActivity extends AppCompatActivity {
                         } else {
                             ResponseBody serverResponse = requestServer(request);
                             if(serverResponse != null){
-                                byte[] respByte = serverResponse.bytes();
+                                byte[] respByte = null;
+                                if(path.contains("main.js")){
+                                    String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
+                                    respByte = newRespStr.getBytes();
+                                } else {
+                                    respByte = serverResponse.bytes();
+                                }
                                 saveFile(path, respByte);
                                 return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                             } else {
@@ -244,6 +264,18 @@ public class GameActivity extends AppCompatActivity {
                 return null;
             }
         });
+
+        mWebview.addJavascriptInterface(new Object(){
+            @JavascriptInterface
+            public void JsToJavaInterface(String requestUrl, String param, String respData) {
+                try {
+                    URL url = new URL(requestUrl);
+                    KcaVpnData.renderToHander(url.getPath(), param, respData);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+        },"androidJs");
 
         mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
     }

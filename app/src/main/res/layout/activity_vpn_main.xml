@@ -52,6 +52,7 @@
                     android:textColor="@drawable/togglebtn_text"
                     android:textOff="@string/ma_vpn_toggleoff"
                     android:textOn="@string/ma_vpn_toggleon"
+                    android:visibility="gone"
                     android:textSize="@dimen/activity_main_btn_textsize" />
 
                 <ToggleButton
@@ -63,7 +64,7 @@
                     android:layout_alignParentRight="true"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentTop="true"
-                    android:layout_weight=".5"
+                    android:layout_weight="1"
                     android:background="@drawable/togglebtn"
                     android:stateListAnimator="@null"
                     android:text="SERVICE BTN"

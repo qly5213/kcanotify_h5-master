@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -108,12 +109,17 @@ public class GameOOIActivity extends AppCompatActivity {
 
         try {
             String cacheJsonPathStr = Environment.getExternalStorageDirectory() + "/KanCollCache/cache.json";
+            String nomedia = Environment.getExternalStorageDirectory() + "/KanCollCache/.nomedia";
             cacheJsonFile = new File(cacheJsonPathStr);
             if (!cacheJsonFile.getParentFile().exists()) {
                 cacheJsonFile.getParentFile().mkdirs();
             }
             if (!cacheJsonFile.exists()) {
                 cacheJsonFile.createNewFile();
+            }
+            File nomediaFile = new File(nomedia);
+            if(!nomediaFile.exists()){
+                nomediaFile.createNewFile();
             }
             byte[] bytes = readFileToBytes(cacheJsonFile);
             String cacheJson = new String(bytes, "UTF-8");
@@ -232,7 +238,13 @@ public class GameOOIActivity extends AppCompatActivity {
                             }
                             ResponseBody serverResponse = requestServer(request);
                             if(serverResponse != null){
-                                byte[] respByte = serverResponse.bytes();
+                                byte[] respByte = null;
+                                if(path.contains("main.js")){
+                                    String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){console.log(xhr.xhr.responseURL);console.log(xhr.xhr.requestParam);console.log(xhr.responseText);window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
+                                    respByte = newRespStr.getBytes();
+                                } else {
+                                    respByte = serverResponse.bytes();
+                                }
                                 saveFile(path, respByte);
                                 return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                             } else {
@@ -248,7 +260,13 @@ public class GameOOIActivity extends AppCompatActivity {
                         } else {
                             ResponseBody serverResponse = requestServer(request);
                             if(serverResponse != null){
-                                byte[] respByte = serverResponse.bytes();
+                                byte[] respByte = null;
+                                if(path.contains("main.js")){
+                                    String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){console.log(xhr.xhr.responseURL);console.log(xhr.xhr.requestParam);console.log(xhr.responseText);window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
+                                    respByte = newRespStr.getBytes();
+                                } else {
+                                    respByte = serverResponse.bytes();
+                                }
                                 saveFile(path, respByte);
                                 return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                             } else {
@@ -266,6 +284,18 @@ public class GameOOIActivity extends AppCompatActivity {
                 return null;
             }
         });
+
+        mWebview.addJavascriptInterface(new Object(){
+            @JavascriptInterface
+            public void JsToJavaInterface(String requestUrl, String param, String respData) {
+                try {
+                    URL url = new URL(requestUrl);
+                    KcaVpnData.renderToHander(url.getPath(), param, respData);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+        },"androidJs");
 
         mWebview.loadUrl("http://" + hostName + "/poi");
     }
