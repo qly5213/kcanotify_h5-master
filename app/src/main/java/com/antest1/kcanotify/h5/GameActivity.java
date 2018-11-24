@@ -13,6 +13,7 @@ import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -60,6 +61,7 @@ public class GameActivity extends AppCompatActivity {
     private File cacheJsonFile = null;
     private OkHttpClient client = null;
     private SharedPreferences prefs = null;
+    private boolean changeTouchEventPrefs = false;
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
@@ -87,6 +89,11 @@ public class GameActivity extends AppCompatActivity {
         if(hardSpeed) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
         }
+        boolean keepScreenOn = prefs.getBoolean("keep_screen_on", false);
+        if(keepScreenOn){
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+        changeTouchEventPrefs = prefs.getBoolean("change_touch_event", true);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         GameActivity.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
         mWebview = findViewById(R.id.webView1);
@@ -119,10 +126,19 @@ public class GameActivity extends AppCompatActivity {
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-        for(String serverIp : SERVER_IP){
-            cookieManager.setCookie(serverIp, "vol_bgm=0; domain=" + serverIp + "; path=/kcs2");
-            cookieManager.setCookie(serverIp, "vol_se=0; domain=" + serverIp + "; path=/kcs2");
-            cookieManager.setCookie(serverIp, "vol_voice=0; domain=" + serverIp + "; path=/kcs2");
+        boolean voicePlay = prefs.getBoolean("voice_play", false);
+        if(voicePlay){
+            for (String serverIp : SERVER_IP) {
+                cookieManager.setCookie(serverIp, "vol_bgm=50; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie(serverIp, "vol_se=50; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie(serverIp, "vol_voice=50; domain=" + serverIp + "; path=/kcs2");
+            }
+        } else {
+            for (String serverIp : SERVER_IP) {
+                cookieManager.setCookie(serverIp, "vol_bgm=0; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie(serverIp, "vol_se=0; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie(serverIp, "vol_voice=0; domain=" + serverIp + "; path=/kcs2");
+            }
         }
         cookieManager.flush();
         client = new OkHttpClient.Builder().build();
@@ -136,6 +152,7 @@ public class GameActivity extends AppCompatActivity {
         prop.setProperty("proxyPort", "6100");*/
         // 设置与Js交互的权限
         mWebSettings.setJavaScriptEnabled(true);
+        mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
         //设置WebChromeClient类
         mWebview.setWebChromeClient(new WebChromeClient() {
@@ -172,7 +189,6 @@ public class GameActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
 //                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\'game_frame\'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector(\'meta[name=viewport]\'),t=0;vp||(vp=$.createElement(\'meta\'),vp.name=\'viewport\',$.querySelector(\'head\').appendChild(vp));vp.content=\'width=\'+gw;\'orientation\'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow=\'hidden\';$.body.style.cssText=\'min-width:0;padding:0;margin:0;overflow:hidden;margin:0\';$.querySelector(\'.dmm-ntgnavi\').style.display=\'none\';$.querySelector(\'.area-naviapp\').style.display=\'none\';$.getElementById(\'ntg-recommend\').style.display=\'none\';gs.position=\'fixed\';gs.marginRight=\'auto\';gs.marginLeft=\'auto\';gs.top=\'-16px\';gs.right=\'0\';gs.zIndex=\'100\';gs.transformOrigin=\'50%25%2016px\';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform=\'scale(\'+w/gw+\')\':gs.transform=\'scale(\'+h/gh+\')\';w<gw?gs.left=\'-\'+(gw-w)/2+\'px\':gs.left=\'0\'};_.addEventListener(\'resize\',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
-//                    view.loadUrl("javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()");
                     view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='-8px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
                 }
             }
@@ -191,8 +207,15 @@ public class GameActivity extends AppCompatActivity {
                 Uri uri = request.getUrl();
                 String path = uri.getPath();
                 Log.d("KCVA", "Request  uri拦截路径uri：：" + uri);
-                if (request.getMethod().equals("GET") && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
-//                    if(!changeTouchEvent) changeTouchEvent = true;
+                if(path != null && path.contains("/kcsapi/api_port/port")){
+                    changeTouchEvent = false;
+                } else if(path != null && (path.contains("/kcsapi/api_get_member/mapinfo") || path.contains("/kcsapi/api_get_member/mission"))){
+                    changeTouchEvent = true;
+                }
+                if (request.getMethod().equals("GET") && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
+                    if(path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")){
+                        changeTouchEvent = true;
+                    }
                     if(path.contains("version.json")){
                         return null;
                     }
@@ -406,26 +429,35 @@ public class GameActivity extends AppCompatActivity {
             mWebview.setLayoutParams(params);
         }
     }
-    /*boolean changeTouchEvent = false;
+    boolean changeTouchEvent = false;
     public boolean dispatchTouchEvent(MotionEvent event) {
         Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
-        WindowManager.LayoutParams v2 = this.getWindow().getAttributes();
-        this.getWindow().setAttributes(v2);
-        if(event.getToolType(0) == 1 && changeTouchEvent) {
-            if(event.getAction() != 2) {
-            }
-            else {
-                MotionEvent.PointerProperties[] v12 = new MotionEvent.PointerProperties[]{new MotionEvent.PointerProperties()};
-                event.getPointerProperties(0, v12[0]);
-                MotionEvent.PointerCoords[] v13 = new MotionEvent.PointerCoords[]{new MotionEvent.PointerCoords()};
-                event.getPointerCoords(0, v13[0]);
-                v12[0].toolType = 3;
-                long v8 = SystemClock.uptimeMillis();
-                this.mWebview.onTouchEvent(MotionEvent.obtain(v8, v8, 2, 1, v12, v13, 0, 0, 0f, 0f, 1, 0, 8194, 0));
+        if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
+            if(event.getAction() == MotionEvent.ACTION_MOVE) {
+                buildMoveEvent(event);
+            } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
+                buildMoveEvent(event);
+            } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
+                buildMoveEvent(event);
             }
         }
         return super.dispatchTouchEvent(event);
-    }*/
+    }
+
+
+    private void buildMoveEvent(MotionEvent event){
+        MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[]{new MotionEvent.PointerProperties()};
+        event.getPointerProperties(0, pointerProperties[0]);
+        MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[]{new MotionEvent.PointerCoords()};
+        event.getPointerCoords(0, pointerCoords[0]);
+        pointerProperties[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
+        pointerCoords[0].x -= mWebview.getX();
+        pointerCoords[0].y -= mWebview.getY();
+        long touchTime = SystemClock.uptimeMillis();
+        this.mWebview.onTouchEvent(MotionEvent.obtain(touchTime, touchTime, MotionEvent.ACTION_MOVE, 1, pointerProperties, pointerCoords, 0, 0, 0f, 0f, InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC, 0, InputDevice.SOURCE_TOUCHSCREEN, 0));
+
+    }
+
 
     @Override
     protected void onStop() {
