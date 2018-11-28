@@ -95,7 +95,16 @@ public class GameActivity extends AppCompatActivity {
         }
         changeTouchEventPrefs = prefs.getBoolean("change_touch_event", true);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        GameActivity.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+        final View decorView = GameActivity.this.getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                    decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+            }
+        });
         mWebview = findViewById(R.id.webView1);
         try {
             String cacheJsonPathStr = Environment.getExternalStorageDirectory() + "/KanCollCache/cache.json";
