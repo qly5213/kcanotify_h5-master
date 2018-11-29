@@ -1,7 +1,9 @@
 package com.antest1.kcanotify.h5;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -60,6 +62,8 @@ public class GameOOIActivity extends AppCompatActivity {
     WebView mWebview;
     WebSettings mWebSettings;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
+
+    private WebviewBroadcastReceiver webviewBroadcastReceiver = new WebviewBroadcastReceiver();
 
     private JSONObject jsonObj = null;
     private File cacheJsonFile = null;
@@ -329,6 +333,8 @@ public class GameOOIActivity extends AppCompatActivity {
         },"androidJs");
 
         mWebview.loadUrl("http://" + hostName + "/poi");
+
+        registerReceiver(webviewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_reload"));
     }
 
     private WebResourceResponse backToWebView(String path, String size, InputStream is){
@@ -525,10 +531,17 @@ public class GameOOIActivity extends AppCompatActivity {
             mWebview.destroy();
             mWebview = null;
         }
+        unregisterReceiver(webviewBroadcastReceiver);
         super.onDestroy();
     }
 
-
+    private class WebviewBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("com.antest1.kcanotify.h5.webview_reload"))
+                mWebview.reload();
+        }
+    }
 
     private byte[] readFileToBytes(File file){
         byte[] bytes = new byte[0];
