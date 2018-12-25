@@ -34,7 +34,6 @@ import com.antest1.kcanotify.h5.KcaDownloader;
 import com.antest1.kcanotify.h5.KcaMoraleInfo;
 import com.antest1.kcanotify.h5.KcaUtils;
 import com.antest1.kcanotify.h5.KcaViewButtonService;
-import com.antest1.kcanotify.h5.KcaVpnService;
 import com.antest1.kcanotify.h5.LocaleUtils;
 import com.antest1.kcanotify.h5.R;
 import com.antest1.kcanotify.h5.SettingActivity;
@@ -226,7 +225,7 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
 
 
 
-            if (key.equals(PREF_SNIFFER_MODE)) {
+            /*if (key.equals(PREF_SNIFFER_MODE)) {
                 pref.setOnPreferenceChangeListener((preference, newValue) -> {
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
                     String val = (String) newValue;
@@ -236,7 +235,7 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
                     }
                     return true;
                 });
-            }
+            }*/
 
             if (key.equals(PREF_KCA_LANGUAGE)) {
                 pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

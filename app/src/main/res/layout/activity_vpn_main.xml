@@ -37,25 +37,6 @@
                 android:weightSum="1.0">
 
                 <ToggleButton
-                    android:id="@+id/vpnbtn"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_weight=".5"
-                    android:background="@drawable/togglebtn"
-                    android:stateListAnimator="@null"
-                    android:text="VPN BTN"
-                    android:textColor="@drawable/togglebtn_text"
-                    android:textOff="@string/ma_vpn_toggleoff"
-                    android:textOn="@string/ma_vpn_toggleon"
-                    android:visibility="gone"
-                    android:textSize="@dimen/activity_main_btn_textsize" />
-
-                <ToggleButton
                     android:id="@+id/svcbtn"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -141,7 +122,6 @@
                     android:id="@+id/textDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="TextView"
                     android:textColor="@color/colorActivityText"
                     android:textSize="@dimen/activity_text_size" />
 
