@@ -13,6 +13,10 @@
         android:orderInCategory="101"
         app:showAsAction="never"
         android:title="@string/action_errorlog"/>
-
+    <item
+        android:id="@+id/reload_webview"
+        android:orderInCategory="102"
+        app:showAsAction="never"
+        android:title="刷新"/>
 
 </menu>

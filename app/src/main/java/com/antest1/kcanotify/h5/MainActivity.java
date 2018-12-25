@@ -44,22 +44,14 @@ import android.widget.ToggleButton;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Locale;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import util.UpdateAppUtils;
 
-import static com.antest1.kcanotify.h5.InitStartActivity.ACTION_RESET;
 import static com.antest1.kcanotify.h5.KcaAlarmService.DELETE_ACTION;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.*;
@@ -69,7 +61,6 @@ import static com.antest1.kcanotify.h5.KcaUtils.getKcIntent;
 import static com.antest1.kcanotify.h5.KcaUtils.getNotificationId;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
-import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.showDataLoadErrorToast;
 import static com.antest1.kcanotify.h5.LocaleUtils.getLocaleCode;
 
@@ -428,6 +419,9 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_errorlog) {
             startActivity(new Intent(this, ErrorlogActivity.class));
             return true;
+        }
+        if (id == R.id.reload_webview) {
+            sendBroadcast(new Intent("com.antest1.kcanotify.h5.webview_reload"));
         }
         return super.onOptionsItemSelected(item);
     }
