@@ -57,6 +57,7 @@ import javax.crypto.NoSuchPaddingException;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import util.UpdateAppUtils;
 
 import static com.antest1.kcanotify.h5.InitStartActivity.ACTION_RESET;
 import static com.antest1.kcanotify.h5.KcaAlarmService.DELETE_ACTION;
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog dialogVpn = null;
     Context ctx;
     Intent kcIntent;
-    ToggleButton vpnbtn, svcbtn;
+    ToggleButton svcbtn;
     Button kcbtn;
     ImageButton kctoolbtn;
     public ImageButton kcafairybtn;
@@ -152,39 +153,6 @@ public class MainActivity extends AppCompatActivity {
 
         int sniffer_mode = Integer.parseInt(getStringPreferences(getApplicationContext(), PREF_SNIFFER_MODE));
 
-        vpnbtn = findViewById(R.id.vpnbtn);
-        vpnbtn.setTextOff(getStringWithLocale(R.string.ma_vpn_toggleoff));
-        vpnbtn.setTextOn(getStringWithLocale(R.string.ma_vpn_toggleon));
-        vpnbtn.setText("PASSIVE");
-        vpnbtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    try {
-                        final Intent prepare = VpnService.prepare(MainActivity.this);
-                        if (prepare == null) {
-                            //Log.i(TAG, "Prepare done");
-                            onActivityResult(REQUEST_VPN, RESULT_OK, null);
-                        } else {
-                            startActivityForResult(prepare, REQUEST_VPN);
-                        }
-                    } catch (Throwable ex) {
-                        // Prepare failed
-                        Log.e(TAG, ex.toString() + "\n" + Log.getStackTraceString(ex));
-                    }
-                } else {
-                    KcaVpnService.stop(VPN_STOP_REASON, MainActivity.this);
-                    prefs.edit().putBoolean(PREF_VPN_ENABLED, false).apply();
-                }
-            }
-        });
-
-        if (sniffer_mode == SNIFFER_ACTIVE) {
-            vpnbtn.setEnabled(true);
-
-        } else {
-            vpnbtn.setEnabled(false);
-        }
 
         kcafairybtn = findViewById(R.id.kcafairybtn);
         svcbtn = findViewById(R.id.svcbtn);
@@ -268,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
         textWarn = findViewById(R.id.textMainWarn);
         textWarn.setVisibility(View.GONE);
 
-        String main_html = "";
+        /*String main_html = "";
         try {
             String locale = getStringPreferences(getApplicationContext(), PREF_KCA_LANGUAGE);
             InputStream ais = assetManager.open("main-".concat(getLocaleCode(locale)).concat(".html"));
@@ -276,12 +244,12 @@ public class MainActivity extends AppCompatActivity {
             main_html = new String(bytes);
         } catch (IOException e) {
             main_html = "Error loading html file.";
-        }
+        }*/
 
         textDescription = findViewById(R.id.textDescription);
-        Spanned fromHtml = HtmlCompat.fromHtml(getApplicationContext(), main_html, 0);
+/*        Spanned fromHtml = HtmlCompat.fromHtml(getApplicationContext(), main_html, 0);
         textDescription.setMovementMethod(LinkMovementMethod.getInstance());
-        textDescription.setText(fromHtml);
+        textDescription.setText(fromHtml);*/
         //Linkify.addLinks(textDescription, Linkify.WEB_URLS);
 
         backPressCloseHandler = new BackPressCloseHandler(this);
@@ -307,10 +275,74 @@ public class MainActivity extends AppCompatActivity {
         */
     }
 
+    private boolean isCheckVersion = false;
+    private long checkVersionDate = 0;
+    public void checkVersion(){
+        Handler handler = new Handler();
+        Thread t = new Thread(() -> {
+            downloader = KcaUtils.getH5InfoDownloader(getApplicationContext());
+            final Call<String> rv_data = downloader.getH5RecentVersion();
+            String response = getResultFromCall(rv_data);
+            try {
+                if (response != null && !isCheckVersion && System.currentTimeMillis() - checkVersionDate > 24 * 60 * 60 * 1000) {
+                    isCheckVersion = true;
+                    checkVersionDate = System.currentTimeMillis();
+                    final JsonObject response_data = new JsonParser().parse(response).getAsJsonObject();
+                    handler.post(() -> {
+                        UpdateAppUtils.from(this)
+                                .checkBy(UpdateAppUtils.CHECK_BY_VERSION_NAME) //更新检测方式，默认为VersionCode
+                                .serverVersionCode(2641)
+                                .serverVersionName(response_data.get("versionName").getAsString())
+                                .apkPath(response_data.get("apkUrl").getAsString())
+                                .showNotification(true) //是否显示下载进度到通知栏，默认为true
+                                .updateInfo(response_data.get("apkInfo").getAsString())  //更新日志信息 String
+                                .downloadBy(UpdateAppUtils.DOWNLOAD_BY_APP) //下载方式：app下载、手机浏览器下载。默认app下载
+                                .isForce(false) //是否强制更新，默认false 强制更新情况下用户不同意更新则不能使用app
+                                .update();
+                    });
+                }
+            } catch (Exception e) {
+                dbHelper.recordErrorLog(ERROR_TYPE_MAIN, "version_check", "", "", getStringFromException(e));
+            }
+        });
+        t.start();
+    }
+    private String getResultFromCall(Call<String> call) {
+        KcaRequestThread thread = new KcaRequestThread(call);
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return thread.getResult();
+    }
+    public void getMainHtml(){
+        Handler handler = new Handler();
+        Thread t = new Thread(() -> {
+            downloader = KcaUtils.getH5InfoDownloader(getApplicationContext());
+            String locale = getStringPreferences(getApplicationContext(), PREF_KCA_LANGUAGE);
+            String localCode = getLocaleCode(locale);
+            final Call<String> rv_data = downloader.getH5MainHtml(localCode);
+            String response = getResultFromCall(rv_data);
+            try {
+                if (response != null) {
+                    handler.post(() -> {
+                        Spanned fromHtml = HtmlCompat.fromHtml(getApplicationContext(), response, 0);
+                        textDescription.setMovementMethod(LinkMovementMethod.getInstance());
+                        textDescription.setText(fromHtml);
+                    });
+                }
+            } catch (Exception e) {
+                dbHelper.recordErrorLog(ERROR_TYPE_MAIN, "version_check", "", "", getStringFromException(e));
+            }
+        });
+        t.start();
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        setVpnBtn();
         setCheckBtn();
 
         kcafairybtn = findViewById(R.id.kcafairybtn);
@@ -337,8 +369,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setVpnBtn();
         setCheckBtn();
+        checkVersion();
+        getMainHtml();
     }
 
     @Override
@@ -367,18 +400,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             textWarn.setVisibility(View.GONE);
             textWarn.setText("");
-        }
-    }
-
-    public void setVpnBtn() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        int sniffer_mode = Integer.parseInt(getStringPreferences(getApplicationContext(), PREF_SNIFFER_MODE));
-        if (sniffer_mode == SNIFFER_ACTIVE) {
-            vpnbtn.setEnabled(true);
-            vpnbtn.setChecked(prefs.getBoolean(PREF_VPN_ENABLED, false));
-        } else {
-            vpnbtn.setText("PASSIVE");
-            vpnbtn.setEnabled(false);
         }
     }
 
@@ -420,14 +441,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Log.i(TAG, "onActivityResult request=" + requestCode + " result=" + resultCode + " ok=" + (resultCode == RESULT_OK));
-        if (requestCode == REQUEST_VPN) {
-            prefs.edit().putBoolean(PREF_VPN_ENABLED, resultCode == RESULT_OK).apply();
-            if (resultCode == RESULT_OK) {
-                KcaVpnService.start("prepared", this);
-            } else if (resultCode == RESULT_CANCELED) {
-                // Canceled
-            }
-        }
+
     }
 
     @Override

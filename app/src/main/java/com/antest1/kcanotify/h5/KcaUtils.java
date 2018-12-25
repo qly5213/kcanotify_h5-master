@@ -550,6 +550,20 @@ public class KcaUtils {
         return retrofit.create(KcaDownloader.class);
     }
 
+    public static KcaDownloader getH5InfoDownloader(Context context){
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(1, TimeUnit.MINUTES)
+                .build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://www.uyan.pw/")
+                .client(okHttpClient)
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .build();
+        return retrofit.create(KcaDownloader.class);
+    }
+
     public static KcaDownloader getResDownloader(Context context){
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
