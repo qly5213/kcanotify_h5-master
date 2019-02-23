@@ -1126,6 +1126,8 @@ public class KcaApiData {
                     currentNodeInfo = KcaUtils.format(context.getString(R.string.node_info_ecbattle), currentNode);
                 } else if (kind == API_NODE_EVENT_KIND_LDAIRBATTLE) {
                     currentNodeInfo = KcaUtils.format(context.getString(R.string.node_info_ldairbattle), currentNode);
+                } else if (kind == API_NODE_EVENT_KIND_LDSHOOTING) {
+                    currentNodeInfo = KcaUtils.format(context.getString(R.string.node_info_ldshooting), currentNode);
                 }
                 break;
             case API_NODE_EVENT_ID_BOSS:

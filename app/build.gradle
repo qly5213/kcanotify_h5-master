@@ -14,7 +14,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 2641
-        versionName "2.6.4r1_1.09"
+        versionName "2.6.4r1_1.11"
 
         multiDexEnabled true
         externalNativeBuild {

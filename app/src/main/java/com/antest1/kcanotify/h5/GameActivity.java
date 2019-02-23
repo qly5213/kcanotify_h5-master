@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -23,12 +24,14 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -66,6 +69,7 @@ public class GameActivity extends AppCompatActivity {
     private OkHttpClient client = null;
     private SharedPreferences prefs = null;
     private boolean changeTouchEventPrefs = false;
+    private int changeCookieCnt = 0;
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
@@ -137,9 +141,24 @@ public class GameActivity extends AppCompatActivity {
         }
         resetWebView(false);
 
+        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
+        if(clearCookie){
+            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean value) {
+                    if(value){
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putBoolean("clear_cookie_start", false);
+                        editor.commit();
+                    }
+                }
+            });
+        }
+
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(mWebview, true);
         boolean voicePlay = prefs.getBoolean("voice_play", false);
+        boolean changeCookie = prefs.getBoolean("change_cookie_start", false);
         if(voicePlay){
             for (String serverIp : SERVER_IP) {
                 cookieManager.setCookie(serverIp, "vol_bgm=50; domain=" + serverIp + "; path=/kcs2");
@@ -152,6 +171,14 @@ public class GameActivity extends AppCompatActivity {
                 cookieManager.setCookie(serverIp, "vol_se=0; domain=" + serverIp + "; path=/kcs2");
                 cookieManager.setCookie(serverIp, "vol_voice=0; domain=" + serverIp + "; path=/kcs2");
             }
+        }
+        if(changeCookie){
+            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/");
+            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/");
+            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/");
+            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/");
+            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/");
+            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/");
         }
         cookieManager.flush();
         client = new OkHttpClient.Builder().build();
@@ -167,6 +194,7 @@ public class GameActivity extends AppCompatActivity {
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
+        WebView.setWebContentsDebuggingEnabled(true);
         //设置WebChromeClient类
         mWebview.setWebChromeClient(new WebChromeClient() {
 
@@ -202,7 +230,149 @@ public class GameActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
 //                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\'game_frame\'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector(\'meta[name=viewport]\'),t=0;vp||(vp=$.createElement(\'meta\'),vp.name=\'viewport\',$.querySelector(\'head\').appendChild(vp));vp.content=\'width=\'+gw;\'orientation\'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow=\'hidden\';$.body.style.cssText=\'min-width:0;padding:0;margin:0;overflow:hidden;margin:0\';$.querySelector(\'.dmm-ntgnavi\').style.display=\'none\';$.querySelector(\'.area-naviapp\').style.display=\'none\';$.getElementById(\'ntg-recommend\').style.display=\'none\';gs.position=\'fixed\';gs.marginRight=\'auto\';gs.marginLeft=\'auto\';gs.top=\'-16px\';gs.right=\'0\';gs.zIndex=\'100\';gs.transformOrigin=\'50%25%2016px\';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform=\'scale(\'+w/gw+\')\':gs.transform=\'scale(\'+h/gh+\')\';w<gw?gs.left=\'-\'+(gw-w)/2+\'px\':gs.left=\'0\'};_.addEventListener(\'resize\',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
-                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='-8px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+                }
+                if(view.getUrl() != null && view.getUrl().startsWith("https://www.dmm.com/my/-/login/=")){
+
+                    new Handler().postDelayed(new Runnable(){
+                        public void run() {
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=osapi.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=203.104.209.7;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=www.dmm.com;path=/netgame/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie =  'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=log-netgame.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                        }
+                    }, 5000);
+
+
+                }
+                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/top/-/error/area/") && changeCookie && changeCookieCnt++ < 5) {
+                    Log.i("KCVA", "Change Cookie");
+
+                    new Handler().postDelayed(new Runnable(){
+                        public void run() {
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=osapi.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=203.104.209.7;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=www.dmm.com;path=/netgame/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie =  'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=log-netgame.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
+                        }
+                    }, 5000);
                 }
             }
 
@@ -211,7 +381,7 @@ public class GameActivity extends AppCompatActivity {
                 super.onLoadResource(view, url);
                 if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
 //                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\'game_frame\'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector(\'meta[name=viewport]\'),t=0;vp||(vp=$.createElement(\'meta\'),vp.name=\'viewport\',$.querySelector(\'head\').appendChild(vp));vp.content=\'width=\'+gw;\'orientation\'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow=\'hidden\';$.body.style.cssText=\'min-width:0;padding:0;margin:0;overflow:hidden;margin:0\';$.querySelector(\'.dmm-ntgnavi\').style.display=\'none\';$.querySelector(\'.area-naviapp\').style.display=\'none\';$.getElementById(\'ntg-recommend\').style.display=\'none\';gs.position=\'fixed\';gs.marginRight=\'auto\';gs.marginLeft=\'auto\';gs.top=\'-16px\';gs.right=\'0\';gs.zIndex=\'100\';gs.transformOrigin=\'50%25%2016px\';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform=\'scale(\'+w/gw+\')\':gs.transform=\'scale(\'+h/gh+\')\';w<gw?gs.left=\'-\'+(gw-w)/2+\'px\':gs.left=\'0\'};_.addEventListener(\'resize\',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
-                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='-8px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
                 }
             }
 
@@ -225,7 +395,7 @@ public class GameActivity extends AppCompatActivity {
                 } else if(path != null && (path.contains("/kcsapi/api_get_member/mapinfo") || path.contains("/kcsapi/api_get_member/mission"))){
                     changeTouchEvent = true;
                 }
-                if (request.getMethod().equals("GET") && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
+                if (request.getMethod().equals("GET") && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
                     if(path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")){
                         changeTouchEvent = true;
                     }
@@ -260,6 +430,9 @@ public class GameActivity extends AppCompatActivity {
                                 if(path.contains("/kcs2/js/main.js")){
                                     String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){console.log(xhr.xhr.responseURL);console.log(xhr.xhr.requestParam);console.log(xhr.responseText);window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
                                     respByte = newRespStr.getBytes();
+                                } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                                    String newRespStr = serverResponse.string() + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                                    respByte = newRespStr.getBytes();
                                 } else {
                                     respByte = serverResponse.bytes();
                                 }
@@ -274,7 +447,11 @@ public class GameActivity extends AppCompatActivity {
                             Log.d("KCVA", "Local cache uri：：" + uri);
                             //从缓存直接返回客户端，不请求服务器
                             byte[] fileContent = readFileToBytes(tmp);
-                            return backToWebView(path, String.valueOf(fileContent.length), new FileInputStream(tmp));
+                            if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                                String newRespStr = new String(fileContent, "utf-8") + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                                fileContent = newRespStr.getBytes("utf-8");
+                            }
+                            return backToWebView(path, String.valueOf(fileContent.length), new ByteArrayInputStream(fileContent));
                         } else {
                             ResponseBody serverResponse = requestServer(request);
                             if(serverResponse != null){
@@ -282,7 +459,10 @@ public class GameActivity extends AppCompatActivity {
                                 if(path.contains("/kcs2/js/main.js")){
                                     String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
                                     respByte = newRespStr.getBytes();
-                                } else {
+                                } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                                    String newRespStr = serverResponse.string() + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                                    respByte = newRespStr.getBytes();
+                                }  else {
                                     respByte = serverResponse.bytes();
                                 }
                                 saveFile(path, respByte);
@@ -336,7 +516,7 @@ public class GameActivity extends AppCompatActivity {
         map.put("Server", "KanCollCache");
         map.put("Content-Length", size);
         map.put("Content-Type", mimeType);
-        map.put("Cache-Control", "no-cache");
+        map.put("Cache-Control", "public");
         return new WebResourceResponse(mimeType, null, 200, "OK", map, is);
     }
 
@@ -402,7 +582,7 @@ public class GameActivity extends AppCompatActivity {
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
         resetWebView(true);
-        mWebview.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\'game_frame\'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector(\'meta[name=viewport]\'),t=0;vp||(vp=$.createElement(\'meta\'),vp.name=\'viewport\',$.querySelector(\'head\').appendChild(vp));vp.content=\'width=\'+gw;\'orientation\'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow=\'hidden\';$.body.style.cssText=\'min-width:0;padding:0;margin:0;overflow:hidden;margin:0\';$.querySelector(\'.dmm-ntgnavi\').style.display=\'none\';$.querySelector(\'.area-naviapp\').style.display=\'none\';$.getElementById(\'ntg-recommend\').style.display=\'none\';gs.position=\'fixed\';gs.marginRight=\'auto\';gs.marginLeft=\'auto\';gs.top=\'-16px\';gs.right=\'0\';gs.zIndex=\'100\';gs.transformOrigin=\'50%25%2016px\';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform=\'scale(\'+w/gw+\')\':gs.transform=\'scale(\'+h/gh+\')\';w<gw?gs.left=\'-\'+(gw-w)/2+\'px\':gs.left=\'0\'};_.addEventListener(\'resize\',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+        mWebview.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
 
     }
 

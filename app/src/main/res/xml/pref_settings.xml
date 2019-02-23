@@ -144,9 +144,29 @@
             android:title="自定义OOI游戏域名" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="ooi_auto_user"
+            android:summary="OOI模式预填写用户名密码"
+            android:title="OOI模式预填写用户名密码" />
+        <EditTextPreference
+            android:dependency="ooi_auto_user"
+            android:key="dmm_user"
+            android:summary="OOI模式时可自动填入该用户名"
+            android:title="DMM用户名" />
+        <EditTextPreference
+            android:dependency="ooi_auto_user"
+            android:key="dmm_pwd"
+            android:summary="OOI模式时可自动填入该密码"
+            android:title="DMM密码" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="clear_cookie_start"
             android:summary="@string/clear_cookie_start_summary"
             android:title="@string/clear_cookie_start_title" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="change_cookie_start"
+            android:summary="修改Cookie绕过dmm地域检测"
+           android:title="修改Cookie" />
         <!--
         <Preference
         android:defaultValue=""

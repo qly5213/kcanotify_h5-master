@@ -184,6 +184,7 @@ public final class KcaConstants {
     public static final String API_REQ_SORTIE_LDAIRBATTLE = "/api_req_sortie/ld_airbattle";
     public static final String API_REQ_SORTIE_BATTLE_RESULT = "/api_req_sortie/battleresult";
     public static final String API_REQ_SORTIE_NIGHTTODAY = "/api_req_sortie/night_to_day";
+    public static final String API_REQ_SORTIE_LDSHOOTING = "/api_req_sortie/ld_shooting"; // 레이더사격
     public static final String API_REQ_SORTIE_GOBACKPORT = "/api_req_sortie/goback_port"; // 단함퇴피
 
     public static final String API_REQ_MAP_SELECT_EVENTMAP_RANK = "/api_req_map/select_eventmap_rank";
@@ -196,6 +197,7 @@ public final class KcaConstants {
 
     public static final String API_REQ_COMBINED_AIRBATTLE = "/api_req_combined_battle/airbattle"; // 아웃레인지
     public static final String API_REQ_COMBINED_LDAIRBATTLE = "/api_req_combined_battle/ld_airbattle"; // 공습
+    public static final String API_REQ_COMBINED_LDSHOOTING = "/api_req_combined_battle/ld_shooting"; // 레이더사격?
     public static final String API_REQ_COMBINED_BATTLE_EC_NIGHTTODAY = "/api_req_combined_battle/ec_night_to_day"; // 야간->주간
     public static final String API_REQ_COMBINED_BATTLE_MIDNIGHT = "/api_req_combined_battle/midnight_battle";
     public static final String API_REQ_COMBINED_BATTLE_MIDNIGHT_SP = "/api_req_combined_battle/sp_midnight";
@@ -224,6 +226,7 @@ public final class KcaConstants {
             API_REQ_COMBINED_BATTLE,
             API_REQ_COMBINED_BATTLE_WATER,
             API_REQ_COMBINED_AIRBATTLE,
+            API_REQ_SORTIE_LDSHOOTING,
             API_REQ_COMBINED_LDAIRBATTLE,
             API_REQ_COMBINED_BATTLE_MIDNIGHT,
             API_REQ_COMBINED_BATTLE_MIDNIGHT_SP,
@@ -258,6 +261,7 @@ public final class KcaConstants {
     public static final int API_NODE_EVENT_KIND_ECBATTLE = 5;
     public static final int API_NODE_EVENT_KIND_LDAIRBATTLE = 6;
     public static final int API_NODE_EVENT_KIND_NIGHTDAYBATTLE_EC = 7;
+    public static final int API_NODE_EVENT_KIND_LDSHOOTING = 8;
 
     public static final int API_NODE_EVENT_KIND_SELECTABLE = 2;
 
