@@ -116,6 +116,17 @@
             android:summary="开启游戏声音进行游戏,如频繁闪退请关闭游戏声音"
             android:title="开启游戏声音" />
         <CheckBoxPreference
+            android:dependency="voice_play"
+            android:defaultValue="true"
+            android:key="voice_sub_title"
+            android:summary="开启游戏声音时显示字幕，字幕来源KCWIKI(zh.kcwiki.org)"
+            android:title="开启语音字幕" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="chat_service"
+            android:summary="开启聊天窗口"
+            android:title="开启聊天窗口" />
+        <CheckBoxPreference
             android:defaultValue="true"
             android:key="change_touch_event"
             android:summary="当出现触摸无效等问题时，请关闭触摸适配"

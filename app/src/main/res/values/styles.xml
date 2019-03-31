@@ -22,5 +22,24 @@
         <item name="android:textStyle">normal</item>
         <item name="android:background">@color/white</item>
     </style>
+    <!--位于右侧dialog的风格-->
+    <style name="DialogLeft" parent="@android:style/Theme.Dialog">
+        <!-- 背景透明 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- 浮于Activity之上 -->
+        <item name="android:windowIsFloating">true</item>
+        <!-- 边框 -->
+        <item name="android:windowFrame">@null</item>
+        <!-- Dialog以外的区域模糊效果 -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!-- 无标题 -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <!-- 半透明 -->
+        <item name="android:windowIsTranslucent">true</item>
+        <!--点击dialog以外区域关闭弹窗-->
+        <item name="android:windowCloseOnTouchOutside">true</item>
+    </style>
 
 </resources>
