@@ -1,5 +1,6 @@
 package com.antest1.kcanotify.h5;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -23,6 +24,10 @@ import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 
 public class KcaApplication extends MultiDexApplication {
     public static Locale defaultLocale;
+    public static Activity gameActivity;
+    public static Activity gameOOIActivity;
+    public static boolean isCheckVersion = false;
+    public static long checkVersionDate = 0;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -34,6 +39,7 @@ public class KcaApplication extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        application = this;
         String language, country;
         defaultLocale = Locale.getDefault();
         SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
@@ -54,5 +60,10 @@ public class KcaApplication extends MultiDexApplication {
 
         LocaleUtils.updateConfig(this, getBaseContext().getResources().getConfiguration());
         ACRA.init(this);
+    }
+
+    private static KcaApplication application;
+    public static KcaApplication getInstance(){
+        return application;
     }
 }

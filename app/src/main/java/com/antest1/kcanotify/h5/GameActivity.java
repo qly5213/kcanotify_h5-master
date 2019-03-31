@@ -1,11 +1,14 @@
 package com.antest1.kcanotify.h5;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -13,6 +16,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -31,7 +35,9 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.json.JSONObject;
 
@@ -45,10 +51,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import andhook.lib.AndHook;
 import okhttp3.OkHttpClient;
@@ -59,6 +65,7 @@ import okhttp3.ResponseBody;
 public class GameActivity extends AppCompatActivity {
     WebView mWebview;
     WebSettings mWebSettings;
+    private ProgressBar progressBar1;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
     private static final String[] SERVER_IP = new String[]{"203.104.209.71", "203.104.209.87", "125.6.184.215", "203.104.209.183", "203.104.209.150", "203.104.209.134", "203.104.209.167", "203.104.248.135", "125.6.189.7", "125.6.189.39", "125.6.189.71", "125.6.189.103", "125.6.189.135", "125.6.189.167", "125.6.189.215", "125.6.189.247", "203.104.209.23", "203.104.209.39", "203.104.209.55", "203.104.209.102"};
 
@@ -70,6 +77,13 @@ public class GameActivity extends AppCompatActivity {
     private SharedPreferences prefs = null;
     private boolean changeTouchEventPrefs = false;
     private int changeCookieCnt = 0;
+    private RotationObserver mRotationObserver;
+    private TextView subtitleTextview;
+    private StrokeTextView subtitleStrokeTextview;
+    private ImageView chatImageView;
+    private String nickName;
+    private HashMap<String, String> serverMap;
+
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
@@ -81,8 +95,27 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        KcaApplication.gameActivity = this;
+        mRotationObserver = new RotationObserver(new Handler());
         prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
+
+        boolean subTitleEnable = prefs.getBoolean("voice_sub_title", false);
+
+        if(subTitleEnable) {
+            //语言字幕初始化
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    SubTitleUtils.initVoiceMap();
+                    SubTitleUtils.initSubTitle();
+                }
+            }).start();
+        }
+
+        boolean chatService = prefs.getBoolean("chat_service", false);
+        if(chatService){
+            serverMap = SubTitleUtils.initServiceHost();
+        }
 
         boolean proxyEnable = prefs.getBoolean("host_proxy_enable", true);
         String proxyIP = prefs.getString("host_proxy_address", "106.186.27.62");
@@ -114,6 +147,12 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         mWebview = findViewById(R.id.webView1);
+        progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
+        subtitleTextview = findViewById(R.id.subtitle_textview);
+        subtitleStrokeTextview = findViewById(R.id.subtitle_textview_stroke);
+        chatImageView = findViewById(R.id.chat_image_view);
+        chatImageView.setImageAlpha(50);
+
         try {
             String cacheJsonPathStr = Environment.getExternalStorageDirectory() + "/KanCollCache/cache.json";
             String nomedia = Environment.getExternalStorageDirectory() + "/KanCollCache/.nomedia";
@@ -208,6 +247,12 @@ public class GameActivity extends AppCompatActivity {
             //获取加载进度
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
+                if (newProgress == 100) {
+                    progressBar1.setVisibility(View.GONE);
+                } else {
+                    progressBar1.setVisibility(View.VISIBLE);
+                    progressBar1.setProgress(newProgress);
+                }
             }
         });
 
@@ -384,7 +429,19 @@ public class GameActivity extends AppCompatActivity {
                     view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
                 }
             }
-
+            Handler handler = new Handler();
+            Runnable dismissSubTitle = new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            subtitleTextview.setText("");
+                            subtitleStrokeTextview.setText("");
+                        }
+                    });
+                }
+            };
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -403,6 +460,23 @@ public class GameActivity extends AppCompatActivity {
                         return null;
                     }
                     try {
+                        //获取字幕
+                        String pattern = "/kcs/sound/(.*?)/(.*?).mp3";
+                        boolean isMatch = Pattern.matches(pattern, path);
+                        if(isMatch && subTitleEnable){
+                            String subTitle = SubTitleUtils.getSubTitle(path);
+//                            Log.d("KCVA", "语音字幕：" + subTitle);
+                            handler.removeCallbacks(dismissSubTitle);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    subtitleTextview.setText(subTitle);
+                                    subtitleStrokeTextview.setText(subTitle);
+                                }
+                            });
+                            handler.postDelayed(dismissSubTitle, 10000);
+                        }
+
                         String version = "0";
                         if (uri.getQueryParameter("version") != null && !uri.getQueryParameter("version").equals("")) {
                             version = uri.getQueryParameter("version");
@@ -489,7 +563,15 @@ public class GameActivity extends AppCompatActivity {
                 try {
                     URL url = new URL(requestUrl);
                     KcaVpnData.renderToHander(url.getPath(), param, respData);
-                } catch (MalformedURLException e) {
+                    if(url.getPath().contains("/kcsapi/api_start2/getData") && subTitleEnable){
+                        SubTitleUtils.initShipGraph(respData);
+                    }
+                    if(url.getPath().contains("/kcsapi/api_port/port") && chatService){
+                        String host = url.getHost();
+                        String serName = serverMap.get(host);
+                        nickName = new JSONObject(respData.substring(7)).getJSONObject("api_data").getJSONObject("api_basic").getString("api_nickname") + (serName != null ? " - " + serName : "");
+                    }
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -497,6 +579,29 @@ public class GameActivity extends AppCompatActivity {
 
         mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
 
+        if(chatService) {
+            ChatDialogUtils dialogUtils = new ChatDialogUtils(this);
+            chatImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    chatImageView.setImageAlpha(255);
+                    dialogUtils.showLeftChat(nickName);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    chatImageView.setImageAlpha(50);
+                                }
+                            });
+                        }
+                    }, 5000);
+                }
+            });
+        } else {
+            chatImageView.setVisibility(View.GONE);
+        }
         registerReceiver(webviewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_reload"));
     }
 
@@ -653,6 +758,17 @@ public class GameActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        mRotationObserver.startObserver();
+        setScreenOrientation();
+        super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        mRotationObserver.stopObserver();
+        super.onPause();
+    }
 
     @Override
     protected void onStop() {
@@ -728,6 +844,49 @@ public class GameActivity extends AppCompatActivity {
             }
         }
         return bytes;
+    }
+
+    private void setScreenOrientation() {
+        try {
+            int screenchange = Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION);
+            //是否开启自动旋转设置 1 开启 0 关闭
+            if (screenchange == 1){
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            }else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    //观察屏幕旋转设置变化，类似于注册动态广播监听变化机制
+    private class RotationObserver extends ContentObserver {
+        ContentResolver mResolver;
+
+        public RotationObserver(Handler handler) {
+            super(handler);
+            mResolver = getContentResolver();
+            // TODO Auto-generated constructor stub
+        }
+
+        //屏幕旋转设置改变时调用
+        @Override
+        public void onChange(boolean selfChange) {
+            // TODO Auto-generated method stub
+            super.onChange(selfChange);
+            //更新按钮状态
+            setScreenOrientation();
+        }
+
+        public void startObserver() {
+            mResolver.registerContentObserver(Settings.System
+                            .getUriFor(Settings.System.ACCELEROMETER_ROTATION), false,
+                    this);
+        }
+
+        public void stopObserver() {
+            mResolver.unregisterContentObserver(this);
+        }
     }
 
 }

@@ -1,17 +1,21 @@
 package com.antest1.kcanotify.h5;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -23,7 +27,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -32,6 +35,10 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -46,13 +53,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
-import andhook.lib.AndHook;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -61,6 +67,7 @@ import okhttp3.ResponseBody;
 public class GameOOIActivity extends AppCompatActivity {
     WebView mWebview;
     WebSettings mWebSettings;
+    private ProgressBar progressBar1;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 
     private WebviewBroadcastReceiver webviewBroadcastReceiver = new WebviewBroadcastReceiver();
@@ -71,11 +78,29 @@ public class GameOOIActivity extends AppCompatActivity {
     private SharedPreferences prefs = null;
     private boolean changeTouchEventPrefs = false;
     String hostName = null;
+    private GameOOIActivity.RotationObserver mRotationObserver;
+    private TextView subtitleTextview;
+    private StrokeTextView subtitleStrokeTextview;
+    private ImageView chatImageView;
+    private String nickName;
+    private HashMap<String, String> serverMap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        KcaApplication.gameOOIActivity = this;
+        mRotationObserver = new GameOOIActivity.RotationObserver(new Handler());
         prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
+        boolean subTitleEnable = prefs.getBoolean("voice_sub_title", false);
 
+        if(subTitleEnable) {
+            //语言字幕初始化
+            SubTitleUtils.initVoiceMap();
+            SubTitleUtils.initSubTitle();
+        }
+        boolean chatService = prefs.getBoolean("chat_service", false);
+        if(chatService){
+            serverMap = SubTitleUtils.initServiceHost();
+        }
         setContentView(R.layout.activity_game_webview);
         boolean hardSpeed = prefs.getBoolean("hardware_accelerated", true);
         if(hardSpeed) {
@@ -126,6 +151,11 @@ public class GameOOIActivity extends AppCompatActivity {
             }
         });
         mWebview = findViewById(R.id.webView1);
+        progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
+        subtitleTextview = findViewById(R.id.subtitle_textview);
+        subtitleStrokeTextview = findViewById(R.id.subtitle_textview_stroke);
+        chatImageView = findViewById(R.id.chat_image_view);
+        chatImageView.setImageAlpha(50);
 
         try {
             String cacheJsonPathStr = Environment.getExternalStorageDirectory() + "/KanCollCache/cache.json";
@@ -196,6 +226,12 @@ public class GameOOIActivity extends AppCompatActivity {
             //获取加载进度
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
+                if (newProgress == 100) {
+                    progressBar1.setVisibility(View.GONE);
+                } else {
+                    progressBar1.setVisibility(View.VISIBLE);
+                    progressBar1.setProgress(newProgress);
+                }
             }
         });
 
@@ -246,7 +282,19 @@ public class GameOOIActivity extends AppCompatActivity {
             public void onReceivedLoginRequest(WebView view, String realm, @Nullable String account, String args) {
                 super.onReceivedLoginRequest(view, realm, account, args);
             }
-
+            Handler handler = new Handler();
+            Runnable dismissSubTitle = new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            subtitleTextview.setText("");
+                            subtitleStrokeTextview.setText("");
+                        }
+                    });
+                }
+            };
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -265,6 +313,22 @@ public class GameOOIActivity extends AppCompatActivity {
                         return null;
                     }
                     try {
+                        //获取字幕
+                        String pattern = "/kcs/sound/(.*?)/(.*?).mp3";
+                        boolean isMatch = Pattern.matches(pattern, path);
+                        if(isMatch && subTitleEnable){
+                            String subTitle = SubTitleUtils.getSubTitle(path);
+//                            Log.d("KCVA", "语音字幕：" + subTitle);
+                            handler.removeCallbacks(dismissSubTitle);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    subtitleTextview.setText(subTitle);
+                                    subtitleStrokeTextview.setText(subTitle);
+                                }
+                            });
+                            handler.postDelayed(dismissSubTitle, 10000);
+                        }
                         String version = "0";
                         if (uri.getQueryParameter("version") != null && !uri.getQueryParameter("version").equals("")) {
                             version = uri.getQueryParameter("version");
@@ -340,8 +404,32 @@ public class GameOOIActivity extends AppCompatActivity {
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
                 try {
                     URL url = new URL(requestUrl);
+                    if(requestUrl.contains("api_req_member/get_incentive")){
+                        try {
+                            JSONObject respDataJson = new JSONObject(respData.substring(7));
+                            if(respDataJson.has("api_result") && respDataJson.getInt("api_result") != 1){
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mWebview.loadUrl("http://" + hostName + "/");
+                                    }
+                                });
+                                Toast.makeText(GameOOIActivity.this, "登录过期，正在跳转到登录页面！", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
                     KcaVpnData.renderToHander(url.getPath(), param, respData);
-                } catch (MalformedURLException e) {
+                    if(url.getPath().contains("/kcsapi/api_start2/getData") && subTitleEnable){
+                        SubTitleUtils.initShipGraph(respData);
+                    }
+                    if(url.getPath().contains("/kcsapi/api_port/port") && chatService){
+                        String host = url.getHost();
+                        String serName = serverMap.get(host);
+                        nickName = new JSONObject(respData.substring(7)).getJSONObject("api_data").getJSONObject("api_basic").getString("api_nickname") + (serName != null ? " - " + serName : "");
+                    }
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -349,6 +437,29 @@ public class GameOOIActivity extends AppCompatActivity {
 
         mWebview.loadUrl("http://" + hostName + "/poi");
 
+        if(chatService) {
+            ChatDialogUtils dialogUtils = new ChatDialogUtils(this);
+            chatImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    chatImageView.setImageAlpha(255);
+                    dialogUtils.showLeftChat(nickName);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    chatImageView.setImageAlpha(50);
+                                }
+                            });
+                        }
+                    }, 5000);
+                }
+            });
+        } else {
+            chatImageView.setVisibility(View.GONE);
+        }
         registerReceiver(webviewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_reload"));
     }
 
@@ -508,6 +619,17 @@ public class GameOOIActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        mRotationObserver.startObserver();
+        setScreenOrientation();
+        super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        mRotationObserver.stopObserver();
+        super.onPause();
+    }
+    @Override
     protected void onStop() {
         if (!prefs.getBoolean("background_play", true)){
             mWebview.onPause();
@@ -583,4 +705,46 @@ public class GameOOIActivity extends AppCompatActivity {
         return bytes;
     }
 
+    private void setScreenOrientation() {
+        try {
+            int screenchange = Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION);
+            //是否开启自动旋转设置 1 开启 0 关闭
+            if (screenchange == 1){
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            }else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    //观察屏幕旋转设置变化，类似于注册动态广播监听变化机制
+    private class RotationObserver extends ContentObserver {
+        ContentResolver mResolver;
+
+        public RotationObserver(Handler handler) {
+            super(handler);
+            mResolver = getContentResolver();
+            // TODO Auto-generated constructor stub
+        }
+
+        //屏幕旋转设置改变时调用
+        @Override
+        public void onChange(boolean selfChange) {
+            // TODO Auto-generated method stub
+            super.onChange(selfChange);
+            //更新按钮状态
+            setScreenOrientation();
+        }
+
+        public void startObserver() {
+            mResolver.registerContentObserver(Settings.System
+                            .getUriFor(Settings.System.ACCELEROMETER_ROTATION), false,
+                    this);
+        }
+
+        public void stopObserver() {
+            mResolver.unregisterContentObserver(this);
+        }
+    }
 }

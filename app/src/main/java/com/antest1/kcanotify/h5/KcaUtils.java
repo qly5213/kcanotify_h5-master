@@ -578,6 +578,21 @@ public class KcaUtils {
         return retrofit.create(KcaDownloader.class);
     }
 
+
+    public static KcaDownloader getSubTitleInfoDownloader(Context context){
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(1, TimeUnit.MINUTES)
+                .build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://acc.kcwiki.org/")
+                .client(okHttpClient)
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .build();
+        return retrofit.create(KcaDownloader.class);
+    }
+
     public static boolean checkFairyImageInStorage(Context context, String name) {
         ContextWrapper cw = new ContextWrapper(context);
         File directory = cw.getDir("fairy", Context.MODE_PRIVATE);

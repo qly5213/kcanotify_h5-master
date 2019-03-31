@@ -21,8 +21,14 @@ public class BackPressCloseHandler {
             return;
         }
         if (System.currentTimeMillis() <= pressedTime + INTERVAL) {
+            if(KcaApplication.gameActivity != null) {
+                KcaApplication.gameActivity.finish();
+            }
+            if(KcaApplication.gameOOIActivity != null) {
+                KcaApplication.gameOOIActivity.finish();
+            }
             activity.finish();
-            System.exit(0);
+//            System.exit(0);
             toast.cancel();
         }
     }

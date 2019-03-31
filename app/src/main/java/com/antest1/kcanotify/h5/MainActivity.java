@@ -184,9 +184,11 @@ public class MainActivity extends AppCompatActivity {
                 if(gamePageType.equals("0")) {
                     Intent intent = new Intent(MainActivity.this, GameActivity.class);
                     startActivity(intent);
+                    MainActivity.this.finish();
                 } else {
                     Intent intent = new Intent(MainActivity.this, GameOOIActivity.class);
                     startActivity(intent);
+                    MainActivity.this.finish();
                 }
             }
         });
@@ -266,8 +268,6 @@ public class MainActivity extends AppCompatActivity {
         */
     }
 
-    private boolean isCheckVersion = false;
-    private long checkVersionDate = 0;
     public void checkVersion(){
         Handler handler = new Handler();
         Thread t = new Thread(() -> {
@@ -275,9 +275,9 @@ public class MainActivity extends AppCompatActivity {
             final Call<String> rv_data = downloader.getH5RecentVersion();
             String response = getResultFromCall(rv_data);
             try {
-                if (response != null && !isCheckVersion && System.currentTimeMillis() - checkVersionDate > 24 * 60 * 60 * 1000) {
-                    isCheckVersion = true;
-                    checkVersionDate = System.currentTimeMillis();
+                if (response != null && !KcaApplication.isCheckVersion && System.currentTimeMillis() - KcaApplication.checkVersionDate > 24 * 60 * 60 * 1000) {
+                    KcaApplication.isCheckVersion = true;
+                    KcaApplication.checkVersionDate = System.currentTimeMillis();
                     final JsonObject response_data = new JsonParser().parse(response).getAsJsonObject();
                     handler.post(() -> {
                         UpdateAppUtils.from(this)

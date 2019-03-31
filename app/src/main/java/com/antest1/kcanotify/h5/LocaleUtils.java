@@ -61,4 +61,28 @@ public class LocaleUtils {
             return "en";
         }
     }
+    public static String getKcWikiLocaleCode(String pref) {
+        if (pref.startsWith("default")) {
+            Locale locale = Locale.getDefault();
+            String language = locale.getLanguage();
+            String country = locale.getCountry();
+            pref = language.concat("-").concat(country);
+        }
+
+        if (pref.startsWith("ko")) {
+            return "ko";
+        } else if (pref.startsWith("en")) {
+            return "en";
+        } else if (pref.startsWith("zh")) {
+            if (pref.equals("zh-CN") || pref.equals("zh-SG")) {
+                return "zh-cn";
+            } else {
+                return "zh-tw";
+            }
+        } else if (pref.startsWith("ja")) {
+            return "jp";
+        } else {
+            return "en";
+        }
+    }
 }

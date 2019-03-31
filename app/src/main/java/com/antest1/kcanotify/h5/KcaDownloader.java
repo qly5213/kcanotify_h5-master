@@ -56,4 +56,26 @@ public interface KcaDownloader {
     })
     @GET("/kcanotify/main-{local}.html")
     Call<String> getH5MainHtml(@Path("local") String local);
+
+
+
+    @Headers({
+            "Accept: application/json",
+            "X-Identify: app/kcanotify",
+            "Referer: app:/KCA/",
+            "Cache-control: no-cache, no-store, must-revalidate",
+            "Content-Type: application/x-www-form-urlencoded"
+    })
+    @GET("/subtitles/{local}")
+    Call<String> getSubTitle(@Path("local") String local);
+
+    @Headers({
+            "Accept: application/json",
+            "X-Identify: app/kcanotify",
+            "Referer: app:/KCA/",
+            "Cache-control: no-cache, no-store, must-revalidate",
+            "Content-Type: application/x-www-form-urlencoded"
+    })
+    @GET("/subtitles/{local}/diff/{version}")
+    Call<String> getSubTitleDiff(@Path("local") String local, @Path("version") String version);
 }
