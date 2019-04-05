@@ -1,15 +1,12 @@
 package com.antest1.kcanotify.h5;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.v7.widget.AppCompatTextView;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 public class StrokeTextView extends AppCompatTextView
 {
@@ -30,6 +27,11 @@ public class StrokeTextView extends AppCompatTextView
         mStrokeWidth = 5;
 
         setTextColor(mStrokeColor);
+    }
+
+    @Override
+    public boolean isFocused() {
+        return true;
     }
 
     @Override

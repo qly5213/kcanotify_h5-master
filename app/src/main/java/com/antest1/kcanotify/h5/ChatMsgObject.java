@@ -8,11 +8,27 @@ public class ChatMsgObject {
     private String userName;
     private int msgType;
     private String msg;
+    private String imageMsg;
 
-    private static class MsgTypeCont{
+    public static class MsgTypeCont{
 
         public static final int MSG_TEXT = 1;
         public static final int MSG_IMAGE= 2;
+    }
+
+    public String getImageMsg() {
+        return imageMsg;
+    }
+
+    public void setImageMsg(String imageMsg) {
+        this.imageMsg = imageMsg;
+    }
+
+    public ChatMsgObject(String userName, int msgType, String msg, String imageMsg) {
+        this.userName = userName + "  " + new SimpleDateFormat("HH:mm:ss").format(new Date());
+        this.msgType = msgType;
+        this.msg = msg;
+        this.imageMsg = imageMsg;
     }
 
     public ChatMsgObject(String userName, int msgType, String msg) {

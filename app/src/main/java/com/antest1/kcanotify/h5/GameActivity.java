@@ -10,6 +10,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,6 +40,12 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bilibili.boxing.Boxing;
+import com.bilibili.boxing.BoxingMediaLoader;
+import com.bilibili.boxing.model.config.BoxingConfig;
+import com.bilibili.boxing.model.entity.BaseMedia;
+import com.bilibili.boxing_impl.ui.BoxingActivity;
+
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -53,10 +60,20 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import andhook.lib.AndHook;
+import master.flame.danmaku.controller.DrawHandler;
+import master.flame.danmaku.danmaku.model.BaseDanmaku;
+import master.flame.danmaku.danmaku.model.DanmakuTimer;
+import master.flame.danmaku.danmaku.model.IDanmakus;
+import master.flame.danmaku.danmaku.model.IDisplayer;
+import master.flame.danmaku.danmaku.model.android.DanmakuContext;
+import master.flame.danmaku.danmaku.model.android.Danmakus;
+import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
+import master.flame.danmaku.ui.widget.DanmakuView;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -83,6 +100,20 @@ public class GameActivity extends AppCompatActivity {
     private ImageView chatImageView;
     private String nickName;
     private HashMap<String, String> serverMap;
+
+    private boolean showDanmaku;
+
+    private DanmakuView danmakuView;
+
+    private DanmakuContext danmakuContext;
+    private BaseDanmakuParser parser = new BaseDanmakuParser() {
+        @Override
+        protected IDanmakus parse() {
+            return new Danmakus();
+        }
+    };
+    private ChatDialogUtils dialogUtils;
+    private boolean chatDanmuku;
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
@@ -113,6 +144,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         boolean chatService = prefs.getBoolean("chat_service", false);
+        chatDanmuku = prefs.getBoolean("chat_danmuku", false);
         if(chatService){
             serverMap = SubTitleUtils.initServiceHost();
         }
@@ -152,6 +184,47 @@ public class GameActivity extends AppCompatActivity {
         subtitleStrokeTextview = findViewById(R.id.subtitle_textview_stroke);
         chatImageView = findViewById(R.id.chat_image_view);
         chatImageView.setImageAlpha(50);
+
+        //弹幕
+        // 设置最大显示行数
+        HashMap<Integer, Integer> maxLinesPair = new HashMap<Integer, Integer>();
+        maxLinesPair.put(BaseDanmaku.TYPE_SCROLL_RL, 10); // 滚动弹幕最大显示10行
+        // 设置是否禁止重叠
+        HashMap<Integer, Boolean> overlappingEnablePair = new HashMap<Integer, Boolean>();
+        overlappingEnablePair.put(BaseDanmaku.TYPE_SCROLL_RL, true);
+        overlappingEnablePair.put(BaseDanmaku.TYPE_FIX_TOP, true);
+
+        danmakuContext = DanmakuContext.create();
+        danmakuContext.setDanmakuStyle(IDisplayer.DANMAKU_STYLE_STROKEN, 5).setDuplicateMergingEnabled(false)
+                .setMaximumLines(maxLinesPair)
+                .preventOverlapping(overlappingEnablePair).setDanmakuMargin(20);
+        danmakuView = findViewById(R.id.danmaku_view);
+        danmakuView.enableDanmakuDrawingCache(true);
+        danmakuView.setCallback(new DrawHandler.Callback() {
+            @Override
+            public void prepared() {
+                showDanmaku = true;
+                danmakuView.start();
+            }
+
+            @Override
+            public void updateTimer(DanmakuTimer timer) {
+
+            }
+
+            @Override
+            public void danmakuShown(BaseDanmaku danmaku) {
+
+            }
+
+            @Override
+            public void drawingFinished() {
+
+            }
+        });
+        danmakuView.prepare(parser, danmakuContext);
+        BoxingMediaLoader.getInstance().init(new BoxingPicassoLoader());
+        BoxingConfig singleImgConfig = new BoxingConfig(BoxingConfig.Mode.SINGLE_IMG).withMediaPlaceHolderRes(R.drawable.ic_boxing_default_image);
 
         try {
             String cacheJsonPathStr = Environment.getExternalStorageDirectory() + "/KanCollCache/cache.json";
@@ -580,7 +653,21 @@ public class GameActivity extends AppCompatActivity {
         mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
 
         if(chatService) {
-            ChatDialogUtils dialogUtils = new ChatDialogUtils(this);
+            dialogUtils = new ChatDialogUtils(this, new ChatListener() {
+                @Override
+                public void onMessage(ChatMsgObject msgObject) {
+                    if(msgObject.getMsgType() == ChatMsgObject.MsgTypeCont.MSG_TEXT) {
+                        if(chatDanmuku) {
+                            addDanmaku(msgObject.getMsg(), false);
+                        }
+                    }
+                }
+                @Override
+                public void onSelectMsg(){
+                    Boxing.of(singleImgConfig).withIntent(GameActivity.this, BoxingActivity.class).start(GameActivity.this, 2);
+                }
+
+            });
             chatImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -603,6 +690,19 @@ public class GameActivity extends AppCompatActivity {
             chatImageView.setVisibility(View.GONE);
         }
         registerReceiver(webviewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_reload"));
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 2) {
+            if(data != null){
+                List<BaseMedia> medias = Boxing.getResult(data);
+                if(medias.size() > 0) {
+                    dialogUtils.sendImage(medias.get(0).getPath());
+                }
+            }
+        }
+        super.onActivityReenter(resultCode, data);
     }
 
     private WebResourceResponse backToWebView(String path, String size, InputStream is){
@@ -762,11 +862,17 @@ public class GameActivity extends AppCompatActivity {
     protected void onResume() {
         mRotationObserver.startObserver();
         setScreenOrientation();
+        if (danmakuView != null && danmakuView.isPrepared() && danmakuView.isPaused()) {
+            danmakuView.resume();
+        }
         super.onResume();
     }
     @Override
     protected void onPause() {
         mRotationObserver.stopObserver();
+        if (danmakuView != null && danmakuView.isPrepared()) {
+            danmakuView.pause();
+        }
         super.onPause();
     }
 
@@ -810,6 +916,11 @@ public class GameActivity extends AppCompatActivity {
             mWebview = null;
         }
         unregisterReceiver(webviewBroadcastReceiver);
+        showDanmaku = false;
+        if (danmakuView != null) {
+            danmakuView.release();
+            danmakuView = null;
+        }
         super.onDestroy();
     }
 
@@ -889,4 +1000,24 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    private void addDanmaku(String content, boolean withBorder) {
+        BaseDanmaku danmaku = danmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
+        if(content.length() > 7) {
+            danmaku = danmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_FIX_TOP);
+        }
+        danmaku.text = content;
+        danmaku.padding = 5;
+        danmaku.textSize = sp2px(14);
+        danmaku.textColor = Color.WHITE;
+        danmaku.textShadowColor = Color.BLACK;
+        danmaku.setTime(danmakuView.getCurrentTime());
+        if (withBorder) {
+            danmaku.borderColor = Color.GREEN;
+        }
+        danmakuView.addDanmaku(danmaku);
+    }
+    public int sp2px(float spValue) {
+        final float fontScale = getResources().getDisplayMetrics().scaledDensity;
+        return (int) (spValue * fontScale + 0.5f);
+    }
 }
