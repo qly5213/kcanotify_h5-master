@@ -16,4 +16,14 @@
         android:textIsSelectable="true"
         android:layout_marginLeft="20dip"
         android:id="@+id/chat_msg"/>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="200dp"
+        android:adjustViewBounds="true"
+        android:layout_gravity="start"
+        android:scaleType="fitStart"
+        android:textIsSelectable="true"
+        android:layout_marginLeft="20dip"
+        android:id="@+id/chat_image_msg"/>
 </LinearLayout>

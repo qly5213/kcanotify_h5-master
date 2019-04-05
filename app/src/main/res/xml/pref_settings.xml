@@ -127,6 +127,12 @@
             android:summary="开启聊天窗口"
             android:title="开启聊天窗口" />
         <CheckBoxPreference
+            android:dependency="chat_service"
+            android:defaultValue="true"
+            android:key="chat_danmuku"
+            android:summary="开启聊天室弹幕"
+            android:title="开启弹幕" />
+        <CheckBoxPreference
             android:defaultValue="true"
             android:key="change_touch_event"
             android:summary="当出现触摸无效等问题时，请关闭触摸适配"
