@@ -14,7 +14,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 2641
-        versionName "2.6.4r1_1.11"
+        versionName "2.6.4r1_1.14"
 
         multiDexEnabled true
         externalNativeBuild {
@@ -80,5 +80,13 @@ dependencies {
     implementation('com.journeyapps:zxing-android-embedded:3.6.0') { transitive = false }
     implementation 'com.google.zxing:core:3.3.0'
     implementation 'com.teprinciple:updateapputils:1.5.1'
+    implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
+    implementation 'com.github.ctiao:ndkbitmap-armv7a:0.9.21'
+
+    implementation 'com.github.ctiao:ndkbitmap-armv5:0.9.21'
+    implementation 'com.github.ctiao:ndkbitmap-x86:0.9.21'
+    implementation 'com.bilibili:boxing:1.0.4'
+    implementation 'com.bilibili:boxing-impl:1.0.4'
+    implementation 'com.squareup.picasso:picasso:2.5.2'
     // testCompile 'junit:junit:4.12'
 }
