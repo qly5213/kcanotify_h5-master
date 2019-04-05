@@ -1,11 +1,5 @@
 package com.antest1.kcanotify.h5;
 
-import com.google.common.io.ByteStreams;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.pixplicity.htmlcompat.HtmlCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -15,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
-import android.net.VpnService;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,19 +35,32 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.pixplicity.htmlcompat.HtmlCompat;
+
 import java.util.Arrays;
 import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Response;
 import util.UpdateAppUtils;
 
 import static com.antest1.kcanotify.h5.KcaAlarmService.DELETE_ACTION;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
-import static com.antest1.kcanotify.h5.KcaConstants.*;
+import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_MAIN;
+import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
+import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_FAIRY_RETURN;
+import static com.antest1.kcanotify.h5.KcaConstants.NOTI_UPDATE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREFS_LIST;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_ICON;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_BATTLEVIEW_USE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_DATA_VERSION;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_QUESTVIEW_USE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_SNIFFER_MODE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_SVC_ENABLED;
 import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getKcIntent;
@@ -70,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_VPN = 1;
     public static final int REQUEST_OVERLAY_PERMISSION = 2;
     public static final int REQUEST_EXTERNAL_PERMISSION = 3;
+    private String imageSize;
 
     public String getStringWithLocale(int id) {
         return KcaUtils.getStringWithLocale(getApplicationContext(), getBaseContext(), id);
@@ -169,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        imageSize = "100";
         kcbtn = findViewById(R.id.kcbtn);
         kcbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -183,10 +191,12 @@ public class MainActivity extends AppCompatActivity {
                 String gamePageType = prefs.getString("game_page_type", "0");
                 if(gamePageType.equals("0")) {
                     Intent intent = new Intent(MainActivity.this, GameActivity.class);
+                    intent.putExtra("imageSize", imageSize);
                     startActivity(intent);
                     MainActivity.this.finish();
                 } else {
                     Intent intent = new Intent(MainActivity.this, GameOOIActivity.class);
+                    intent.putExtra("imageSize", imageSize);
                     startActivity(intent);
                     MainActivity.this.finish();
                 }
@@ -274,12 +284,16 @@ public class MainActivity extends AppCompatActivity {
             downloader = KcaUtils.getH5InfoDownloader(getApplicationContext());
             final Call<String> rv_data = downloader.getH5RecentVersion();
             String response = getResultFromCall(rv_data);
+
             try {
                 if (response != null && !KcaApplication.isCheckVersion && System.currentTimeMillis() - KcaApplication.checkVersionDate > 24 * 60 * 60 * 1000) {
                     KcaApplication.isCheckVersion = true;
                     KcaApplication.checkVersionDate = System.currentTimeMillis();
-                    final JsonObject response_data = new JsonParser().parse(response).getAsJsonObject();
-                    handler.post(() -> {
+                        final JsonObject response_data = new JsonParser().parse(response).getAsJsonObject();
+                        if(response_data.has("imageSize")){
+                            imageSize = response_data.get("imageSize").getAsString();
+                        }
+                        handler.post(() -> {
                         UpdateAppUtils.from(this)
                                 .checkBy(UpdateAppUtils.CHECK_BY_VERSION_NAME) //更新检测方式，默认为VersionCode
                                 .serverVersionCode(2641)

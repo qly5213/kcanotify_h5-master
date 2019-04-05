@@ -8,40 +8,62 @@
         android:id="@+id/lv_main_msg"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:paddingBottom="36dp"
+        android:paddingBottom="37dp"
         android:background="#eeeeee"
         android:divider="@null"
-        android:stackFromBottom="true"
-        android:transcriptMode="alwaysScroll" />
+        android:stackFromBottom="true"/>
 
+    <!--<RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="当前在线人数（100）" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="0dp"
+            android:layout_marginBottom="0dp"
+            android:background="#333333" />
+    </RelativeLayout>-->
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="35dp"
+        android:layout_height="36.5dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true">
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
             android:background="#333333"/>
-        <Button
+
+        <ImageButton
             android:id="@+id/select_image_btn"
             android:layout_width="40dp"
-            android:layout_height="35dp"
+            android:layout_height="30dp"
             android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginEnd="0dp"
-            android:textSize="12sp"
-            android:layout_marginBottom="0dp"
-            android:background="#52ade9"
-            android:text="图片" />
+            android:layout_centerInParent="true"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/icon_image"
+            android:textSize="12sp" />
         <EditText
             android:id="@+id/msg_text_view"
             android:layout_width="match_parent"
             android:layout_height="35dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginStart="45dp"
+            android:layout_marginStart="40dp"
             android:layout_marginEnd="70dp"
             android:layout_marginBottom="0dp"
             android:textSize="12sp"
@@ -51,13 +73,15 @@
         <Button
             android:id="@+id/send_btn"
             android:layout_width="70dp"
-            android:layout_height="35dp"
+            android:layout_height="match_parent"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
             android:layout_marginEnd="0dp"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:layout_marginBottom="0dp"
             android:background="#52ade9"
+            android:layout_centerInParent="true"
             android:text="发送" />
     </RelativeLayout>
+
 </RelativeLayout>

@@ -6,10 +6,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.os.StatFs;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -18,16 +16,13 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -54,13 +49,17 @@ public class ChatDialogUtils {
     private final Button sendBtn;
     private boolean connecting = false;
     private String showName;
+    private String imageSize;
     private ChatListener listener;
-    private final Button selectImageBtn;
+    private final ImageButton selectImageBtn;
+    private int retryConnCnt;
+    private final ListView chatMsgListView;
 
-    public ChatDialogUtils(Context context, ChatListener listener) {
+    public ChatDialogUtils(Context context, ChatListener listener, String imageSize) {
         msgList = new ArrayList<>();
         this.context = context;
         showName = "游客 - 未登录";
+        this.imageSize = imageSize;
         this.listener = listener;
         mWebSocketHandler = new Handler(new Handler.Callback() {
             @Override
@@ -70,6 +69,7 @@ public class ChatDialogUtils {
                 if(msgList.size() > 100){
                     msgList.remove(0);
                 }
+                chatMsgListView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
                 chatAdapter.notifyDataSetChanged();
                 listener.onMessage(chatMsgObject);
                 return false;
@@ -81,7 +81,7 @@ public class ChatDialogUtils {
         dialog.setContentView(inflate);
         webSocketConnect();
         chatAdapter = new ChatAdapter(context, R.layout.view_chat_item, msgList);
-        ListView chatMsgListView = dialog.findViewById(R.id.lv_main_msg);
+        chatMsgListView = dialog.findViewById(R.id.lv_main_msg);
         chatMsgListView.setAdapter(chatAdapter);
 
         msgEditText = dialog.findViewById(R.id.msg_text_view);
@@ -96,6 +96,7 @@ public class ChatDialogUtils {
                     if(msgList.size() > 100){
                         msgList.remove(0);
                     }
+                    chatMsgListView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
                     chatAdapter.notifyDataSetChanged();
                     mWebSocket.send(gson.toJson(chatMsgObject));
                     msgEditText.setText("");
@@ -122,15 +123,18 @@ public class ChatDialogUtils {
             mWebSocket=webSocket;
             connected = true;
             connecting = false;
+            retryConnCnt = 0;
         }
 
         @Override
         public void onMessage(WebSocket webSocket, String text) {
             Log.i("KCV", text);
             ChatMsgObject chatMsgObject = gson.fromJson(text, ChatMsgObject.class);
-            Message message=Message.obtain();
-            message.obj=chatMsgObject;
-            mWebSocketHandler.sendMessage(message);
+            if(chatMsgObject != null) {
+                Message message = Message.obtain();
+                message.obj = chatMsgObject;
+                mWebSocketHandler.sendMessage(message);
+            }
         }
 
         @Override
@@ -150,7 +154,11 @@ public class ChatDialogUtils {
             Log.e("KCV", reason);
             connected = false;
             connecting = false;
-            webSocketConnect();
+            if(retryConnCnt < 5) {
+                webSocketConnect();
+            } else {
+                retryConnCnt++;
+            }
         }
 
         @Override
@@ -158,7 +166,11 @@ public class ChatDialogUtils {
             t.printStackTrace();
             connected = false;
             connecting = false;
-            webSocketConnect();
+            if(retryConnCnt < 5) {
+                webSocketConnect();
+            } else {
+                retryConnCnt++;
+            }
         }
     }
 
@@ -181,6 +193,7 @@ public class ChatDialogUtils {
     }
 
     public void showLeftChat(String showName) {
+        retryConnCnt = 0;
         if(!connected){
             webSocketConnect();
             Toast.makeText(context, "未能连接服务器，请重开聊天窗口！", Toast.LENGTH_LONG).show();
@@ -191,7 +204,7 @@ public class ChatDialogUtils {
         } else {
             sendBtn.setBackgroundColor(Color.parseColor("#52ade9"));
             sendBtn.setEnabled(true);
-            selectImageBtn.setBackgroundColor(Color.parseColor("#52ade9"));
+//            selectImageBtn.setBackgroundColor(Color.parseColor("#52ade9"));
             selectImageBtn.setEnabled(true);
         }
         if(showName != null) {
@@ -206,13 +219,17 @@ public class ChatDialogUtils {
             Toast.makeText(context, "未能连接服务器，请重开聊天窗口！", Toast.LENGTH_LONG).show();
             sendBtn.setBackgroundColor(Color.GRAY);
             sendBtn.setEnabled(false);
+            selectImageBtn.setBackgroundColor(Color.GRAY);
+            selectImageBtn.setEnabled(false);
         } else {
             sendBtn.setBackgroundColor(Color.parseColor("#52ade9"));
             sendBtn.setEnabled(true);
+//            selectImageBtn.setBackgroundColor(Color.parseColor("#52ade9"));
+            selectImageBtn.setEnabled(true);
         }
         File file = new File(path);
-        if(file.length() > 2 * 1024 * 1024){
-            Toast.makeText(context, "文件过大，请确保图片大小小于2M！", Toast.LENGTH_LONG).show();
+        if(file.length() > Integer.parseInt(imageSize) * 1024){
+            Toast.makeText(context, "文件过大，请确保图片大小小于" + imageSize + "KB！", Toast.LENGTH_LONG).show();
             return;
         }
         try {
@@ -223,6 +240,7 @@ public class ChatDialogUtils {
             if(msgList.size() > 100){
                 msgList.remove(0);
             }
+            chatMsgListView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
             chatAdapter.notifyDataSetChanged();
             mWebSocket.send(gson.toJson(chatMsgObject));
         } catch (Exception e) {
@@ -236,81 +254,8 @@ public class ChatDialogUtils {
             dialog.hide();
         }
     }
-    private static int FREE_SD_SPACE_NEEDED_TO_CACHE = 1;
-    private static int MB = 1024 * 1024;
-    public static int freeSpaceOnSd() {
-        StatFs stat = new StatFs(Environment.getExternalStorageDirectory()
-                .getPath());
 
-
-        double sdFreeMB = ((double) stat.getAvailableBlocks() * (double) stat
-                .getBlockSize()) / MB;
-
-
-        return (int) sdFreeMB;
-    }
-    public static boolean saveBmpToSd(String dir, Bitmap bm, String filename,
-                                      int quantity, boolean recyle) {
-        boolean ret = true;
-        if (bm == null) {
-            return false;
-        }
-
-
-        if (FREE_SD_SPACE_NEEDED_TO_CACHE > freeSpaceOnSd()) {
-            bm.recycle();
-            bm = null;
-            return false;
-        }
-
-
-        File dirPath = new File(dir);
-
-
-        if (!dirPath.exists()) {
-            dirPath.mkdirs();
-        }
-
-
-        if (!dir.endsWith(File.separator)) {
-            dir += File.separator;
-        }
-
-
-        File file = new File(dir + filename);
-        OutputStream outStream = null;
-        try {
-            file.createNewFile();
-            outStream = new FileOutputStream(file);
-            bm.compress(Bitmap.CompressFormat.JPEG, quantity, outStream);
-            outStream.flush();
-            outStream.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            ret = false;
-        } catch (IOException e) {
-            e.printStackTrace();
-            ret = false;
-        } catch (OutOfMemoryError e) {
-            e.printStackTrace();
-            ret = false;
-        } finally {
-            if (outStream != null) {
-                try {
-                    outStream.close();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-            if (recyle && !bm.isRecycled()) {
-                bm.recycle();
-                bm = null;
-                Log.e("BitmaptoCard", "saveBmpToSd, recyle");
-            }
-        }
-
-
-        return ret;
+    public boolean isShow(){
+        return dialog.isShowing();
     }
 }

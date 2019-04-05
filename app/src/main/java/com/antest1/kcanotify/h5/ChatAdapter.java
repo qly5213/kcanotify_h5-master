@@ -62,7 +62,7 @@ public class ChatAdapter extends ArrayAdapter {
                 @Override
                 public boolean onLongClick(View v) {
                     File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                   ChatDialogUtils.saveBmpToSd(file.getAbsolutePath(), PictureUtils.base64ToBitmap(msgObject.getImageMsg()), sdf.format(new Date()) + ".jpg", 100, true);
+                    ChatFileUtils.saveBmpToSd(file.getAbsolutePath(), PictureUtils.base64ToBitmap(msgObject.getImageMsg()), sdf.format(new Date()) + ".jpg", 100, true);
                     Toast.makeText(KcaApplication.getInstance(), "已保存文件到下载目录", Toast.LENGTH_LONG).show();
                     return false;
                 }

@@ -7,7 +7,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:layout_marginLeft="5dip"
-        android:textColor="#317bf2"
+        android:layout_marginRight="10dip"
+        android:textColor="#0000ff"
         android:id="@+id/chat_name"/>
     <TextView
         android:layout_width="match_parent"
@@ -15,15 +16,17 @@
         android:layout_gravity="start"
         android:textIsSelectable="true"
         android:layout_marginLeft="20dip"
+        android:layout_marginRight="10dip"
         android:id="@+id/chat_msg"/>
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxHeight="200dp"
+        android:maxHeight="100dp"
         android:adjustViewBounds="true"
         android:layout_gravity="start"
         android:scaleType="fitStart"
         android:textIsSelectable="true"
         android:layout_marginLeft="20dip"
+        android:layout_marginRight="10dip"
         android:id="@+id/chat_image_msg"/>
 </LinearLayout>

@@ -44,7 +44,6 @@ import com.bilibili.boxing.Boxing;
 import com.bilibili.boxing.BoxingMediaLoader;
 import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
-import com.bilibili.boxing_impl.ui.BoxingActivity;
 
 import org.json.JSONObject;
 
@@ -65,6 +64,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import andhook.lib.AndHook;
+import customview.ConfirmDialog;
 import master.flame.danmaku.controller.DrawHandler;
 import master.flame.danmaku.danmaku.model.BaseDanmaku;
 import master.flame.danmaku.danmaku.model.DanmakuTimer;
@@ -98,6 +98,7 @@ public class GameActivity extends AppCompatActivity {
     private TextView subtitleTextview;
     private StrokeTextView subtitleStrokeTextview;
     private ImageView chatImageView;
+    private ImageView chatNewMsgImageView;
     private String nickName;
     private HashMap<String, String> serverMap;
 
@@ -114,6 +115,7 @@ public class GameActivity extends AppCompatActivity {
     };
     private ChatDialogUtils dialogUtils;
     private boolean chatDanmuku;
+    private String imageSize;
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
@@ -183,7 +185,13 @@ public class GameActivity extends AppCompatActivity {
         subtitleTextview = findViewById(R.id.subtitle_textview);
         subtitleStrokeTextview = findViewById(R.id.subtitle_textview_stroke);
         chatImageView = findViewById(R.id.chat_image_view);
+        chatNewMsgImageView = findViewById(R.id.chat_new_msg_image_view);
         chatImageView.setImageAlpha(50);
+
+        imageSize = getIntent().getStringExtra("imageSize");
+        if(imageSize == null){
+            imageSize = "100";
+        }
 
         //弹幕
         // 设置最大显示行数
@@ -547,7 +555,7 @@ public class GameActivity extends AppCompatActivity {
                                     subtitleStrokeTextview.setText(subTitle);
                                 }
                             });
-                            handler.postDelayed(dismissSubTitle, 10000);
+                            handler.postDelayed(dismissSubTitle, 15000);
                         }
 
                         String version = "0";
@@ -661,19 +669,37 @@ public class GameActivity extends AppCompatActivity {
                             addDanmaku(msgObject.getMsg(), false);
                         }
                     }
+                    if(!dialogUtils.isShow()) {
+                        chatNewMsgImageView.setVisibility(View.VISIBLE);
+                        chatNewMsgImageView.setImageAlpha(255);
+                        chatImageView.setImageAlpha(255);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        chatImageView.setImageAlpha(50);
+                                        chatNewMsgImageView.setImageAlpha(50);
+                                    }
+                                });
+                            }
+                        }, 5000);
+                    }
                 }
                 @Override
                 public void onSelectMsg(){
-                    Boxing.of(singleImgConfig).withIntent(GameActivity.this, BoxingActivity.class).start(GameActivity.this, 2);
+                    Boxing.of(singleImgConfig).withIntent(GameActivity.this, LandScapeBoxingActivity.class).start(GameActivity.this, 2);
                 }
 
-            });
+            }, imageSize);
             chatImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    chatImageView.setImageAlpha(255);
+//                    chatImageView.setImageAlpha(255);
+                    chatNewMsgImageView.setVisibility(View.GONE);
                     dialogUtils.showLeftChat(nickName);
-                    new Handler().postDelayed(new Runnable() {
+                    /*new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             runOnUiThread(new Runnable() {
@@ -683,7 +709,7 @@ public class GameActivity extends AppCompatActivity {
                                 }
                             });
                         }
-                    }, 5000);
+                    }, 5000);*/
                 }
             });
         } else {
@@ -698,7 +724,16 @@ public class GameActivity extends AppCompatActivity {
             if(data != null){
                 List<BaseMedia> medias = Boxing.getResult(data);
                 if(medias.size() > 0) {
-                    dialogUtils.sendImage(medias.get(0).getPath());
+                    ConfirmDialog confirmDialog =  new ConfirmDialog(this, new ConfirmDialog.Callback() {
+                        @Override
+                        public void callback(int position) {
+                            if(position == 1) {
+                                dialogUtils.sendImage(medias.get(0).getPath());
+                            }
+                        }
+                    });
+                    confirmDialog.setContent("请确认是否发送该图片？");
+                    confirmDialog.show();
                 }
             }
         }
@@ -786,6 +821,23 @@ public class GameActivity extends AppCompatActivity {
     @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
+        if(isInMultiWindowMode) {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            final View decorView = GameActivity.this.getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+        } else {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            final View decorView = GameActivity.this.getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                    }
+                }
+            });
+        }
         resetWebView(true);
         mWebview.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
 
