@@ -152,8 +152,8 @@ public class GameActivity extends AppCompatActivity {
             serverMap = SubTitleUtils.initServiceHost();
         }
 
-        boolean proxyEnable = prefs.getBoolean("host_proxy_enable", true);
-        String proxyIP = prefs.getString("host_proxy_address", "106.186.27.62");
+        boolean proxyEnable = prefs.getBoolean("host_proxy_enable", false);
+        String proxyIP = prefs.getString("host_proxy_address", "167.179.91.86");
         if(proxyEnable) {
             AndHook.ensureNativeLibraryLoaded(null);
             System.loadLibrary("xhook");
@@ -538,7 +538,7 @@ public class GameActivity extends AppCompatActivity {
                     if(path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")){
                         changeTouchEvent = true;
                     }
-                    if(path.contains("version.json")){
+                    if(path.contains("version.json") || path.contains("index.php")){
                         return null;
                     }
                     try {
@@ -751,6 +751,10 @@ public class GameActivity extends AppCompatActivity {
             mimeType = "application/json";
         } else if (path.endsWith("js")) {
             mimeType = "application/javascript";
+        } else if (path.endsWith("css")) {
+            mimeType = "text/css";
+        } else {
+            mimeType = "text/html";
         }
         Map<String, String> map = new HashMap<>();
         map.put("Connection", "keep-alive");
@@ -1052,6 +1056,9 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void addDanmaku(String content, boolean withBorder) {
+        if(danmakuView == null){
+            return;
+        }
         BaseDanmaku danmaku = danmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
         if(content.length() > 7) {
             danmaku = danmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_FIX_TOP);
