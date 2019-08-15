@@ -38,6 +38,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -680,21 +681,19 @@ public class GameOOIActivity extends AppCompatActivity {
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
         if(isInMultiWindowMode) {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            final View decorView = GameOOIActivity.this.getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+            RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) chatImageView.getLayoutParams();
+            lp.setMargins(0, dip2px(20), 0, 0);
+            chatImageView.setLayoutParams(lp);
+            RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) chatNewMsgImageView.getLayoutParams();
+            lp1.setMargins(dip2px(10), dip2px(15), 0, 0);
+            chatNewMsgImageView.setLayoutParams(lp1);
         } else {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            final View decorView = GameOOIActivity.this.getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-                @Override
-                public void onSystemUiVisibilityChange(int visibility) {
-                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-                    }
-                }
-            });
+            RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) chatImageView.getLayoutParams();
+            lp.setMargins(0, 0, 0, 0);
+            chatImageView.setLayoutParams(lp);
+            RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) chatNewMsgImageView.getLayoutParams();
+            lp1.setMargins(dip2px(20), dip2px(-5), 0, 0);
+            chatNewMsgImageView.setLayoutParams(lp1);
         }
         resetWebView(true);
         mWebview.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\"externalswf\"),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
@@ -928,5 +927,9 @@ public class GameOOIActivity extends AppCompatActivity {
     public int sp2px(float spValue) {
         final float fontScale = getResources().getDisplayMetrics().scaledDensity;
         return (int) (spValue * fontScale + 0.5f);
+    }
+    public int dip2px(float dpValue) {
+        final float scale = getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
     }
 }
