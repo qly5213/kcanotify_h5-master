@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                     MainActivity.this.finish();
                 } else {
-                    Intent intent = new Intent(MainActivity.this, GameActivity.class);
+                    Intent intent = new Intent(MainActivity.this, GameOOIActivity.class);
                     intent.putExtra("imageSize", imageSize);
                     startActivity(intent);
                     MainActivity.this.finish();
