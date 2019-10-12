@@ -85,7 +85,7 @@ import okhttp3.ResponseBody;
 public class GameOOIActivity extends XWalkActivity {
     XWalkView mWebview;
     XWalkSettings mWebSettings;
-//    private ProgressBar progressBar1;
+    private ProgressBar progressBar1;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 
     private WebviewBroadcastReceiver webviewBroadcastReceiver = new WebviewBroadcastReceiver();
@@ -187,7 +187,7 @@ public class GameOOIActivity extends XWalkActivity {
             }
         });
         mWebview = findViewById(R.id.webView1);
-//        progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
+        progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
         subtitleTextview = findViewById(R.id.subtitle_textview);
         subtitleStrokeTextview = findViewById(R.id.subtitle_textview_stroke);
         chatImageView = findViewById(R.id.chat_image_view);
@@ -291,22 +291,21 @@ public class GameOOIActivity extends XWalkActivity {
             @Override
             public void onReceivedTitle(XWalkView view, String title) {
             }
-
-
-            //获取加载进度
-//            @Override
-//            public void onProgressChanged(WebView view, int newProgress) {
-//                if (newProgress == 100) {
-//                    progressBar1.setVisibility(View.GONE);
-//                } else {
-//                    progressBar1.setVisibility(View.VISIBLE);
-//                    progressBar1.setProgress(newProgress);
-//                }
-//            }
         });
 
         //设置WebViewClient类
         mWebview.setResourceClient(new XWalkResourceClient(mWebview) {
+            //获取加载进度
+            @Override
+            public void onProgressChanged(XWalkView view, int newProgress) {
+                if (newProgress == 100) {
+                    progressBar1.setVisibility(View.GONE);
+                } else {
+                    progressBar1.setVisibility(View.VISIBLE);
+                    progressBar1.setProgress(newProgress);
+                }
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
                 view.loadUrl(url);
