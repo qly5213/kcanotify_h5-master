@@ -275,6 +275,16 @@ public class GameOOIActivity extends XWalkActivity {
             @Override
             public void onLoadStarted(XWalkView view, String url) {
                 super.onLoadStarted(view, url);
+                if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/poi")) {
+                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\"externalswf\"),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
+                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/")){
+                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
+                    if(isAutoUser){
+                        String userName = prefs.getString("dmm_user", "");
+                        String pwd = prefs.getString("dmm_pwd", "");
+                        mWebview.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");$(\"#mode\").val(\"3\");");
+                    }
+                }
             }
 
             //设置结束加载函数
@@ -291,21 +301,6 @@ public class GameOOIActivity extends XWalkActivity {
                     }
                 }
             }
-
-//            @Override
-//            public void onLoadResource(WebView view, String url) {
-//                super.onLoadResource(view, url);
-//                if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/poi")) {
-//                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\"externalswf\"),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
-//                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/")){
-//                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-//                    if(isAutoUser){
-//                        String userName = prefs.getString("dmm_user", "");
-//                        String pwd = prefs.getString("dmm_pwd", "");
-//                        mWebview.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");$(\"#mode\").val(\"3\");");
-//                    }
-//                }
-//            }
 
 //            @Override
 //            public void onReceivedLoginRequest(WebView view, String realm, @Nullable String account, String args) {
