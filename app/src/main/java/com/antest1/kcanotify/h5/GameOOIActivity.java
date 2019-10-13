@@ -27,7 +27,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.webkit.CookieManager;
 import org.xwalk.core.JavascriptInterface;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -41,6 +40,7 @@ import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
 
 import org.json.JSONObject;
+import org.xwalk.core.XWalkCookieManager;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkActivity;
@@ -147,32 +147,6 @@ public class GameOOIActivity extends XWalkActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         changeTouchEventPrefs = prefs.getBoolean("change_touch_event", true);
-//        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
-//        if(clearCookie){
-//            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
-//                @Override
-//                public void onReceiveValue(Boolean value) {
-//                    if(value){
-//                        SharedPreferences.Editor editor = prefs.edit();
-//                        editor.putBoolean("clear_cookie_start", false);
-//                        editor.commit();
-//                    }
-//                }
-//            });
-//        }
-        hostName = prefs.getString("ooi_host_name", "ooi.moe");
-        if(hostName.equals("")) hostName = "ooi.moe";
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    InetAddress address = InetAddress.getByName(hostName);
-                    KcaConstants.hostAddressIp = address.getHostAddress();
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
 
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -267,20 +241,6 @@ public class GameOOIActivity extends XWalkActivity {
         }
         resetWebView(false);
 
-
-//        CookieManager cookieManager = CookieManager.getInstance();
-//        cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-//        boolean voicePlay = prefs.getBoolean("voice_play", false);
-//        if(voicePlay) {
-//            cookieManager.setCookie(hostName, "vol_bgm=50; domain=" + hostName + "; path=/kcs2");
-//            cookieManager.setCookie(hostName, "vol_se=50; domain=" + hostName + "; path=/kcs2");
-//            cookieManager.setCookie(hostName, "vol_voice=50; domain=" + hostName + "; path=/kcs2");
-//        } else {
-//            cookieManager.setCookie(hostName, "vol_bgm=0; domain=" + hostName + "; path=/kcs2");
-//            cookieManager.setCookie(hostName, "vol_se=0; domain=" + hostName + "; path=/kcs2");
-//            cookieManager.setCookie(hostName, "vol_voice=0; domain=" + hostName + "; path=/kcs2");
-//        }
-//        cookieManager.flush();
 
         client = new OkHttpClient.Builder().build();
         //设置WebChromeClient类
@@ -566,6 +526,42 @@ public class GameOOIActivity extends XWalkActivity {
 
     @Override
     protected void onXWalkReady() {
+        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
+        if(clearCookie){
+            (new XWalkCookieManager()).removeAllCookie();
+        }
+
+        hostName = prefs.getString("ooi_host_name", "ooi.moe");
+        if(hostName.equals("")) hostName = "ooi.moe";
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    InetAddress address = InetAddress.getByName(hostName);
+                    KcaConstants.hostAddressIp = address.getHostAddress();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        XWalkCookieManager cookieManager = new XWalkCookieManager();
+        cookieManager.setAcceptCookie(true);
+        boolean voicePlay = prefs.getBoolean("voice_play", false);
+        String fullHostName = hostName;
+        if (!fullHostName.startsWith("http")) {
+            fullHostName = "https://" + fullHostName;
+        }
+        if(voicePlay) {
+            cookieManager.setCookie(fullHostName, "vol_bgm=50; domain=" + hostName + "; path=/kcs2");
+            cookieManager.setCookie(fullHostName, "vol_se=50; domain=" + hostName + "; path=/kcs2");
+            cookieManager.setCookie(fullHostName, "vol_voice=50; domain=" + hostName + "; path=/kcs2");
+        } else {
+            cookieManager.setCookie(fullHostName, "vol_bgm=0; domain=" + hostName + "; path=/kcs2");
+            cookieManager.setCookie(fullHostName, "vol_se=0; domain=" + hostName + "; path=/kcs2");
+            cookieManager.setCookie(fullHostName, "vol_voice=0; domain=" + hostName + "; path=/kcs2");
+        }
+        cookieManager.flushCookieStore();
 
         mWebSettings = mWebview.getSettings();
         mWebSettings.setUserAgentString(USER_AGENT);

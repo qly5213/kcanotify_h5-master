@@ -41,6 +41,7 @@ import com.bilibili.boxing.model.entity.BaseMedia;
 
 import org.json.JSONObject;
 import org.xwalk.core.XWalkActivity;
+import org.xwalk.core.XWalkCookieManager;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
@@ -262,46 +263,6 @@ public class GameActivity extends XWalkActivity {
         }
         resetWebView(false);
 
-        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
-        if(clearCookie){
-//            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
-//                @Override
-//                public void onReceiveValue(Boolean value) {
-//                    if(value){
-//                        SharedPreferences.Editor editor = prefs.edit();
-//                        editor.putBoolean("clear_cookie_start", false);
-//                        editor.commit();
-//                    }
-//                }
-//            });
-        }
-
-//        CookieManager cookieManager = CookieManager.getInstance();
-//        cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-//        boolean voicePlay = prefs.getBoolean("voice_play", false);
-//        boolean changeCookie = prefs.getBoolean("change_cookie_start", false);
-//        if(voicePlay){
-//            for (String serverIp : SERVER_IP) {
-//                cookieManager.setCookie(serverIp, "vol_bgm=50; domain=" + serverIp + "; path=/kcs2");
-//                cookieManager.setCookie(serverIp, "vol_se=50; domain=" + serverIp + "; path=/kcs2");
-//                cookieManager.setCookie(serverIp, "vol_voice=50; domain=" + serverIp + "; path=/kcs2");
-//            }
-//        } else {
-//            for (String serverIp : SERVER_IP) {
-//                cookieManager.setCookie(serverIp, "vol_bgm=0; domain=" + serverIp + "; path=/kcs2");
-//                cookieManager.setCookie(serverIp, "vol_se=0; domain=" + serverIp + "; path=/kcs2");
-//                cookieManager.setCookie(serverIp, "vol_voice=0; domain=" + serverIp + "; path=/kcs2");
-//            }
-//        }
-//        if(changeCookie){
-//            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/");
-//            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/");
-//            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/");
-//            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/");
-//            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/");
-//            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/");
-//        }
-//        cookieManager.flush();
         client = new OkHttpClient.Builder().build();
 
         //设置WebChromeClient类
@@ -709,6 +670,38 @@ public class GameActivity extends XWalkActivity {
 
     @Override
     protected void onXWalkReady() {
+        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
+        if(clearCookie){
+            (new XWalkCookieManager()).removeAllCookie();
+        }
+
+        XWalkCookieManager cookieManager = new XWalkCookieManager();
+        cookieManager.setAcceptCookie(true);
+        boolean voicePlay = prefs.getBoolean("voice_play", false);
+        boolean changeCookie = prefs.getBoolean("change_cookie_start", false);
+        if(voicePlay){
+            for (String serverIp : SERVER_IP) {
+                cookieManager.setCookie("http://" + serverIp, "vol_bgm=50; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie("http://" + serverIp, "vol_se=50; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie("http://" + serverIp, "vol_voice=50; domain=" + serverIp + "; path=/kcs2");
+            }
+        } else {
+            for (String serverIp : SERVER_IP) {
+                cookieManager.setCookie("http://" + serverIp, "vol_bgm=0; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie("http://" + serverIp, "vol_se=0; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie("http://" + serverIp, "vol_voice=0; domain=" + serverIp + "; path=/kcs2");
+            }
+        }
+        if(changeCookie){
+            cookieManager.setCookie("https://www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/");
+            cookieManager.setCookie("https://www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/");
+            cookieManager.setCookie("https://www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/");
+            cookieManager.setCookie("https://www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/");
+            cookieManager.setCookie("https://www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/");
+            cookieManager.setCookie("https://www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/");
+        }
+        cookieManager.flushCookieStore();
+
         mWebSettings = mWebview.getSettings();
         mWebSettings.setUserAgentString(USER_AGENT);
         mWebSettings.setBuiltInZoomControls(true);
