@@ -282,7 +282,7 @@ public class GameOOIActivity extends XWalkActivity {
                     if(isAutoUser){
                         String userName = prefs.getString("dmm_user", "");
                         String pwd = prefs.getString("dmm_pwd", "");
-                        mWebview.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");$(\"#mode\").val(\"3\");");
+                        mWebview.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");document.getElementById(\"mode3\").checked = true;");
                     }
                 }
             }
@@ -297,7 +297,7 @@ public class GameOOIActivity extends XWalkActivity {
                     if(isAutoUser){
                         String userName = prefs.getString("dmm_user", "");
                         String pwd = prefs.getString("dmm_pwd", "");
-                        mWebview.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");$(\"#mode\").val(\"3\");");
+                        mWebview.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");document.getElementById(\"mode3\").checked = true;");
                     }
                 }
             }
