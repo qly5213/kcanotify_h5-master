@@ -103,6 +103,7 @@ public class SubTitleUtils {
                             writer.close();
                         }
                     } catch (Exception e) {
+                        subTitleJson = oriSubTitleJson;
                         e.printStackTrace();
                     }
                 });
@@ -150,6 +151,7 @@ public class SubTitleUtils {
                             }
                         }
                     } catch (Exception e) {
+                        subTitleJson = oriSubTitleJson;
                         e.printStackTrace();
                     }
                 });
