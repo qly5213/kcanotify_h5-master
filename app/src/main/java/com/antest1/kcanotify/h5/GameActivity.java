@@ -1,5 +1,6 @@
 package com.antest1.kcanotify.h5;
 
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -9,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -17,8 +17,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.InputDevice;
@@ -27,7 +27,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import org.xwalk.core.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -40,6 +39,7 @@ import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
 
 import org.json.JSONObject;
+import org.xwalk.core.JavascriptInterface;
 import org.xwalk.core.XWalkActivity;
 import org.xwalk.core.XWalkCookieManager;
 import org.xwalk.core.XWalkResourceClient;
@@ -118,6 +118,7 @@ public class GameActivity extends XWalkActivity {
     private ChatDialogUtils dialogUtils;
     private boolean chatDanmuku;
     private String imageSize;
+    private boolean battleResultVibrate;
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
@@ -130,6 +131,9 @@ public class GameActivity extends XWalkActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(KcaApplication.gameActivity != null){
+            KcaApplication.gameActivity.finish();
+        }
         KcaApplication.gameActivity = this;
         mRotationObserver = new RotationObserver(new Handler());
         prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
@@ -152,6 +156,8 @@ public class GameActivity extends XWalkActivity {
         if(chatService){
             serverMap = SubTitleUtils.initServiceHost();
         }
+
+        battleResultVibrate = prefs.getBoolean("battle_result_vibrate", true);
 
         boolean proxyEnable = prefs.getBoolean("host_proxy_enable", false);
         String proxyIP = prefs.getString("host_proxy_address", "167.179.91.86");
@@ -491,6 +497,10 @@ public class GameActivity extends XWalkActivity {
                 } else if(path != null && (path.contains("/kcsapi/api_get_member/mapinfo") || path.contains("/kcsapi/api_get_member/mission"))){
                     changeTouchEvent = true;
                 }
+                if(battleResultVibrate && path != null && (path.contains("battle_result") || path.contains("battleresult"))){
+                    Vibrator vib = (Vibrator) GameActivity.this.getSystemService(Service.VIBRATOR_SERVICE);
+                    vib.vibrate(200);
+                }
                 if (request.getMethod().equals("GET") && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
                     if(path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")){
                         changeTouchEvent = true;
@@ -724,7 +734,6 @@ public class GameActivity extends XWalkActivity {
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
 //        XWalkView.setWebContentsDebuggingEnabled(true);
-
         mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
 
         mWebview.resumeTimers();

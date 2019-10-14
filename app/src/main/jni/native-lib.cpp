@@ -191,6 +191,14 @@ Java_com_antest1_kcanotify_h5_GameActivity_stringFromJNI(
   return env->NewStringUTF(hello.c_str());
 }
 
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_com_antest1_kcanotify_h5_GameWebViewActivity_stringFromJNI(
+        JNIEnv *env,
+        jobject /* this */) {
+  std::string hello = "Hello from C++";
+  return env->NewStringUTF(hello.c_str());
+}
 
 static int
 (*sys_getaddrinfo)(const char *__node, const char *__service, const struct addrinfo *__hints,
@@ -255,6 +263,28 @@ Java_com_antest1_kcanotify_h5_GameActivity_nativeInit(JNIEnv *env, jobject insta
   env->GetJavaVM(&sjavaVM);
     proxyEnable = (bool)(enable == JNI_TRUE);
     proxyId = env->GetStringUTFChars(ip, NULL);
+  if (initMethod(env) == -1) {
+    return -1;
+  }
+//    if (version >= 27) {
+//        return -1;
+//    }
+  if (version >= 21) {
+    return hookForL(env, instance);
+  } else if (version >= 19) {
+    return hookForKitkat(env, instance);
+  }
+  return -1;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_antest1_kcanotify_h5_GameWebViewActivity_nativeInit(JNIEnv *env, jobject instance,
+                                                      jint version, jboolean enable, jstring ip) {
+
+  env->GetJavaVM(&sjavaVM);
+  proxyEnable = (bool)(enable == JNI_TRUE);
+  proxyId = env->GetStringUTFChars(ip, NULL);
   if (initMethod(env) == -1) {
     return -1;
   }

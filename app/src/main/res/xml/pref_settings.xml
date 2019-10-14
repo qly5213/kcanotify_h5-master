@@ -183,7 +183,17 @@
             android:defaultValue="false"
             android:key="change_cookie_start"
             android:summary="修改Cookie绕过dmm地域检测"
-           android:title="修改Cookie" />
+            android:title="修改Cookie" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="change_webview"
+            android:summary="使用Crosswalk替换原生WebView"
+            android:title="修改webview" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="battle_result_vibrate"
+            android:summary="战斗结束时震动提醒"
+            android:title="战斗结束提醒" />
         <!--
         <Preference
         android:defaultValue=""

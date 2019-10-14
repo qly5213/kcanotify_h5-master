@@ -10,14 +10,17 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.provider.Settings;
+import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.InputDevice;
@@ -26,11 +29,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bilibili.boxing.Boxing;
 import com.bilibili.boxing.BoxingMediaLoader;
@@ -38,15 +49,6 @@ import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
 
 import org.json.JSONObject;
-import org.xwalk.core.JavascriptInterface;
-import org.xwalk.core.XWalkActivity;
-import org.xwalk.core.XWalkCookieManager;
-import org.xwalk.core.XWalkResourceClient;
-import org.xwalk.core.XWalkSettings;
-import org.xwalk.core.XWalkUIClient;
-import org.xwalk.core.XWalkView;
-import org.xwalk.core.XWalkWebResourceRequest;
-import org.xwalk.core.XWalkWebResourceResponse;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -58,14 +60,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import andhook.lib.AndHook;
 import customview.ConfirmDialog;
 import master.flame.danmaku.controller.DrawHandler;
 import master.flame.danmaku.danmaku.model.BaseDanmaku;
@@ -81,11 +82,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class GameOOIActivity extends XWalkActivity {
-    XWalkView mWebview;
-    XWalkSettings mWebSettings;
+public class GameWebViewActivity extends AppCompatActivity {
+    WebView mWebview;
+    WebSettings mWebSettings;
     private ProgressBar progressBar1;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
+    private static final String[] SERVER_IP = new String[]{"203.104.209.71", "203.104.209.87", "125.6.184.215", "203.104.209.183", "203.104.209.150", "203.104.209.134", "203.104.209.167", "203.104.248.135", "125.6.189.7", "125.6.189.39", "125.6.189.71", "125.6.189.103", "125.6.189.135", "125.6.189.167", "125.6.189.215", "125.6.189.247", "203.104.209.23", "203.104.209.39", "203.104.209.55", "203.104.209.102"};
 
     private WebviewBroadcastReceiver webviewBroadcastReceiver = new WebviewBroadcastReceiver();
 
@@ -94,8 +96,8 @@ public class GameOOIActivity extends XWalkActivity {
     private OkHttpClient client = null;
     private SharedPreferences prefs = null;
     private boolean changeTouchEventPrefs = false;
-    String hostName = null;
-    private GameOOIActivity.RotationObserver mRotationObserver;
+    private int changeCookieCnt = 0;
+    private RotationObserver mRotationObserver;
     private TextView subtitleTextview;
     private StrokeTextView subtitleStrokeTextview;
     private ImageView chatImageView;
@@ -119,30 +121,54 @@ public class GameOOIActivity extends XWalkActivity {
     private String imageSize;
     private boolean battleResultVibrate;
 
+    /**
+     * A native method that is implemented by the 'native-lib' native library,
+     * which is packaged with this application.
+     */
+    public native String stringFromJNI();
+
+    public native int nativeInit(int version, boolean proxyEnable, String ip);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(KcaApplication.gameOOIActivity != null){
-            KcaApplication.gameOOIActivity.finish();
+        if(KcaApplication.gameActivity != null){
+            KcaApplication.gameActivity.finish();
         }
-        KcaApplication.gameOOIActivity = this;
-        mRotationObserver = new GameOOIActivity.RotationObserver(new Handler());
+        KcaApplication.gameActivity = this;
+        mRotationObserver = new RotationObserver(new Handler());
         prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
+
         boolean subTitleEnable = prefs.getBoolean("voice_sub_title", false);
 
         if(subTitleEnable) {
             //语言字幕初始化
-            SubTitleUtils.initVoiceMap();
-            SubTitleUtils.initSubTitle();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    SubTitleUtils.initVoiceMap();
+                    SubTitleUtils.initSubTitle();
+                }
+            }).start();
         }
+
         boolean chatService = prefs.getBoolean("chat_service", false);
         chatDanmuku = prefs.getBoolean("chat_danmuku", false);
         if(chatService){
             serverMap = SubTitleUtils.initServiceHost();
         }
 
+        boolean proxyEnable = prefs.getBoolean("host_proxy_enable", false);
+        String proxyIP = prefs.getString("host_proxy_address", "167.179.91.86");
+        if(proxyEnable) {
+            AndHook.ensureNativeLibraryLoaded(null);
+            System.loadLibrary("xhook");
+            System.loadLibrary("native-lib");
+            Log.e("KCAV", "onCreate: " + "native hook result-->" + (nativeInit(Build.VERSION.SDK_INT, proxyEnable, proxyIP) == 0));
+        }
+
         battleResultVibrate = prefs.getBoolean("battle_result_vibrate", true);
-        setContentView(R.layout.activity_game_webview);
+        setContentView(R.layout.activity_game_webview_ori);
         boolean hardSpeed = prefs.getBoolean("hardware_accelerated", true);
         if(hardSpeed) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
@@ -152,10 +178,8 @@ public class GameOOIActivity extends XWalkActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         changeTouchEventPrefs = prefs.getBoolean("change_touch_event", true);
-
-
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        final View decorView = GameOOIActivity.this.getWindow().getDecorView();
+        final View decorView = GameWebViewActivity.this.getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
             @Override
@@ -246,23 +270,73 @@ public class GameOOIActivity extends XWalkActivity {
         }
         resetWebView(false);
 
+        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
+        if(clearCookie){
+            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean value) {
+                    if(value){
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putBoolean("clear_cookie_start", false);
+                        editor.commit();
+                    }
+                }
+            });
+        }
 
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptThirdPartyCookies(mWebview, true);
+        boolean voicePlay = prefs.getBoolean("voice_play", false);
+        boolean changeCookie = prefs.getBoolean("change_cookie_start", false);
+        if(voicePlay){
+            for (String serverIp : SERVER_IP) {
+                cookieManager.setCookie(serverIp, "vol_bgm=50; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie(serverIp, "vol_se=50; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie(serverIp, "vol_voice=50; domain=" + serverIp + "; path=/kcs2");
+            }
+        } else {
+            for (String serverIp : SERVER_IP) {
+                cookieManager.setCookie(serverIp, "vol_bgm=0; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie(serverIp, "vol_se=0; domain=" + serverIp + "; path=/kcs2");
+                cookieManager.setCookie(serverIp, "vol_voice=0; domain=" + serverIp + "; path=/kcs2");
+            }
+        }
+        if(changeCookie){
+            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/");
+            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/");
+            cookieManager.setCookie("www.dmm.com", "cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/");
+            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/");
+            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/");
+            cookieManager.setCookie("www.dmm.com", "ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/");
+        }
+        cookieManager.flush();
         client = new OkHttpClient.Builder().build();
+        mWebSettings = mWebview.getSettings();
+        mWebSettings.setUserAgentString(USER_AGENT);
+        mWebSettings.setBuiltInZoomControls(true);
+        mWebSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+/*        Properties prop = System.getProperties();
+        prop.setProperty("proxySet", "true");
+        prop.setProperty("proxyHost", "218.241.131.227");
+        prop.setProperty("proxyPort", "6100");*/
+        // 设置与Js交互的权限
+        mWebSettings.setJavaScriptEnabled(true);
+        mWebSettings.setMediaPlaybackRequiresUserGesture(false);
+
+        WebView.setWebContentsDebuggingEnabled(true);
         //设置WebChromeClient类
-        mWebview.setUIClient(new XWalkUIClient(mWebview) {
+        mWebview.setWebChromeClient(new WebChromeClient() {
 
 
             //获取网站标题
             @Override
-            public void onReceivedTitle(XWalkView view, String title) {
+            public void onReceivedTitle(WebView view, String title) {
             }
-        });
 
-        //设置WebViewClient类
-        mWebview.setResourceClient(new XWalkResourceClient(mWebview) {
+
             //获取加载进度
             @Override
-            public void onProgressChanged(XWalkView view, int newProgress) {
+            public void onProgressChanged(WebView view, int newProgress) {
                 if (newProgress == 100) {
                     progressBar1.setVisibility(View.GONE);
                 } else {
@@ -270,47 +344,181 @@ public class GameOOIActivity extends XWalkActivity {
                     progressBar1.setProgress(newProgress);
                 }
             }
+        });
 
+
+        //设置WebViewClient类
+        mWebview.setWebViewClient(new WebViewClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
                 return true;
             }
             //设置加载前的函数
             @Override
-            public void onLoadStarted(XWalkView view, String url) {
-                super.onLoadStarted(view, url);
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/poi")) {
-                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\"externalswf\"),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/")){
-                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-                    if(isAutoUser){
-                        String userName = prefs.getString("dmm_user", "");
-                        String pwd = prefs.getString("dmm_pwd", "");
-                        mWebview.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");document.getElementById(\"mode3\").checked = true;");
-                    }
-                }
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
             }
 
             //设置结束加载函数
             @Override
-            public void onLoadFinished(XWalkView view, String url) {
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/poi")) {
-                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\"externalswf\"),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/")){
-                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-                    if(isAutoUser){
-                        String userName = prefs.getString("dmm_user", "");
-                        String pwd = prefs.getString("dmm_pwd", "");
-                        mWebview.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");document.getElementById(\"mode3\").checked = true;");
-                    }
+            public void onPageFinished(WebView view, String url) {
+                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
+//                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\'game_frame\'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector(\'meta[name=viewport]\'),t=0;vp||(vp=$.createElement(\'meta\'),vp.name=\'viewport\',$.querySelector(\'head\').appendChild(vp));vp.content=\'width=\'+gw;\'orientation\'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow=\'hidden\';$.body.style.cssText=\'min-width:0;padding:0;margin:0;overflow:hidden;margin:0\';$.querySelector(\'.dmm-ntgnavi\').style.display=\'none\';$.querySelector(\'.area-naviapp\').style.display=\'none\';$.getElementById(\'ntg-recommend\').style.display=\'none\';gs.position=\'fixed\';gs.marginRight=\'auto\';gs.marginLeft=\'auto\';gs.top=\'-16px\';gs.right=\'0\';gs.zIndex=\'100\';gs.transformOrigin=\'50%25%2016px\';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform=\'scale(\'+w/gw+\')\':gs.transform=\'scale(\'+h/gh+\')\';w<gw?gs.left=\'-\'+(gw-w)/2+\'px\':gs.left=\'0\'};_.addEventListener(\'resize\',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+                }
+                if(view.getUrl() != null && view.getUrl().startsWith("https://www.dmm.com/my/-/login/=")){
+
+                    new Handler().postDelayed(new Runnable(){
+                        public void run() {
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=osapi.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=203.104.209.7;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=www.dmm.com;path=/netgame/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie =  'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=log-netgame.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                        }
+                    }, 5000);
+
+
+                }
+                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/top/-/error/area/") && changeCookie && changeCookieCnt++ < 5) {
+                    Log.i("KCVA", "Change Cookie");
+
+                    new Handler().postDelayed(new Runnable(){
+                        public void run() {
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = \"cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/\";", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=osapi.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=203.104.209.7;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=www.dmm.com;path=/netgame/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie =  'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=log-netgame.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.evaluateJavascript("javascript:document.cookie = 'ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/';", new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String value) {
+                                    Log.i("KCVA", value);
+                                }
+                            });
+                            mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
+                        }
+                    }, 5000);
                 }
             }
 
-//            @Override
-//            public void onReceivedLoginRequest(WebView view, String realm, @Nullable String account, String args) {
-//                super.onReceivedLoginRequest(view, realm, account, args);
-//            }
+            @Override
+            public void onLoadResource(WebView view, String url) {
+                super.onLoadResource(view, url);
+                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
+//                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\'game_frame\'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector(\'meta[name=viewport]\'),t=0;vp||(vp=$.createElement(\'meta\'),vp.name=\'viewport\',$.querySelector(\'head\').appendChild(vp));vp.content=\'width=\'+gw;\'orientation\'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow=\'hidden\';$.body.style.cssText=\'min-width:0;padding:0;margin:0;overflow:hidden;margin:0\';$.querySelector(\'.dmm-ntgnavi\').style.display=\'none\';$.querySelector(\'.area-naviapp\').style.display=\'none\';$.getElementById(\'ntg-recommend\').style.display=\'none\';gs.position=\'fixed\';gs.marginRight=\'auto\';gs.marginLeft=\'auto\';gs.top=\'-16px\';gs.right=\'0\';gs.zIndex=\'100\';gs.transformOrigin=\'50%25%2016px\';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform=\'scale(\'+w/gw+\')\':gs.transform=\'scale(\'+h/gh+\')\';w<gw?gs.left=\'-\'+(gw-w)/2+\'px\':gs.left=\'0\'};_.addEventListener(\'resize\',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+                    view.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+                }
+            }
             Handler handler = new Handler();
             Runnable dismissSubTitle = new Runnable() {
                 @Override
@@ -325,7 +533,7 @@ public class GameOOIActivity extends XWalkActivity {
                 }
             };
             @Override
-            public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView webView, XWalkWebResourceRequest request) {
+            public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 String path = uri.getPath();
                 Log.d("KCVA", "Request  uri拦截路径uri：：" + uri);
@@ -335,14 +543,14 @@ public class GameOOIActivity extends XWalkActivity {
                     changeTouchEvent = true;
                 }
                 if(battleResultVibrate && path != null && (path.contains("battle_result") || path.contains("battleresult"))){
-                    Vibrator vib = (Vibrator) GameOOIActivity.this.getSystemService(Service.VIBRATOR_SERVICE);
+                    Vibrator vib = (Vibrator) GameWebViewActivity.this.getSystemService(Service.VIBRATOR_SERVICE);
                     vib.vibrate(200);
                 }
-                if (request.getMethod().equals("GET") && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
+                if (request.getMethod().equals("GET") && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
                     if(path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")){
                         changeTouchEvent = true;
                     }
-                    if(path.contains("version.json")){
+                    if(path.contains("version.json") || path.contains("index.php")){
                         return null;
                     }
                     try {
@@ -362,6 +570,7 @@ public class GameOOIActivity extends XWalkActivity {
                             });
                             handler.postDelayed(dismissSubTitle, 15000);
                         }
+
                         String version = "0";
                         if (uri.getQueryParameter("version") != null && !uri.getQueryParameter("version").equals("")) {
                             version = uri.getQueryParameter("version");
@@ -389,11 +598,14 @@ public class GameOOIActivity extends XWalkActivity {
                                 if(path.contains("/kcs2/js/main.js")){
                                     String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){console.log(xhr.xhr.responseURL);console.log(xhr.xhr.requestParam);console.log(xhr.responseText);window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
                                     respByte = newRespStr.getBytes();
+                                } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                                    String newRespStr = serverResponse.string() + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                                    respByte = newRespStr.getBytes();
                                 } else {
                                     respByte = serverResponse.bytes();
                                 }
                                 saveFile(path, respByte);
-                                return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte), this);
+                                return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                             } else {
                                 return null;
                             }
@@ -403,19 +615,26 @@ public class GameOOIActivity extends XWalkActivity {
                             Log.d("KCVA", "Local cache uri：：" + uri);
                             //从缓存直接返回客户端，不请求服务器
                             byte[] fileContent = readFileToBytes(tmp);
-                            return backToWebView(path, String.valueOf(fileContent.length), new FileInputStream(tmp), this);
+                            if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                                String newRespStr = new String(fileContent, "utf-8") + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                                fileContent = newRespStr.getBytes("utf-8");
+                            }
+                            return backToWebView(path, String.valueOf(fileContent.length), new ByteArrayInputStream(fileContent));
                         } else {
                             ResponseBody serverResponse = requestServer(request);
                             if(serverResponse != null){
                                 byte[] respByte = null;
                                 if(path.contains("/kcs2/js/main.js")){
-                                    String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){console.log(xhr.xhr.responseURL);console.log(xhr.xhr.requestParam);console.log(xhr.responseText);window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
+                                    String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
                                     respByte = newRespStr.getBytes();
-                                } else {
+                                } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                                    String newRespStr = serverResponse.string() + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                                    respByte = newRespStr.getBytes();
+                                }  else {
                                     respByte = serverResponse.bytes();
                                 }
                                 saveFile(path, respByte);
-                                return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte), this);
+                                return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                             } else {
                                 return null;
                             }
@@ -427,10 +646,8 @@ public class GameOOIActivity extends XWalkActivity {
 
                         return null;//异常情况，直接访问网络资源
                     }
-                } else {
-                    // Not KC api
-                    return null;
                 }
+                return null;
             }
         });
 
@@ -439,22 +656,6 @@ public class GameOOIActivity extends XWalkActivity {
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
                 try {
                     URL url = new URL(requestUrl);
-                    if(requestUrl.contains("api_req_member/get_incentive")){
-                        try {
-                            JSONObject respDataJson = new JSONObject(respData.substring(7));
-                            if(respDataJson.has("api_result") && respDataJson.getInt("api_result") != 1){
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mWebview.loadUrl("http://" + hostName + "/");
-                                    }
-                                });
-                                Toast.makeText(GameOOIActivity.this, "登录过期，正在跳转到登录页面！", Toast.LENGTH_LONG).show();
-                            }
-                        } catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
                     KcaVpnData.renderToHander(url.getPath(), param, respData);
                     if(url.getPath().contains("/kcsapi/api_start2/getData") && subTitleEnable){
                         SubTitleUtils.initShipGraph(respData);
@@ -470,6 +671,7 @@ public class GameOOIActivity extends XWalkActivity {
             }
         },"androidJs");
 
+        mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
 
         if(chatService) {
             dialogUtils = new ChatDialogUtils(this, new ChatListener() {
@@ -500,8 +702,9 @@ public class GameOOIActivity extends XWalkActivity {
                 }
                 @Override
                 public void onSelectMsg(){
-                    Boxing.of(singleImgConfig).withIntent(GameOOIActivity.this, LandScapeBoxingActivity.class).start(GameOOIActivity.this, 2);
+                    Boxing.of(singleImgConfig).withIntent(GameWebViewActivity.this, LandScapeBoxingActivity.class).start(GameWebViewActivity.this, 2);
                 }
+
             }, imageSize);
             chatImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -529,65 +732,6 @@ public class GameOOIActivity extends XWalkActivity {
     }
 
     @Override
-    protected void onXWalkReady() {
-        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
-        if(clearCookie){
-            (new XWalkCookieManager()).removeAllCookie();
-        }
-
-        hostName = prefs.getString("ooi_host_name", "ooi.moe");
-        if(hostName.equals("")) hostName = "ooi.moe";
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    InetAddress address = InetAddress.getByName(hostName);
-                    KcaConstants.hostAddressIp = address.getHostAddress();
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
-        XWalkCookieManager cookieManager = new XWalkCookieManager();
-        cookieManager.setAcceptCookie(true);
-        boolean voicePlay = prefs.getBoolean("voice_play", false);
-        String fullHostName = hostName;
-        if (!fullHostName.startsWith("http")) {
-            fullHostName = "https://" + fullHostName;
-        }
-        if(voicePlay) {
-            cookieManager.setCookie(fullHostName, "vol_bgm=50; domain=" + hostName + "; path=/kcs2");
-            cookieManager.setCookie(fullHostName, "vol_se=50; domain=" + hostName + "; path=/kcs2");
-            cookieManager.setCookie(fullHostName, "vol_voice=50; domain=" + hostName + "; path=/kcs2");
-        } else {
-            cookieManager.setCookie(fullHostName, "vol_bgm=0; domain=" + hostName + "; path=/kcs2");
-            cookieManager.setCookie(fullHostName, "vol_se=0; domain=" + hostName + "; path=/kcs2");
-            cookieManager.setCookie(fullHostName, "vol_voice=0; domain=" + hostName + "; path=/kcs2");
-        }
-        cookieManager.flushCookieStore();
-
-        mWebSettings = mWebview.getSettings();
-        mWebSettings.setUserAgentString(USER_AGENT);
-        mWebSettings.setBuiltInZoomControls(true);
-        mWebSettings.setCacheMode(XWalkSettings.LOAD_DEFAULT);
-/*        Properties prop = System.getProperties();
-        prop.setProperty("proxySet", "true");
-        prop.setProperty("proxyHost", "218.241.131.227");
-        prop.setProperty("proxyPort", "6100");*/
-        // 设置与Js交互的权限
-        mWebSettings.setJavaScriptEnabled(true);
-        mWebSettings.setMediaPlaybackRequiresUserGesture(false);
-
-//        WebView.setWebContentsDebuggingEnabled(true);
-
-        mWebview.loadUrl("http://" + hostName + "/poi");
-
-        mWebview.resumeTimers();
-
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 2) {
             if(data != null){
@@ -608,7 +752,8 @@ public class GameOOIActivity extends XWalkActivity {
         }
         super.onActivityReenter(resultCode, data);
     }
-    private XWalkWebResourceResponse backToWebView(String path, String size, InputStream is, XWalkResourceClient client){
+
+    private WebResourceResponse backToWebView(String path, String size, InputStream is){
         String mimeType = null;
         if (path.endsWith("mp3")) {
             mimeType = "audio/mpeg";
@@ -618,6 +763,10 @@ public class GameOOIActivity extends XWalkActivity {
             mimeType = "application/json";
         } else if (path.endsWith("js")) {
             mimeType = "application/javascript";
+        } else if (path.endsWith("css")) {
+            mimeType = "text/css";
+        } else {
+            mimeType = "text/html";
         }
         Map<String, String> map = new HashMap<>();
         map.put("Connection", "keep-alive");
@@ -625,10 +774,10 @@ public class GameOOIActivity extends XWalkActivity {
         map.put("Content-Length", size);
         map.put("Content-Type", mimeType);
         map.put("Cache-Control", "public");
-        return client.createXWalkWebResourceResponse(mimeType, null, is, 200, "OK", map);
+        return new WebResourceResponse(mimeType, null, 200, "OK", map, is);
     }
 
-    private ResponseBody requestServer(XWalkWebResourceRequest request){
+    private ResponseBody requestServer(WebResourceRequest request){
         Request.Builder builder = new Request.Builder().url(request.getUrl().toString());
         Map<String, String> headerHeader = request.getRequestHeaders();
         for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
@@ -686,7 +835,6 @@ public class GameOOIActivity extends XWalkActivity {
     }
 
 
-
     @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
@@ -706,7 +854,7 @@ public class GameOOIActivity extends XWalkActivity {
             chatNewMsgImageView.setLayoutParams(lp1);
         }
         resetWebView(true);
-        mWebview.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\"externalswf\"),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
+        mWebview.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
 
     }
 
@@ -748,7 +896,6 @@ public class GameOOIActivity extends XWalkActivity {
             mWebview.setLayoutParams(params);
         }
     }
-
     boolean changeTouchEvent = false;
     public boolean dispatchTouchEvent(MotionEvent event) {
         Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
@@ -795,10 +942,11 @@ public class GameOOIActivity extends XWalkActivity {
         }
         super.onPause();
     }
+
     @Override
     protected void onStop() {
         if (!prefs.getBoolean("background_play", true)){
-//            mWebview.onPause();
+            mWebview.onPause();
             mWebview.pauseTimers();
         }
         super.onStop();
@@ -806,15 +954,8 @@ public class GameOOIActivity extends XWalkActivity {
     @Override
     protected void onStart() {
         if (!prefs.getBoolean("background_play", true)) {
-//            mWebview.onResume();
-            try{
-                mWebview.resumeTimers();
-            } catch(java.lang.RuntimeException e) {
-                if ( e.getMessage().compareTo("Crosswalk's APIs are not ready yet") == 0 ) {
-                } else {
-                    throw e;
-                }
-            }
+            mWebview.onResume();
+            mWebview.resumeTimers();
         }
         super.onStart();
     }
@@ -835,10 +976,10 @@ public class GameOOIActivity extends XWalkActivity {
     protected void onDestroy() {
         if (mWebview != null) {
             mWebview.loadDataWithBaseURL(null, "", "text/html", "utf-8", null);
-//            mWebview.clearHistory();
+            mWebview.clearHistory();
 
             ((ViewGroup) mWebview.getParent()).removeView(mWebview);
-            mWebview.onDestroy();
+            mWebview.destroy();
             mWebview = null;
         }
         unregisterReceiver(webviewBroadcastReceiver);
@@ -854,7 +995,7 @@ public class GameOOIActivity extends XWalkActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("com.antest1.kcanotify.h5.webview_reload"))
-                mWebview.reload(XWalkView.RELOAD_IGNORE_CACHE);
+                mWebview.reload();
         }
     }
 
@@ -925,7 +1066,11 @@ public class GameOOIActivity extends XWalkActivity {
             mResolver.unregisterContentObserver(this);
         }
     }
+
     private void addDanmaku(String content, boolean withBorder) {
+        if(danmakuView == null){
+            return;
+        }
         BaseDanmaku danmaku = danmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
         if(content.length() > 7) {
             danmaku = danmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_FIX_TOP);
