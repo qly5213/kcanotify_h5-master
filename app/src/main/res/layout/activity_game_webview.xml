@@ -7,13 +7,13 @@
     android:background="@color/black"
     android:layout_height="match_parent">
 
-    <WebView
+    <org.xwalk.core.XWalkView
         android:id="@+id/webView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true">
 
-    </WebView>
+    </org.xwalk.core.XWalkView>
 
     <ImageView
         android:id="@+id/chat_image_view"

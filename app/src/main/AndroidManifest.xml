@@ -218,7 +218,7 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
-            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation">
+            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation">
         </activity>
 
         <activity
@@ -228,13 +228,13 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
-            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation">
+            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation">
         </activity>
         <activity
             android:name="com.antest1.kcanotify.h5.LandScapeBoxingActivity"
             android:screenOrientation="landscape"
             android:hardwareAccelerated="true"
-            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation">
+            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation">
         </activity>
 
 
