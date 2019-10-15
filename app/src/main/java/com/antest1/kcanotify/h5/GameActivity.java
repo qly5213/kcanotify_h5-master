@@ -87,8 +87,8 @@ public class GameActivity extends XWalkActivity {
     private ProgressBar progressBar1;
 
     // HTML5 audio is bugged in Crosswalk
-    // Use iPhone UA so that Kancolle will fallback to traditional audio playing
-    private final static String USER_AGENT = "Mozilla/5.0 (iPhone) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
+    // Add "edge" to UA so that Kancolle will fallback to traditional audio playing
+    private final static String USER_AGENT = "Mozilla/5.0 (Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36 Edge/14.14931";
 
     private static final String[] SERVER_IP = new String[]{"203.104.209.71", "203.104.209.87", "125.6.184.215", "203.104.209.183", "203.104.209.150", "203.104.209.134", "203.104.209.167", "203.104.248.135", "125.6.189.7", "125.6.189.39", "125.6.189.71", "125.6.189.103", "125.6.189.135", "125.6.189.167", "125.6.189.215", "125.6.189.247", "203.104.209.23", "203.104.209.39", "203.104.209.55", "203.104.209.102"};
 
