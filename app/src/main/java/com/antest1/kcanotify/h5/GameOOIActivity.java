@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import org.xwalk.core.JavascriptInterface;
 import org.xwalk.core.XWalkActivity;
 import org.xwalk.core.XWalkCookieManager;
+import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
@@ -61,6 +62,7 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -396,16 +398,25 @@ public class GameOOIActivity extends XWalkActivity {
                                     respByte = serverResponse.bytes();
                                 }
                                 saveFile(path, respByte);
+
+                                // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
+                                if(changeTouchEventPrefs && path.contains("/kcs2/js/main.js")) {
+                                    respByte = injectTouchLogic(respByte);
+                                }
                                 return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte), this);
                             } else {
                                 return null;
                             }
                         }
                         if (tmp.exists()) {
-
                             Log.d("KCVA", "Local cache uri：：" + uri);
                             //从缓存直接返回客户端，不请求服务器
                             byte[] fileContent = readFileToBytes(tmp);
+
+                            // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
+                            if(changeTouchEventPrefs && path.contains("/kcs2/js/main.js")) {
+                                fileContent = injectTouchLogic(fileContent);
+                            }
                             return backToWebView(path, String.valueOf(fileContent.length), new FileInputStream(tmp), this);
                         } else {
                             ResponseBody serverResponse = requestServer(request);
@@ -418,6 +429,11 @@ public class GameOOIActivity extends XWalkActivity {
                                     respByte = serverResponse.bytes();
                                 }
                                 saveFile(path, respByte);
+
+                                // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
+                                if(changeTouchEventPrefs && path.contains("/kcs2/js/main.js")) {
+                                    respByte = injectTouchLogic(respByte);
+                                }
                                 return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte), this);
                             } else {
                                 return null;
@@ -582,7 +598,7 @@ public class GameOOIActivity extends XWalkActivity {
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
-//        WebView.setWebContentsDebuggingEnabled(true);
+//        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 
         mWebview.loadUrl("http://" + hostName + "/poi");
 
@@ -753,32 +769,75 @@ public class GameOOIActivity extends XWalkActivity {
     }
 
     boolean changeTouchEvent = false;
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
-        if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
-            if(event.getAction() == MotionEvent.ACTION_MOVE) {
-                buildMoveEvent(event);
-            } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
-                buildMoveEvent(event);
-            } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
-                buildMoveEvent(event);
-            }
-        }
-        return super.dispatchTouchEvent(event);
-    }
+
+    private byte[] injectTouchLogic(byte[] mainJs){
+        // Convert byte[] to String
+        String s = new String(mainJs, StandardCharsets.UTF_8);
 
 
-    private void buildMoveEvent(MotionEvent event){
-        MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[]{new MotionEvent.PointerProperties()};
-        event.getPointerProperties(0, pointerProperties[0]);
-        MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[]{new MotionEvent.PointerCoords()};
-        event.getPointerCoords(0, pointerCoords[0]);
-        pointerProperties[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
-        pointerCoords[0].x -= mWebview.getX();
-        pointerCoords[0].y -= mWebview.getY();
-        long touchTime = SystemClock.uptimeMillis();
-        this.mWebview.onTouchEvent(MotionEvent.obtain(touchTime, touchTime, MotionEvent.ACTION_MOVE, 1, pointerProperties, pointerCoords, 0, 0, 0f, 0f, InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC, 0, InputDevice.SOURCE_TOUCHSCREEN, 0));
+        // Replace the mouseout and mouseover event name to custom name
+        s = s.replace("over:n.pointer?\"pointerover\":\"mouseover\"", "over:\"touchover\"");
+        s = s.replace("out:n.pointer?\"pointerout\":\"mouseout\"", "out:\"touchout\"");
 
+        // Add code patch inspired by https://github.com/pixijs/pixi.js/issues/616
+        s +=    "function patchInteractionManager () {\n" +
+                "  var proto = PIXI.interaction.InteractionManager.prototype;\n" +
+                "\n" +
+                "  function extendMethod (method, extFn) {\n" +
+                "      var old = proto[method];\n" +
+                "      proto[method] = function () {\n" +
+                "          old.call(this, ...arguments);\n" +
+                "          extFn.call(this, ...arguments);\n" +
+                "      };\n" +
+                "  }\n" +
+                "\n" +
+                "  extendMethod('onTouchMove', function () {\n" +
+                "      this.didMove = true;\n" +
+                "  });\n" +
+                "\n" +
+                "  proto.update = mobileUpdate;\n" +
+                "\n" +
+                "  function mobileUpdate(deltaTime) {\n" +
+                "    this._deltaTime += deltaTime;\n" +
+                "    if (this._deltaTime < this.interactionFrequency) {\n" +
+                "        return;\n" +
+                "    }\n" +
+                "    this._deltaTime = 0;\n" +
+                "    if (!this.interactionDOMElement) {\n" +
+                "        return;\n" +
+                "    }\n" +
+                "    if(this.didMove) {\n" +
+                "        this.didMove = false;\n" +
+                "        return;\n" +
+                "    }\n" +
+                "    if (this.eventData.data) {\n" +
+                "      window.__eventData = this.eventData;\n" +
+                "      this.processInteractive(this.eventData, this.renderer._lastObjectRendered, this.processTouchOverOut, true);\n" +
+                "    }\n" +
+                "  }\n" +
+                "\n" +
+                "  extendMethod('processTouchMove', function(displayObject, hit) {\n" +
+                "      this.processTouchOverOut('processTouchMove', displayObject, hit);\n" +
+                "  });\n" +
+                "\n" +
+                "  proto.processTouchOverOut = function (interactionEvent, displayObject, hit) {\n" +
+                "    if(hit) {\n" +
+                "        if(!displayObject._over) {\n" +
+                "            displayObject._over = true;\n" +
+                "            proto.dispatchEvent( displayObject, 'touchover', window.__eventData);\n" +
+                "        }\n" +
+                "    } else {\n" +
+                "        if(displayObject._over) {\n" +
+                "            displayObject._over = false;\n" +
+                "            proto.dispatchEvent( displayObject, 'touchout', window.__eventData);\n" +
+                "        }\n" +
+                "    }\n" +
+                "  };\n" +
+                "}\n" +
+                "patchInteractionManager();";
+
+        // Convert back to bytes
+        return s.getBytes();
     }
 
     @Override
