@@ -85,7 +85,10 @@ public class GameOOIActivity extends XWalkActivity {
     XWalkView mWebview;
     XWalkSettings mWebSettings;
     private ProgressBar progressBar1;
-    private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
+
+    // HTML5 audio is bugged in Crosswalk
+    // Add "edge" to UA so that Kancolle will fallback to traditional audio playing
+    private final static String USER_AGENT = "Mozilla/5.0 (Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36 Edge/14.14931";
 
     private WebviewBroadcastReceiver webviewBroadcastReceiver = new WebviewBroadcastReceiver();
 
