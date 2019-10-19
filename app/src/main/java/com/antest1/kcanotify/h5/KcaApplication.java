@@ -1,16 +1,13 @@
 package com.antest1.kcanotify.h5;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 
-
 import org.acra.ACRA;
 import org.acra.annotation.AcraCore;
-import org.acra.annotation.AcraMailSender;
 
 import java.util.Locale;
 
@@ -25,7 +22,6 @@ import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 public class KcaApplication extends MultiDexApplication {
     public static Locale defaultLocale;
     public static Activity gameActivity;
-    public static Activity gameOOIActivity;
     public static boolean isCheckVersion = false;
     public static long checkVersionDate = 0;
 

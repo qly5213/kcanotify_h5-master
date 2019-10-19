@@ -40,7 +40,7 @@
 
         <CheckBoxPreference
             android:key="host_proxy_enable"
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/setting_menu_kand_title_host_proxy_enable" />
         <EditTextPreference
             android:key="host_proxy_address"

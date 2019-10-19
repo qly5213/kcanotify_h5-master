@@ -185,7 +185,7 @@
             android:summary="修改Cookie绕过dmm地域检测"
             android:title="修改Cookie" />
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="change_webview"
             android:summary="使用Crosswalk替换原生WebView"
             android:title="修改webview" />
