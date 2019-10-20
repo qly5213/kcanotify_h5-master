@@ -393,17 +393,29 @@ public abstract class GameBaseActivity extends XWalkActivity {
     /**
      * cookie init
      */
-    public void initCookieData(){
+    private void initCookieData(){
         voiceCookieMap = new HashMap<>();
-        int vol = 0;
-        if(voicePlay){
-            vol = 50;
-        }
+        int vol = voicePlay ? 50 : 0;
+
+        // Add volume cookies for DMM
         for (String serverIp : SERVER_IP) {
             voiceCookieMap.put("vol_bgm=" + vol + "; domain=" + serverIp + "; path=/kcs2", "http://" + serverIp);
             voiceCookieMap.put("vol_se=" + vol + "; domain=" + serverIp + "; path=/kcs2", "http://" + serverIp);
             voiceCookieMap.put("vol_voice=" + vol + "; domain=" + serverIp + "; path=/kcs2", "http://" + serverIp);
         }
+
+        // Add volume cookies for OOI
+        String hostName = prefs.getString("ooi_host_name", "ooi.moe");
+        if(hostName.equals("")) hostName = "ooi.moe";
+        String fullHostName = hostName;
+        if (!fullHostName.startsWith("http")) {
+            // XWalkCookieManager requires full URL instead of just domain
+            fullHostName = "https://" + fullHostName;
+        }
+        voiceCookieMap.put("vol_bgm=" + vol + "; domain=" + hostName + "; path=/kcs2", fullHostName);
+        voiceCookieMap.put("vol_se=" + vol + "; domain=" + hostName + "; path=/kcs2", fullHostName);
+        voiceCookieMap.put("vol_voice=" + vol + "; domain=" + hostName + "; path=/kcs2", fullHostName);
+
 
         dmmCokieMap = new HashMap<>();
         dmmCokieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "www.dmm.com");
@@ -723,14 +735,16 @@ public abstract class GameBaseActivity extends XWalkActivity {
     }
 
     public boolean dispatchTouchEvent(MotionEvent event) {
-        Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
-        if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
-            if(event.getAction() == MotionEvent.ACTION_MOVE) {
-                buildMoveEvent(event);
-            } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
-                buildMoveEvent(event);
-            } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
-                buildMoveEvent(event);
+        if (!changeWebview) {
+            Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
+            if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
+                if(event.getAction() == MotionEvent.ACTION_MOVE) {
+                    buildMoveEvent(event);
+                } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
+                    buildMoveEvent(event);
+                } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
+                    buildMoveEvent(event);
+                }
             }
         }
         return super.dispatchTouchEvent(event);
@@ -938,13 +952,13 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "\n" +
                 "  proto.processTouchOverOut = function (interactionEvent, displayObject, hit) {\n" +
                 "    if(hit) {\n" +
-                "        if(!displayObject._over) {\n" +
-                "            displayObject._over = true;\n" +
+                "        if(!displayObject.__over) {\n" +
+                "            displayObject.__over = true;\n" +
                 "            proto.dispatchEvent( displayObject, 'touchover', window.__eventData);\n" +
                 "        }\n" +
                 "    } else {\n" +
-                "        if(displayObject._over) {\n" +
-                "            displayObject._over = false;\n" +
+                "        if(displayObject.__over) {\n" +
+                "            displayObject.__over = false;\n" +
                 "            proto.dispatchEvent( displayObject, 'touchout', window.__eventData);\n" +
                 "        }\n" +
                 "    }\n" +
