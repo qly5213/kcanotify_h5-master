@@ -723,14 +723,16 @@ public abstract class GameBaseActivity extends XWalkActivity {
     }
 
     public boolean dispatchTouchEvent(MotionEvent event) {
-        Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
-        if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
-            if(event.getAction() == MotionEvent.ACTION_MOVE) {
-                buildMoveEvent(event);
-            } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
-                buildMoveEvent(event);
-            } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
-                buildMoveEvent(event);
+        if (!changeWebview) {
+            Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
+            if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
+                if(event.getAction() == MotionEvent.ACTION_MOVE) {
+                    buildMoveEvent(event);
+                } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
+                    buildMoveEvent(event);
+                } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
+                    buildMoveEvent(event);
+                }
             }
         }
         return super.dispatchTouchEvent(event);
