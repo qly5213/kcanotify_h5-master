@@ -938,13 +938,13 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "\n" +
                 "  proto.processTouchOverOut = function (interactionEvent, displayObject, hit) {\n" +
                 "    if(hit) {\n" +
-                "        if(!displayObject._over) {\n" +
-                "            displayObject._over = true;\n" +
+                "        if(!displayObject.__over) {\n" +
+                "            displayObject.__over = true;\n" +
                 "            proto.dispatchEvent( displayObject, 'touchover', window.__eventData);\n" +
                 "        }\n" +
                 "    } else {\n" +
-                "        if(displayObject._over) {\n" +
-                "            displayObject._over = false;\n" +
+                "        if(displayObject.__over) {\n" +
+                "            displayObject.__over = false;\n" +
                 "            proto.dispatchEvent( displayObject, 'touchout', window.__eventData);\n" +
                 "        }\n" +
                 "    }\n" +
