@@ -68,7 +68,7 @@ public class GameWebViewActivity extends GameBaseActivity {
         mWebSettings = mWebview.getSettings();
         mWebSettings.setUserAgentString(USER_AGENT);
         mWebSettings.setBuiltInZoomControls(true);
-        mWebSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        mWebSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         // 设置与Js交互的权限
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
@@ -170,6 +170,13 @@ public class GameWebViewActivity extends GameBaseActivity {
                 jsToJava(requestUrl, param, respData);
             }
         },"androidJs");
+
+        mWebview.addJavascriptInterface(new Object(){
+            @JavascriptInterface
+            public void update(String newFps) {
+                updateFpsCounter(newFps);
+            }
+        },"fpsUpdater");
 
         mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
     }

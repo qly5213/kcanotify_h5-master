@@ -39,6 +39,7 @@ import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
 
 import org.json.JSONObject;
+import org.xwalk.core.JavascriptInterface;
 import org.xwalk.core.XWalkActivity;
 
 import java.io.BufferedInputStream;
@@ -89,6 +90,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
     protected View mWebview;
     protected ProgressBar progressBar1;
+    private TextView fpsCounter;
     private TextView subtitleTextview;
     private StrokeTextView subtitleStrokeTextview;
     private ImageView chatImageView;
@@ -175,7 +177,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             Log.e("KCAV", "onCreate: " + "native hook result-->" + (nativeInit(Build.VERSION.SDK_INT, proxyEnable, proxyIP) == 0));
         }
 
-        changeWebview = prefs.getBoolean("change_webview", true);
+        changeWebview = prefs.getBoolean("change_webview", false);
         if(changeWebview) {
             setContentView(R.layout.activity_game_webview);
         } else {
@@ -212,6 +214,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
         mWebview = findViewById(R.id.webView1);
         progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
+        fpsCounter = (TextView) findViewById(R.id.fps_counter);
         subtitleTextview = findViewById(R.id.subtitle_textview);
         subtitleStrokeTextview = findViewById(R.id.subtitle_textview_stroke);
         chatImageView = findViewById(R.id.chat_image_view);
@@ -636,8 +639,12 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         fileContent = newRespStr.getBytes("utf-8");
                     }
                     // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
-                    if(changeTouchEventPrefs && path.contains("/kcs2/js/main.js") && changeWebview) {
-                        fileContent = injectTouchLogic(fileContent);
+                    if(path.contains("/kcs2/js/main.js")) {
+                        fileContent = injectFpsUpdater(fileContent);
+                        fileContent = injectTickerTimingMode(fileContent);
+                        if (changeTouchEventPrefs && changeWebview) {
+                            fileContent = injectTouchLogic(fileContent);
+                        }
                     }
                     return backToWebView(path, String.valueOf(fileContent.length), new ByteArrayInputStream(fileContent));
                 } else {
@@ -657,8 +664,12 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         saveFile(path, respByte);
 
                         // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
-                        if(changeTouchEventPrefs && path.contains("/kcs2/js/main.js") && changeWebview) {
-                            respByte = injectTouchLogic(respByte);
+                        if(path.contains("/kcs2/js/main.js")) {
+                            respByte = injectFpsUpdater(respByte);
+                            respByte = injectTickerTimingMode(respByte);
+                            if (changeTouchEventPrefs && changeWebview) {
+                                respByte = injectTouchLogic(respByte);
+                            }
                         }
                         return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                     } else {
@@ -969,4 +980,49 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // Convert back to bytes
         return s.getBytes();
     }
+
+    private byte[] injectFpsUpdater(byte[] mainJs){
+        // Convert byte[] to String
+        String s = new String(mainJs, StandardCharsets.UTF_8);
+
+
+        // Replace the mouseout and mouseover event name to custom name
+        s = s.replace("over:n.pointer?\"pointerover\":\"mouseover\"", "over:\"touchover\"");
+        s = s.replace("out:n.pointer?\"pointerout\":\"mouseout\"", "out:\"touchout\"");
+
+        // Add code patch inspired by https://github.com/pixijs/pixi.js/issues/616
+        s +=    "const times = [];\n" +
+                "function refreshLoop() {\n" +
+                "  window.requestAnimationFrame(() => {\n" +
+                "    const now = performance.now();\n" +
+                "    while (times.length > 0 && times[0] <= now - 1000) {\n" +
+                "      times.shift();\n" +
+                "    }\n" +
+                "    times.push(now);\n" +
+                "    window.fpsUpdater.update(times.length);\n" +
+                "    refreshLoop();\n" +
+                "  });\n" +
+                "}\n" +
+                "\n" +
+                "refreshLoop();";
+
+        // Convert back to bytes
+        return s.getBytes();
+    }
+
+    private byte[] injectTickerTimingMode(byte[] mainJs){
+        // Convert byte[] to String
+        String s = new String(mainJs, StandardCharsets.UTF_8);
+
+        // Replace the ticker timing mode to keep animation smooth even with a lot of events (i.e. touch taps)
+        s = s.replace("createjs.Ticker.TIMEOUT", "createjs.Ticker.RAF");
+
+        // Convert back to bytes
+        return s.getBytes();
+    }
+
+
+    public void updateFpsCounter(String newFps) {
+       fpsCounter.setText(newFps);
+   }
 }
