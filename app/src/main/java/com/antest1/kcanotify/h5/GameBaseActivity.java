@@ -641,6 +641,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
                     if(path.contains("/kcs2/js/main.js")) {
                         fileContent = injectFpsUpdater(fileContent);
+                        fileContent = injectTickerTimingMode(fileContent);
                         if (changeTouchEventPrefs && changeWebview) {
                             fileContent = injectTouchLogic(fileContent);
                         }
@@ -665,6 +666,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
                         if(path.contains("/kcs2/js/main.js")) {
                             respByte = injectFpsUpdater(respByte);
+                            respByte = injectTickerTimingMode(respByte);
                             if (changeTouchEventPrefs && changeWebview) {
                                 respByte = injectTouchLogic(respByte);
                             }
@@ -979,7 +981,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         return s.getBytes();
     }
 
-
     private byte[] injectFpsUpdater(byte[] mainJs){
         // Convert byte[] to String
         String s = new String(mainJs, StandardCharsets.UTF_8);
@@ -998,12 +999,23 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "      times.shift();\n" +
                 "    }\n" +
                 "    times.push(now);\n" +
-                "    window.fpsUpdater.update(times.length);\n" +
+                "    window.fpsUpdater.update(createjs.Ticker.getMeasuredFPS());\n" +
                 "    refreshLoop();\n" +
                 "  });\n" +
                 "}\n" +
                 "\n" +
                 "refreshLoop();";
+
+        // Convert back to bytes
+        return s.getBytes();
+    }
+
+    private byte[] injectTickerTimingMode(byte[] mainJs){
+        // Convert byte[] to String
+        String s = new String(mainJs, StandardCharsets.UTF_8);
+
+        // Replace the ticker timing mode to keep animation smooth even with a lot of events (i.e. touch taps)
+        s = s.replace("createjs.Ticker.TIMEOUT", "createjs.Ticker.RAF");
 
         // Convert back to bytes
         return s.getBytes();
