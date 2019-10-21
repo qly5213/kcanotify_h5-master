@@ -26,7 +26,6 @@ public class GameWebViewActivity extends GameBaseActivity {
     WebSettings mWebSettings;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 
-    private SharedPreferences prefs = null;
     private int changeCookieCnt = 0;
 
 
@@ -36,6 +35,19 @@ public class GameWebViewActivity extends GameBaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mWebview = (WebView) super.mWebview;
+
+        if(clearCookie){
+            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean value) {
+                    if(value){
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putBoolean("clear_cookie_start", false);
+                        editor.apply();
+                    }
+                }
+            });
+        }
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(mWebview, true);
