@@ -177,7 +177,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             Log.e("KCAV", "onCreate: " + "native hook result-->" + (nativeInit(Build.VERSION.SDK_INT, proxyEnable, proxyIP) == 0));
         }
 
-        changeWebview = prefs.getBoolean("change_webview", true);
+        changeWebview = prefs.getBoolean("change_webview", false);
         if(changeWebview) {
             setContentView(R.layout.activity_game_webview);
         } else {

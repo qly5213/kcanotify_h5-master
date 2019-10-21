@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                 }*/
                 SharedPreferences prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
                 String gamePageType = prefs.getString("game_page_type", "0");
-                boolean changeWebview = prefs.getBoolean("change_webview", true);
+                boolean changeWebview = prefs.getBoolean("change_webview", false);
                 if(gamePageType.equals("0")) {
                     Intent intent;
                     if(changeWebview){
