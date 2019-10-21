@@ -999,7 +999,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "      times.shift();\n" +
                 "    }\n" +
                 "    times.push(now);\n" +
-                "    window.fpsUpdater.update(createjs.Ticker.getMeasuredFPS());\n" +
+                "    window.fpsUpdater.update(times.length);\n" +
                 "    refreshLoop();\n" +
                 "  });\n" +
                 "}\n" +
