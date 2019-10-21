@@ -149,6 +149,12 @@ public class GameActivity extends GameBaseActivity {
             }
         },"androidJs");
 
+        mWebview.addJavascriptInterface(new Object(){
+            @JavascriptInterface
+            public void update(String newFps) {
+                updateFpsCounter(newFps);
+            }
+        },"fpsUpdater");
     }
 
     @Override

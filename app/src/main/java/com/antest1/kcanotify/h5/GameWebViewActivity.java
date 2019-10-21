@@ -171,6 +171,13 @@ public class GameWebViewActivity extends GameBaseActivity {
             }
         },"androidJs");
 
+        mWebview.addJavascriptInterface(new Object(){
+            @JavascriptInterface
+            public void update(String newFps) {
+                updateFpsCounter(newFps);
+            }
+        },"fpsUpdater");
+
         mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
     }
 

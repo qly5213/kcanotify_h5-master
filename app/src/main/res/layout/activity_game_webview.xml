@@ -36,7 +36,20 @@
         android:progressBackgroundTint="@android:color/white"
         android:progressTint="#00ff00"
         android:visibility="gone" />
-
+    <TextView
+        android:id="@+id/fps_counter"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:progressBackgroundTint="@android:color/white"
+        android:progressTint="#00ff00"
+        android:padding="8dp"
+        android:text=""
+        android:textColor="#ffff00"
+        android:textSize="20sp"
+        android:gravity="right"
+        android:textAlignment="gravity"
+        />
     <com.antest1.kcanotify.h5.StrokeTextView
         android:id="@+id/subtitle_textview_stroke"
         android:layout_width="match_parent"

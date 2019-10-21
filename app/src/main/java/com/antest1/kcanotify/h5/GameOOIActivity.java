@@ -114,6 +114,13 @@ public class GameOOIActivity extends GameBaseActivity {
                 jsToJava(requestUrl, param, respData);
             }
         },"androidJs");
+
+        mWebview.addJavascriptInterface(new Object(){
+            @JavascriptInterface
+            public void update(String newFps) {
+                updateFpsCounter(newFps);
+            }
+        },"fpsUpdater");
     }
 
     public void loginExpire(String requestUrl, String respData){
