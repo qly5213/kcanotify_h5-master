@@ -189,19 +189,23 @@ public class MainActivity extends AppCompatActivity {
                 }*/
                 SharedPreferences prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
                 String gamePageType = prefs.getString("game_page_type", "0");
-                boolean changeWebview = prefs.getBoolean("change_webview", false);
+                boolean changeWebview = prefs.getBoolean("change_webview", true);
                 if(gamePageType.equals("0")) {
-                    Intent intent = new Intent(MainActivity.this, GameWebViewActivity.class);
+                    Intent intent;
                     if(changeWebview){
                         intent = new Intent(MainActivity.this, GameActivity.class);
+                    } else {
+                        intent = new Intent(MainActivity.this, GameWebViewActivity.class);
                     }
                     intent.putExtra("imageSize", imageSize);
                     startActivity(intent);
                     MainActivity.this.finish();
                 } else {
-                    Intent intent = new Intent(MainActivity.this, GameOOIWebViewActivity.class);
+                    Intent intent;
                     if(changeWebview){
                         intent = new Intent(MainActivity.this, GameOOIActivity.class);
+                    } else {
+                        intent = new Intent(MainActivity.this, GameOOIWebViewActivity.class);
                     }
                     intent.putExtra("imageSize", imageSize);
                     startActivity(intent);
@@ -296,11 +300,11 @@ public class MainActivity extends AppCompatActivity {
                 if (response != null && !KcaApplication.isCheckVersion && System.currentTimeMillis() - KcaApplication.checkVersionDate > 24 * 60 * 60 * 1000) {
                     KcaApplication.isCheckVersion = true;
                     KcaApplication.checkVersionDate = System.currentTimeMillis();
-                        final JsonObject response_data = new JsonParser().parse(response).getAsJsonObject();
-                        if(response_data.has("imageSize")){
-                            imageSize = response_data.get("imageSize").getAsString();
-                        }
-                        handler.post(() -> {
+                    final JsonObject response_data = new JsonParser().parse(response).getAsJsonObject();
+                    if(response_data.has("imageSize")){
+                        imageSize = response_data.get("imageSize").getAsString();
+                    }
+                    handler.post(() -> {
                         UpdateAppUtils.from(this)
                                 .checkBy(UpdateAppUtils.CHECK_BY_VERSION_NAME) //更新检测方式，默认为VersionCode
                                 .serverVersionCode(2641)
