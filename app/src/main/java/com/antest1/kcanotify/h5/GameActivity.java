@@ -182,7 +182,7 @@ public class GameActivity extends GameBaseActivity {
         mWebSettings = mWebview.getSettings();
         mWebSettings.setUserAgentString(USER_AGENT);
         mWebSettings.setBuiltInZoomControls(true);
-        mWebSettings.setCacheMode(XWalkSettings.LOAD_DEFAULT);
+        mWebSettings.setCacheMode(XWalkSettings.LOAD_NO_CACHE);
 /*        Properties prop = System.getProperties();
         prop.setProperty("proxySet", "true");
         prop.setProperty("proxyHost", "218.241.131.227");
