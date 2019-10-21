@@ -37,19 +37,6 @@ public class GameWebViewActivity extends GameBaseActivity {
         super.onCreate(savedInstanceState);
         mWebview = (WebView) super.mWebview;
 
-        if(clearCookie){
-            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
-                @Override
-                public void onReceiveValue(Boolean value) {
-                    if(value){
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putBoolean("clear_cookie_start", false);
-                        editor.apply();
-                    }
-                }
-            });
-        }
-
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(mWebview, true);
 
