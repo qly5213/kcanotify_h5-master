@@ -120,6 +120,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
     protected HashMap<String, String> voiceCookieMap;
     protected HashMap<String, String> dmmCokieMap;
 
+    boolean changeTouchEvent = false;
     private boolean subTitleEnable;
     private Handler subtitleHandler;
     private Runnable dismissSubTitle;
@@ -571,6 +572,11 @@ public abstract class GameBaseActivity extends XWalkActivity {
     public Object[] interceptRequest(Uri uri, String requestMethod, Map<String, String> requestHeader){
         String path = uri.getPath();
         Log.d("KCVA", "Request  uri拦截路径uri：：" + uri);
+        if(path != null && path.contains("/kcsapi/api_port/port")){
+            changeTouchEvent = false;
+        } else if(path != null && (path.contains("/kcsapi/api_get_member/mapinfo") || path.contains("/kcsapi/api_get_member/mission"))){
+            changeTouchEvent = true;
+        }
 
         if(battleResultVibrate && path != null && (path.contains("battle_result") || path.contains("battleresult"))){
             Vibrator vib = (Vibrator) GameBaseActivity.this.getSystemService(Service.VIBRATOR_SERVICE);
@@ -578,6 +584,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
 
         if ("GET".equals(requestMethod) && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
+            if(path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")){
+                changeTouchEvent = true;
+            }
             if(path.contains("version.json") || path.contains("index.php")){
                 return null;
             }
@@ -633,7 +642,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     if(path.contains("/kcs2/js/main.js")) {
                         fileContent = injectFpsUpdater(fileContent);
                         fileContent = injectTickerTimingMode(fileContent);
-                        if (changeTouchEventPrefs) {
+                        if (changeTouchEventPrefs && changeWebview) {
                             fileContent = injectTouchLogic(fileContent);
                         }
                     }
@@ -658,7 +667,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         if(path.contains("/kcs2/js/main.js")) {
                             respByte = injectFpsUpdater(respByte);
                             respByte = injectTickerTimingMode(respByte);
-                            if (changeTouchEventPrefs) {
+                            if (changeTouchEventPrefs && changeWebview) {
                                 respByte = injectTouchLogic(respByte);
                             }
                         }
@@ -734,6 +743,36 @@ public abstract class GameBaseActivity extends XWalkActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (!changeWebview) {
+            Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
+            if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
+                if(event.getAction() == MotionEvent.ACTION_MOVE) {
+                    buildMoveEvent(event);
+                } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
+                    buildMoveEvent(event);
+                } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
+                    buildMoveEvent(event);
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
+
+    private void buildMoveEvent(MotionEvent event){
+        MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[]{new MotionEvent.PointerProperties()};
+        event.getPointerProperties(0, pointerProperties[0]);
+        MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[]{new MotionEvent.PointerCoords()};
+        event.getPointerCoords(0, pointerCoords[0]);
+        pointerProperties[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
+        pointerCoords[0].x -= mWebview.getX();
+        pointerCoords[0].y -= mWebview.getY();
+        long touchTime = SystemClock.uptimeMillis();
+        this.mWebview.onTouchEvent(MotionEvent.obtain(touchTime, touchTime, MotionEvent.ACTION_MOVE, 1, pointerProperties, pointerCoords, 0, 0, 0f, 0f, InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC, 0, InputDevice.SOURCE_TOUCHSCREEN, 0));
+
     }
 
     private void setScreenOrientation() {
@@ -882,7 +921,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         s = s.replace("out:n.pointer?\"pointerout\":\"mouseout\"", "out:\"touchout\"");
 
         // Add code patch inspired by https://github.com/pixijs/pixi.js/issues/616
-        // Increase the interactionFrequency by a little bit so it will be easier to click the badly implemented main buttons in the port page
         s +=    "function patchInteractionManager () {\n" +
                 "  var proto = PIXI.interaction.InteractionManager.prototype;\n" +
                 "\n" +
@@ -902,7 +940,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "\n" +
                 "  function mobileUpdate(deltaTime) {\n" +
                 "    this._deltaTime += deltaTime;\n" +
-                "    if (this._deltaTime < this.interactionFrequency + 3) {\n" +
+                "    if (this._deltaTime < this.interactionFrequency) {\n" +
                 "        return;\n" +
                 "    }\n" +
                 "    this._deltaTime = 0;\n" +
