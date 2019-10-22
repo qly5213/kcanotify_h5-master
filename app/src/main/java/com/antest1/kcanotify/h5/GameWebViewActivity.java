@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class GameWebViewActivity extends GameBaseActivity {
-    WebView mWebview;
+    ActiveWebView mWebview;
     WebSettings mWebSettings;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 
@@ -34,10 +34,14 @@ public class GameWebViewActivity extends GameBaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mWebview = (WebView) super.mWebview;
+        mWebview = (ActiveWebView) super.mWebview;
+        if (prefs.getBoolean("background_play", true)) {
+            mWebview.setActiveInBackground(true);
+        }
 
+        CookieManager cookieManager = CookieManager.getInstance();
         if(clearCookie){
-            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+            cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
                 @Override
                 public void onReceiveValue(Boolean value) {
                     if(value){
@@ -49,7 +53,6 @@ public class GameWebViewActivity extends GameBaseActivity {
             });
         }
 
-        CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(mWebview, true);
 
         Set<Map.Entry<String, String>> voiceCookieMapSet = voiceCookieMap.entrySet();
@@ -72,7 +75,7 @@ public class GameWebViewActivity extends GameBaseActivity {
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
-//        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(true);
         //设置WebChromeClient类
         mWebview.setWebChromeClient(new WebChromeClient() {
             //获取网站标题

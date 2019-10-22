@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class GameOOIWebViewActivity extends GameBaseActivity {
-    WebView mWebview;
+    ActiveWebView mWebview;
     WebSettings mWebSettings;
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 
@@ -33,7 +33,11 @@ public class GameOOIWebViewActivity extends GameBaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mWebview = (WebView) super.mWebview;
+        mWebview = (ActiveWebView) super.mWebview;
+        if (prefs.getBoolean("background_play", true)) {
+            mWebview.setActiveInBackground(true);
+        }
+
         hostName = prefs.getString("ooi_host_name", "ooi.moe");
         if(hostName.equals("")) hostName = "ooi.moe";
 
@@ -73,7 +77,7 @@ public class GameOOIWebViewActivity extends GameBaseActivity {
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
-//        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(true);
         //设置WebChromeClient类
         mWebview.setWebChromeClient(new WebChromeClient() {
 
