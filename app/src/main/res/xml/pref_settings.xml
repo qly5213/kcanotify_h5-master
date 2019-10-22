@@ -194,6 +194,11 @@
             android:key="battle_result_vibrate"
             android:summary="战斗结束时震动提醒"
             android:title="战斗结束提醒" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="show_fps_counter"
+            android:summary="右上角显示FPS"
+            android:title="显示帧数" />
         <!--
         <Preference
         android:defaultValue=""
