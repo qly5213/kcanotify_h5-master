@@ -7,13 +7,13 @@
     android:background="@color/black"
     android:layout_height="match_parent">
 
-    <WebView
+    <com.antest1.kcanotify.h5.ActiveWebView
         android:id="@+id/webView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true">
 
-    </WebView>
+    </com.antest1.kcanotify.h5.ActiveWebView>
 
     <ImageView
         android:id="@+id/chat_image_view"

@@ -640,7 +640,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     }
                     // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
                     if(path.contains("/kcs2/js/main.js")) {
-                        fileContent = injectFpsUpdater(fileContent);
+                        if (prefs.getBoolean("show_fps_counter", false)) {
+                            fileContent = injectFpsUpdater(fileContent);
+                        }
                         fileContent = injectTickerTimingMode(fileContent);
                         if (changeTouchEventPrefs && changeWebview) {
                             fileContent = injectTouchLogic(fileContent);
@@ -665,7 +667,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
                         // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
                         if(path.contains("/kcs2/js/main.js")) {
-                            respByte = injectFpsUpdater(respByte);
+                            if (prefs.getBoolean("show_fps_counter", false)) {
+                                respByte = injectFpsUpdater(respByte);
+                            }
                             respByte = injectTickerTimingMode(respByte);
                             if (changeTouchEventPrefs && changeWebview) {
                                 respByte = injectTouchLogic(respByte);
@@ -985,13 +989,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // Convert byte[] to String
         String s = new String(mainJs, StandardCharsets.UTF_8);
 
-
-        // Replace the mouseout and mouseover event name to custom name
-        s = s.replace("over:n.pointer?\"pointerover\":\"mouseover\"", "over:\"touchover\"");
-        s = s.replace("out:n.pointer?\"pointerout\":\"mouseout\"", "out:\"touchout\"");
-
         // Add code patch inspired by https://github.com/pixijs/pixi.js/issues/616
         s +=    "const times = [];\n" +
+                "var lastTimeFps = 0;\n" +
                 "function refreshLoop() {\n" +
                 "  window.requestAnimationFrame(() => {\n" +
                 "    const now = performance.now();\n" +
@@ -999,7 +999,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "      times.shift();\n" +
                 "    }\n" +
                 "    times.push(now);\n" +
-                "    window.fpsUpdater.update(times.length);\n" +
+                "    if (lastTimeFps != times.length) {\n" +
+                "      lastTimeFps = times.length;\n" +
+                "      window.fpsUpdater.update(times.length);\n" +
+                "    }\n" +
                 "    refreshLoop();\n" +
                 "  });\n" +
                 "}\n" +
