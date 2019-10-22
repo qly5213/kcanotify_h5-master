@@ -39,7 +39,6 @@ import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
 
 import org.json.JSONObject;
-import org.xwalk.core.JavascriptInterface;
 import org.xwalk.core.XWalkActivity;
 
 import java.io.BufferedInputStream;
@@ -57,6 +56,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 import andhook.lib.AndHook;
@@ -80,6 +81,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
     private static final String[] SERVER_IP = new String[]{"203.104.209.71", "203.104.209.87", "125.6.184.215", "203.104.209.183", "203.104.209.150", "203.104.209.134", "203.104.209.167", "203.104.248.135", "125.6.189.7", "125.6.189.39", "125.6.189.71", "125.6.189.103", "125.6.189.135", "125.6.189.167", "125.6.189.215", "125.6.189.247", "203.104.209.23", "203.104.209.39", "203.104.209.55", "203.104.209.102"};
 
 
+    ExecutorService pool = Executors.newFixedThreadPool(5);
     private GameBaseActivity.WebviewBroadcastReceiver webviewBroadcastReceiver = new GameBaseActivity.WebviewBroadcastReceiver();
     private GameBaseActivity.RotationObserver mRotationObserver;
     protected SharedPreferences prefs = null;

@@ -470,6 +470,7 @@ public final class KcaConstants {
     public static final String PREF_FAIRY_DOWN_FLAG = "fairy_downloaded_flag";
     public static final String PREF_RES_USELOCAL = "res_uselocal";
     public static final String PREF_FAIRY_REV = "fairy_rev";
+    public static final String PREF_DMM_PWD = "dmm_pwd";
 
     public static final String[] PREF_ARRAY = {
             PREF_CHECK_UPDATE,

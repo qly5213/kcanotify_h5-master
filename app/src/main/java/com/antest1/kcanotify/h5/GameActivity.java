@@ -145,7 +145,12 @@ public class GameActivity extends GameBaseActivity {
         mWebview.addJavascriptInterface(new Object(){
             @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
-                jsToJava(requestUrl, param, respData);
+                pool.execute(new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        jsToJava(requestUrl, param, respData);
+                    }
+                }));
             }
         },"androidJs");
 

@@ -18,7 +18,6 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
@@ -26,17 +25,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.antest1.kcanotify.h5.BuildConfig;
-import com.antest1.kcanotify.h5.KcaAlarmService;
-import com.antest1.kcanotify.h5.KcaApiData;
-import com.antest1.kcanotify.h5.KcaDBHelper;
-import com.antest1.kcanotify.h5.KcaDownloader;
-import com.antest1.kcanotify.h5.KcaMoraleInfo;
-import com.antest1.kcanotify.h5.KcaUtils;
-import com.antest1.kcanotify.h5.KcaViewButtonService;
-import com.antest1.kcanotify.h5.LocaleUtils;
-import com.antest1.kcanotify.h5.R;
-import com.antest1.kcanotify.h5.SettingActivity;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -60,10 +48,10 @@ import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_PREF_PRIORITY_CHANGE
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_ALARM_DELAY;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_APK_DOWNLOAD_SITE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_CHECK_UPDATE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_DMM_PWD;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_AUTOHIDE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCAQSYNC_PASS;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_DATA_VERSION;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_DOWNLOAD_DATA;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_EXP_VIEW;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_MORALE_MIN;
@@ -72,10 +60,6 @@ import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_SET_PRIORITY;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_OVERLAY_SETTING;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SCREEN_ADV_NETWORK;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_SNIFFER_MODE;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_VPN_ENABLED;
-import static com.antest1.kcanotify.h5.KcaConstants.SNIFFER_PASSIVE;
-import static com.antest1.kcanotify.h5.KcaConstants.VPN_STOP_REASON;
 import static com.antest1.kcanotify.h5.KcaUtils.compareVersion;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
@@ -337,6 +321,11 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
                     }
                     etp.setDialogMessage(getStringWithLocale(R.string.setting_menu_stat_desc_kcaqsync_pass));
                 }
+                if (PREF_DMM_PWD.equals(pref.getKey())) {
+                    pref.setSummary("******");
+                } else {
+                    pref.setSummary(etp.getText());
+                }
             }
         }
     }
@@ -452,6 +441,11 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
         } else if (pref instanceof EditTextPreference) {
             EditTextPreference etp = (EditTextPreference) pref;
             pref.setSummary(etp.getText());
+            if (PREF_DMM_PWD.equals(pref.getKey())) {
+                pref.setSummary("******");
+            } else {
+                pref.setSummary(etp.getText());
+            }
         }
     }
 

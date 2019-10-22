@@ -111,7 +111,12 @@ public class GameOOIActivity extends GameBaseActivity {
             @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
                 loginExpire(requestUrl, respData);
-                jsToJava(requestUrl, param, respData);
+                pool.execute(new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        jsToJava(requestUrl, param, respData);
+                    }
+                }));
             }
         },"androidJs");
 
