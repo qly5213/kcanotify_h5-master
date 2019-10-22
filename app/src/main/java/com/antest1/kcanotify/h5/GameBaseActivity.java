@@ -985,11 +985,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // Convert byte[] to String
         String s = new String(mainJs, StandardCharsets.UTF_8);
 
-
-        // Replace the mouseout and mouseover event name to custom name
-        s = s.replace("over:n.pointer?\"pointerover\":\"mouseover\"", "over:\"touchover\"");
-        s = s.replace("out:n.pointer?\"pointerout\":\"mouseout\"", "out:\"touchout\"");
-
         // Add code patch inspired by https://github.com/pixijs/pixi.js/issues/616
         s +=    "const times = [];\n" +
                 "function refreshLoop() {\n" +
