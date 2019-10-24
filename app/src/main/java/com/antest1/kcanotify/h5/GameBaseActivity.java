@@ -925,37 +925,33 @@ public abstract class GameBaseActivity extends XWalkActivity {
         s = s.replace("out:n.pointer?\"pointerout\":\"mouseout\"", "out:\"touchout\"");
 
         // Add code patch inspired by https://github.com/pixijs/pixi.js/issues/616
+        // Only trigger touchout when there is another object start touchover
         s +=    "function patchInteractionManager () {\n" +
                 "  var proto = PIXI.interaction.InteractionManager.prototype;\n" +
                 "\n" +
                 "  function extendMethod (method, extFn) {\n" +
-                "      var old = proto[method];\n" +
-                "      proto[method] = function () {\n" +
-                "          old.call(this, ...arguments);\n" +
-                "          extFn.call(this, ...arguments);\n" +
-                "      };\n" +
+                "    var old = proto[method];\n" +
+                "    proto[method] = function () {\n" +
+                "      old.call(this, ...arguments);\n" +
+                "      extFn.call(this, ...arguments);\n" +
+                "    };\n" +
                 "  }\n" +
                 "\n" +
                 "  extendMethod('onTouchMove', function () {\n" +
-                "      this.didMove = true;\n" +
+                "    this.didMove = true;\n" +
                 "  });\n" +
                 "\n" +
                 "  proto.update = mobileUpdate;\n" +
                 "\n" +
                 "  function mobileUpdate(deltaTime) {\n" +
-                "    this._deltaTime += deltaTime;\n" +
-                "    if (this._deltaTime < this.interactionFrequency) {\n" +
-                "        return;\n" +
-                "    }\n" +
-                "    this._deltaTime = 0;\n" +
                 "    if (!this.interactionDOMElement) {\n" +
-                "        return;\n" +
+                "      return;\n" +
                 "    }\n" +
                 "    if(this.didMove) {\n" +
-                "        this.didMove = false;\n" +
-                "        return;\n" +
+                "      this.didMove = false;\n" +
+                "      return;\n" +
                 "    }\n" +
-                "    if (this.eventData.data) {\n" +
+                "    if (this.eventData.data && (this.eventData.type == 'touchmove' || this.eventData.type == 'touchstart')) {\n" +
                 "      window.__eventData = this.eventData;\n" +
                 "      this.processInteractive(this.eventData, this.renderer._lastObjectRendered, this.processTouchOverOut, true);\n" +
                 "    }\n" +
@@ -964,15 +960,18 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "  extendMethod('processTouchMove', function(displayObject, hit) {\n" +
                 "      this.processTouchOverOut('processTouchMove', displayObject, hit);\n" +
                 "  });\n" +
+                "  extendMethod('processTouchStart', function(displayObject, hit) {\n" +
+                "      this.processTouchOverOut('processTouchStart', displayObject, hit);\n" +
+                "  });\n" +
                 "\n" +
                 "  proto.processTouchOverOut = function (interactionEvent, displayObject, hit) {\n" +
                 "    if(hit) {\n" +
-                "        if(!displayObject.__over) {\n" +
-                "            displayObject.__over = true;\n" +
-                "            proto.dispatchEvent( displayObject, 'touchover', window.__eventData);\n" +
-                "        }\n" +
+                "      if(!displayObject.__over) {\n" +
+                "        displayObject.__over = true;\n" +
+                "        proto.dispatchEvent( displayObject, 'touchover', window.__eventData);\n" +
+                "      }\n" +
                 "    } else {\n" +
-                "        if(displayObject.__over) {\n" +
+                "        if(displayObject.__over && interactionEvent.target != displayObject) {\n" +
                 "            displayObject.__over = false;\n" +
                 "            proto.dispatchEvent( displayObject, 'touchout', window.__eventData);\n" +
                 "        }\n" +
