@@ -571,7 +571,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
     public Object[] interceptRequest(Uri uri, String requestMethod, Map<String, String> requestHeader){
         String path = uri.getPath();
-        Log.d("KCVA", "Request  uri拦截路径uri：：" + uri);
+        final long startTime = System.nanoTime();
+        Log.d("KCVA", "requesting  uri：" + uri);
         if(path != null && path.contains("/kcsapi/api_port/port")){
             changeTouchEvent = false;
         } else if(path != null && (path.contains("/kcsapi/api_get_member/mapinfo") || path.contains("/kcsapi/api_get_member/mission"))){
@@ -630,16 +631,20 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     }
                 }
                 if (tmp.exists()) {
-
-                    Log.d("KCVA", "Local cache uri：：" + uri);
                     //从缓存直接返回客户端，不请求服务器
-                    byte[] fileContent = readFileToBytes(tmp);
+                    long length = 0;
+                    InputStream inputStream;
+
                     if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                        byte[] fileContent = readFileToBytes(tmp);
                         String newRespStr = new String(fileContent, "utf-8") + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
                         fileContent = newRespStr.getBytes("utf-8");
-                    }
-                    // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
-                    if(path.contains("/kcs2/js/main.js")) {
+
+                        length = fileContent.length;
+                        inputStream = new ByteArrayInputStream(fileContent);
+                    } else if(path.contains("/kcs2/js/main.js")) {
+                        // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
+                        byte[] fileContent = readFileToBytes(tmp);
                         if (prefs.getBoolean("show_fps_counter", false)) {
                             fileContent = injectFpsUpdater(fileContent);
                         }
@@ -647,8 +652,20 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         if (changeTouchEventPrefs && changeWebview) {
                             fileContent = injectTouchLogic(fileContent);
                         }
+
+                        length = fileContent.length;
+                        inputStream = new ByteArrayInputStream(fileContent);
+                    } else {
+                        // Nothing to inject to file content
+                        // Avoid extra reading and writing the stream
+                        length = tmp.length();
+                        inputStream = new FileInputStream(tmp);
                     }
-                    return backToWebView(path, String.valueOf(fileContent.length), new ByteArrayInputStream(fileContent));
+
+                    Object[] response = backToWebView(path, String.valueOf(length), inputStream);
+                    final long duration = System.nanoTime() - startTime;
+                    Log.d("KCVA", "Local cache uri："  + uri + " after " + duration/1000 + "us");
+                    return response;
                 } else {
                     ResponseBody serverResponse = requestServer(uri, requestHeader);
                     if(serverResponse != null){
