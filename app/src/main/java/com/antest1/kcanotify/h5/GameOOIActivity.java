@@ -187,9 +187,8 @@ public class GameOOIActivity extends GameBaseActivity {
 //        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 
         mWebview.loadUrl("http://" + hostName + "/poi");
-
+        mWebview.onShow();
         mWebview.resumeTimers();
-
     }
 
 
@@ -201,18 +200,16 @@ public class GameOOIActivity extends GameBaseActivity {
 
     @Override
     public void webviewPause() {
+        mWebview.onHide();
         mWebview.pauseTimers();
     }
 
     @Override
     public void webviewResume() {
-        try{
+        // It may also be called once at startup without xwalkview being ready
+        if (this.isXWalkReady()) {
+            mWebview.onShow();
             mWebview.resumeTimers();
-        } catch(java.lang.RuntimeException e) {
-            if ( e.getMessage().compareTo("Crosswalk's APIs are not ready yet") == 0 ) {
-            } else {
-                throw e;
-            }
         }
     }
 
