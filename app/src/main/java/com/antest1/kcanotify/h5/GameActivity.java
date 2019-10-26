@@ -100,12 +100,14 @@ public class GameActivity extends GameBaseActivity {
                         public void run() {
                             Set<Map.Entry<String, String>> dmmCookieMapSet = dmmCokieMap.entrySet();
                             for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                                mWebview.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
-                                    @Override
-                                    public void onReceiveValue(String value) {
-                                        Log.i("KCVA", value);
-                                    }
-                                });
+                                if (mWebview != null) {
+                                    mWebview.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
+                                        @Override
+                                        public void onReceiveValue(String value) {
+                                            Log.i("KCVA", value);
+                                        }
+                                    });
+                                }
                             }
                         }
                     }, 5000);
@@ -117,12 +119,14 @@ public class GameActivity extends GameBaseActivity {
                         public void run() {
                             Set<Map.Entry<String, String>> dmmCookieMapSet = dmmCokieMap.entrySet();
                             for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                                mWebview.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
-                                    @Override
-                                    public void onReceiveValue(String value) {
-                                        Log.i("KCVA", value);
-                                    }
-                                });
+                                if (mWebview != null) {
+                                    mWebview.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
+                                        @Override
+                                        public void onReceiveValue(String value) {
+                                            Log.i("KCVA", value);
+                                        }
+                                    });
+                                }
                             }
                             mWebview.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
                         }
