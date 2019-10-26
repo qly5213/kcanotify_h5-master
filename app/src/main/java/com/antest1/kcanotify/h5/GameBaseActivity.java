@@ -142,7 +142,12 @@ public abstract class GameBaseActivity extends XWalkActivity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(KcaApplication.gameActivity != null){
+
+        // For some (mainly Samsung) devices, opening app in pop up window mode will re-create a second instant
+        // but the system is still keeping/using resources of the old instant for a while
+        // In this case, we do not finish the old view
+        if(KcaApplication.gameActivity != null && KcaApplication.gameActivity.getClass() != this.getClass()){
+            // Remove last game activity only after changing important settings (DMM/OOI, Crosswalk/WebView)
             KcaApplication.gameActivity.finish();
         }
         KcaApplication.gameActivity = this;
