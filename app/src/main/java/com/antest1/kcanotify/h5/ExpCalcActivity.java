@@ -1,7 +1,6 @@
 package com.antest1.kcanotify.h5;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -24,7 +23,6 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,12 +41,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static android.media.CamcorderProfile.get;
 import static com.antest1.kcanotify.h5.KcaApiData.getShipTranslation;
 import static com.antest1.kcanotify.h5.KcaApiData.loadShipExpInfoFromAssets;
 import static com.antest1.kcanotify.h5.KcaApiData.loadSortieExpInfoFromAssets;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
-import static com.antest1.kcanotify.h5.KcaApiData.setDataLoadTriggered;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_EXPCALTRK;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_EXPSHIP;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_EXPSORTIE;
@@ -88,7 +84,7 @@ public class ExpCalcActivity extends AppCompatActivity {
     EditText value_base_exp;
     CheckBox chkbox_flagship, chkbox_mvp;
     ArrayAdapter<String> ship_adapter, current_lv_adapter, target_lv_adapter, map_adapter, rank_adapter;
-    ImageView cal_hide_bar;
+    ImageView cal_hide_bar, map_base_exp, btn_base_exp_help;
     FloatingActionButton add_button;
     LinearLayout listview;
 
@@ -146,6 +142,15 @@ public class ExpCalcActivity extends AppCompatActivity {
                 cal_visible = !cal_visible;
             }
         });
+
+        map_base_exp = findViewById(R.id.map_base_exp);
+        map_base_exp.setVisibility(View.GONE);
+        map_base_exp.setOnClickListener(v -> map_base_exp.setVisibility(View.GONE));
+
+        btn_base_exp_help = findViewById(R.id.btn_base_exp_help);
+        btn_base_exp_help.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                R.color.black), PorterDuff.Mode.SRC_ATOP);
+        btn_base_exp_help.setOnClickListener(v -> map_base_exp.setVisibility(View.VISIBLE));
 
         listview = findViewById(R.id.ship_leveling_list);
         add_button = findViewById(R.id.add_exp_track);

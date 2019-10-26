@@ -1,12 +1,11 @@
 package com.antest1.kcanotify.h5;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,7 +23,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -39,7 +37,6 @@ import com.tonyodev.fetch2.Request;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -50,7 +47,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.antest1.kcanotify.h5.InitStartActivity.ACTION_RESET;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_STARTDATA;
 import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_SETTING;
@@ -62,6 +58,7 @@ import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_DATA_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_RES_USELOCAL;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_UPDATE_SERVER;
 import static com.antest1.kcanotify.h5.KcaResCheckItemAdpater.RESCHK_KEY;
 import static com.antest1.kcanotify.h5.KcaUtils.compareVersion;
 import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
@@ -70,6 +67,8 @@ import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
 
 public class UpdateCheckActivity extends AppCompatActivity {
+    public static final int LOAD_DELAY = 500;
+
     Toolbar toolbar;
     static Gson gson = new Gson();
     String latest_gamedata_version = "";
@@ -78,12 +77,13 @@ public class UpdateCheckActivity extends AppCompatActivity {
     ListView data_list, resource_list;
     KcaResCheckItemAdpater gamedata_adapter = new KcaResCheckItemAdpater();
     KcaResCheckItemAdpater resource_adapter = new KcaResCheckItemAdpater();
-    TextView gamedata_chk, resource_chk;
+    TextView gamedata_chk, resource_chk, gamedata_server, resource_downall;
     TextView gamedata_load, resource_load;
     CheckBox checkstart_chkbox, localonly_chkbox, resource_reset;
     ProgressDialog mProgressDialog;
     JsonArray fairy_queue = new JsonArray();
     boolean main_flag = false;
+    int checked = -1;
 
     KcaDBHelper dbHelper;
     UpdateHandler handler;
@@ -164,8 +164,7 @@ public class UpdateCheckActivity extends AppCompatActivity {
                         (dialog, which) -> {
                             dbHelper.clearResVer();
                             setPreferences(getApplicationContext(), PREF_KCARESOURCE_VERSION, 0);
-                            Intent mainIntent = new Intent(this, InitStartActivity.class);
-                            mainIntent.putExtra(ACTION_RESET, true);
+                            Intent mainIntent = new Intent(this, MainActivity.class);
                             startActivity(mainIntent);
                             finish();
                         });
@@ -191,9 +190,48 @@ public class UpdateCheckActivity extends AppCompatActivity {
 
         gamedata_chk = findViewById(R.id.gamedata_updatecheck);
         resource_chk = findViewById(R.id.resources_updatecheck);
+        resource_downall = findViewById(R.id.resources_downloadall);
 
         gamedata_chk.setOnClickListener(v -> checkVersionUpdate());
         resource_chk.setOnClickListener(v -> checkResourceUpdate());
+        resource_downall.setOnClickListener(v -> downloadAllResources());
+        resource_downall.setVisibility(View.GONE);
+
+
+        gamedata_server = findViewById(R.id.gamedata_server);
+        gamedata_server.setText(getStringWithLocale(R.string.action_server));
+        gamedata_server.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final int initValue = checked;
+                String[] listItems = getResources().getStringArray(R.array.ServerLocation);
+                String[] listEntry = getResources().getStringArray(R.array.ServerLocationValue);
+                AlertDialog.Builder mBuilder = new AlertDialog.Builder(UpdateCheckActivity.this);
+                mBuilder.setTitle(getStringWithLocale(R.string.setting_menu_app_title_updatecheckserver));
+                String currentServer = getStringPreferences(getApplicationContext(), PREF_UPDATE_SERVER);
+                for (int i = 0; i < listEntry.length; i++) if (currentServer.equals(listEntry[i])) {
+                    checked = i;
+                    break;
+                }
+
+                mBuilder.setSingleChoiceItems(listItems, checked, (dialog, which) -> {
+                    checked = which;
+                });
+                mBuilder.setPositiveButton(getStringWithLocale(R.string.dialog_ok), (dialog, which) -> {
+                    Log.e("KCA", "selected: " + checked);
+                    if (checked != -1) {
+                        String selectedServer = listEntry[checked];
+                        setPreferences(getApplicationContext(), PREF_UPDATE_SERVER, selectedServer);
+                    }
+                });
+                mBuilder.setNegativeButton(getStringWithLocale(R.string.dialog_cancel), ((dialog, which) -> {
+                    checked = initValue;
+                }));
+
+                AlertDialog mDialog = mBuilder.create();
+                mDialog.show();
+            }
+        });
 
         checkVersionUpdate();
         checkResourceUpdate();
@@ -208,6 +246,12 @@ public class UpdateCheckActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        loadTranslationData(getApplicationContext(), true);
+        super.onPause();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -219,6 +263,17 @@ public class UpdateCheckActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (main_flag) {
+            Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(mainIntent);
+            finish();
+        }  else {
+            super.onBackPressed();
         }
     }
 
@@ -282,6 +337,7 @@ public class UpdateCheckActivity extends AppCompatActivity {
             load_resource.enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                    int num_count = 0;
                     String res_result = response.body();
                     try {
                         resource_info = gson.fromJson(res_result, listType);
@@ -295,6 +351,7 @@ public class UpdateCheckActivity extends AppCompatActivity {
                             int latest_res_v = item.get("version").getAsInt();
                             item.addProperty("version_str", getVersionString(current_res_v, latest_res_v));
                             item.addProperty("highlight", current_res_v < latest_res_v);
+                            if (current_res_v < latest_res_v) num_count += 1;
                         }
                         resource_adapter.setContext(getApplicationContext());
                         resource_adapter.setListItem(resource_info);
@@ -305,6 +362,8 @@ public class UpdateCheckActivity extends AppCompatActivity {
                         resource_list.setVisibility(View.VISIBLE);
                     } catch (Exception e) {
                         resource_load.setText("Error: " + e.getMessage());
+                    } finally {
+                        resource_downall.setVisibility(num_count > 0 ? View.VISIBLE : View.GONE);
                     }
                 }
 
@@ -315,8 +374,19 @@ public class UpdateCheckActivity extends AppCompatActivity {
             });
 
         }
+    }
 
-
+    private void downloadAllResources() {
+        for (int i = 0; i < resource_info.size(); i++) {
+            JsonObject item = resource_info.get(i);
+            boolean highlight = item.get("highlight").getAsBoolean();
+            if (highlight) {
+                String url = item.get("url").getAsString();
+                String name = item.get("name").getAsString();
+                int version = item.get("version").getAsInt();
+                downloadFile(url, name, version);
+            }
+        }
     }
 
 
@@ -352,9 +422,9 @@ public class UpdateCheckActivity extends AppCompatActivity {
 
     private void downloadGameData() {
         final Call<String> down_gamedata = downloader.getGameData("recent");
-        down_gamedata.enqueue(new retrofit2.Callback<String>() {
+        down_gamedata.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<String> call, retrofit2.Response<String> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
                 JsonObject response_data = new JsonObject();
                 try {
                     if (response.body() != null) {
@@ -413,8 +483,7 @@ public class UpdateCheckActivity extends AppCompatActivity {
 
         final Request request = new Request(KcaUtils.format("%s?t=%d", url, timestamp), data.getPath());
         fetch.enqueue(request, updatedRequest -> {
-            dbHelper.putResVer(name, version);
-            loadTranslationData(getApplicationContext());
+            new DataSaveTask(this).execute(name, String.valueOf(version));
             if (name.equals("icon_info.json")) {
                 Toast.makeText(getApplicationContext(), "Download Completed: " + name + "\nRetrieving Fairy Images..", Toast.LENGTH_LONG).show();
                 final Handler handler = new Handler();
@@ -423,20 +492,21 @@ public class UpdateCheckActivity extends AppCompatActivity {
                     public void run() {
                         new KcaFairyDownloader().execute();
                     }
-                }, 500);
-            } else {
-                Toast.makeText(getApplicationContext(), "Download Completed: " + name, Toast.LENGTH_LONG).show();
+                }, LOAD_DELAY);
             }
+            int num_count = 0;
             for (int i = 0; i < resource_info.size(); i++) {
                 JsonObject item = resource_info.get(i).getAsJsonObject();
                 if (item.get("name").getAsString().equals(name)) {
                     int latest_res_v = item.get("version").getAsInt();
                     item.addProperty("version_str", getVersionString(version, latest_res_v));
                     item.addProperty("highlight", version < latest_res_v);
+                    if (version < latest_res_v) num_count += 1;
                 }
             }
             resource_adapter.setListItem(resource_info);
             resource_adapter.notifyDataSetChanged();
+            resource_downall.setVisibility(num_count > 0 ? View.VISIBLE : View.GONE);
         }, error -> {
             Toast.makeText(getApplicationContext(), "Error when downloading " + name, Toast.LENGTH_LONG).show();
         });
@@ -598,4 +668,53 @@ public class UpdateCheckActivity extends AppCompatActivity {
         loadTranslationData(getApplicationContext());
         super.onConfigurationChanged(newConfig);
     }
+
+    static class DataSaveTask extends AsyncTask<String, Void, Boolean> {
+        private final WeakReference<Activity> weakReference;
+        String name = "";
+
+        DataSaveTask(Activity myActivity) {
+            this.weakReference = new WeakReference<>(myActivity);
+        }
+
+        @Override
+        public Boolean doInBackground(String... params) {
+            Activity activity = this.weakReference.get();
+            if (activity == null || activity.isFinishing()
+                    || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed())) {
+                // weakReference is no longer valid, don't do anything!
+                return false;
+            }
+            name = params[0];
+            KcaDBHelper dbHelper = new KcaDBHelper(activity.getApplicationContext(), null, KCANOTIFY_DB_VERSION);
+            dbHelper.putResVer(params[0], Long.parseLong(params[1]));
+            dbHelper.close();
+            return true;
+        }
+
+        @Override
+        public void onPostExecute(Boolean result) {
+            // Re-acquire a strong reference to the weakReference, and verify
+            // that it still exists and is active.
+            Activity activity = this.weakReference.get();
+            if (activity == null || activity.isFinishing()
+                    || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed())) {
+                return;
+            }
+            Context context = activity.getApplicationContext();
+            if (result) {
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(context, "Download Completed: " + name, Toast.LENGTH_LONG).show();
+                    }
+                }, LOAD_DELAY);
+            } else {
+                Toast.makeText(context, "failed to read data", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
 }

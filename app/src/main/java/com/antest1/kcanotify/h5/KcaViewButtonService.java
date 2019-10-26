@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -44,7 +43,6 @@ import android.widget.Toast;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -55,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_BATTLEINFO;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_BATTLENODE;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_FAIRYLOC;
+import static com.antest1.kcanotify.h5.KcaConstants.GOTO_PACKAGE_NAME;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_FAIRY_CHECKED;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_FAIRY_HIDDEN;
@@ -71,11 +70,8 @@ import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_NOTI_LONGCLICK;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_REV;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_BATTLEVIEW_USE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_NOTI_QUEST_FAIRY_GLOW;
-import static com.antest1.kcanotify.h5.KcaFairySelectActivity.FAIRY_SPECIAL_FLAG;
-import static com.antest1.kcanotify.h5.KcaFairySelectActivity.FAIRY_SPECIAL_PREFIX;
 import static com.antest1.kcanotify.h5.KcaUtils.doVibrate;
 import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
-import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getOrientationPrefix;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
@@ -573,6 +569,8 @@ public class KcaViewButtonService extends Service {
                 if (foregroundPackage.trim().length() > 0) {
                     if (foregroundPackage.contains(KC_PACKAGE_NAME)) {
                         current_foreground_status = true;
+                    } else if (foregroundPackage.contains(GOTO_PACKAGE_NAME)) {
+                        current_foreground_status = true;
                     }
                 } else {
                     current_foreground_status = is_kc_foreground;
@@ -658,6 +656,8 @@ public class KcaViewButtonService extends Service {
                 if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND){
                     if (appProcess.processName.contains(KC_PACKAGE_NAME)) {
                         recentPackageName = KC_PACKAGE_NAME;
+                    } else if (appProcess.processName.contains(GOTO_PACKAGE_NAME)) {
+                        recentPackageName = GOTO_PACKAGE_NAME;
                     }
                 }
             }

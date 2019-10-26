@@ -146,13 +146,6 @@
                 android:value="com.antest1.kcanotify.h5.ToolsActivity" />
         </activity>
         <activity
-            android:name="com.antest1.kcanotify.h5.KcaDataSyncActivity"
-            android:configChanges="locale|layoutDirection|orientation|screenSize">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.antest1.kcanotify.h5.ToolsActivity" />
-        </activity>
-        <activity
             android:name="com.antest1.kcanotify.h5.KcaFairySelectActivity"
             android:configChanges="locale|layoutDirection|orientation|screenSize">
             <meta-data
@@ -196,14 +189,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.antest1.kcanotify.h5.SettingActivity" />
         </activity>
-        <!--<activity
-            android:name="com.antest1.kcanotify.h5.InitStartActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>-->
         <activity
             android:name=".ZxingActivity"
             android:screenOrientation="fullSensor"
@@ -304,17 +289,6 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
-
-        <receiver
-            android:name=".KcaAutomationReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:label="Automation Receiver" >
-            <intent-filter>
-                <action android:name="sniffer_on" />
-                <action android:name="sniffer_off" />
-            </intent-filter>
-        </receiver>
 
         <receiver
             android:name=".KcaTimerWidget"

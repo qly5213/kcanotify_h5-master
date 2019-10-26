@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#2c3e50</color>
-    <color name="colorPrimaryDark">#1d2935</color>
-    <color name="colorAccent">#03a9f4</color>
+    <color name="colorPrimary">#313447</color>
+    <color name="colorPrimaryDark">#2B2B30</color>
+    <color name="colorAccent">#CA5B0A</color>
     <color name="colorActivityBack">#ffffff</color>
     <color name="colorActivityText">#888888</color>
+    <color name="colorMainBtn">#CA5B0A</color>
+    <color name="colorMainBtnText">#ffffff</color>
     <color name="colorToolbarText">#ffffff</color>
     <color name="colorBtn">#d6d6d6</color>
     <color name="colorBtnText">#000000</color>
     <color name="colorBtnTextAccent">#ffffff</color>
-    <color name="colorFleetInfoBtn">#2c3e50</color>
+    <color name="colorFleetInfoBtn">#313447</color>
 
-    <color name="colorGameStartBtn">#2a5aac</color>
-    <color name="colorFairyShowBtn">#009688</color>
-    <color name="colorToolsBtn">#5c6bc0</color>
+    <color name="colorGameStartBtn">#AA0108</color>
+    <color name="colorFairyShowBtn">#FD811F</color>
+    <color name="colorToolsBtn">#FACC5C</color>
 
     <color name="colorUpdate">#e8f5e9</color>
     <color name="colorUpdateText">#1b5e20</color>
@@ -43,6 +45,7 @@
     <color name="colorAirBattle">#4e342e</color>
     <color name="colorLdShooting">#ffa000</color>
     <color name="colorPlaneWipedText">#ff5252</color>
+    <color name="colorSubmarineNode">#60C1D4</color>
 
     <color name="colorProgressBack">#d6d6d6</color>
     <color name="colorNormalState">#64dd17</color>
@@ -185,13 +188,13 @@
     <color name="colorStatNotLocked">#bdbdbd</color>
     <color name="colorStatLocked">#4e7bff</color>
 
-    <color name="colorStatSallyArea0">#FFFFFF</color>
-    <color name="colorStatSallyArea1">#bdbdbd</color>
-    <color name="colorStatSallyArea2">#aed581</color>
-    <color name="colorStatSallyArea3">#388e3c</color>
-    <color name="colorStatSallyArea4">#f9a825</color>
-    <color name="colorStatSallyArea5">#00acc1</color>
-    <color name="colorStatSallyArea6">#673AB7</color>
+    <color name="colorStatSallyArea0">#00FFFFFF</color>
+    <color name="colorStatSallyArea1">#72B8FD</color>
+    <color name="colorStatSallyArea2">#AFD633</color>
+    <color name="colorStatSallyArea3">#FFE082</color>
+    <color name="colorStatSallyArea4">#90CAF9</color>
+    <color name="colorStatSallyArea5">#F48FB1</color>
+    <color name="colorStatSallyArea6">#B1E6B5</color>
 
     <color name="colorStatFighterPower">#16a085</color>
     <color name="colorStatSortCurrentBack">#c0bdbdbd</color>
@@ -210,6 +213,8 @@
     <color name="colorExpeditionTable3">#03A9F4</color>
     <color name="colorExpeditionTable4">#4CAF50</color>
     <color name="colorExpeditionTable5">#AB47BC</color>
+    <color name="colorExpeditionTable6">#5264D6</color>
+    <color name="colorExpeditionTable7">#F7A43A</color>
     <color name="colorExpeditionTable99">#e53935</color>
     <color name="colorExpeditionGreatSuccess">#ff5252</color>
     <color name="colorExpeditionItemBack">#c0f5f5f5</color>
@@ -232,4 +237,12 @@
 
     <color name="colorWidgetAlert">#ff5252</color>
     <color name="colorFairyBtn">#009688</color>
+
+    <color name="colorGunfit0">#e57373</color>
+    <color name="colorGunfit1">#ffcdd2</color>
+    <color name="colorGunfit2">#f5f5f5</color>
+    <color name="colorGunfit3">#a7ffeb</color>
+    <color name="colorGunfit4">#1de9b6</color>
+
+
 </resources>

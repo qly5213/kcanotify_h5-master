@@ -153,6 +153,7 @@ public class KcaAlarmService extends Service {
                 if (action.startsWith(CLICK_ACTION)) {
                     Intent kcintent = getKcIntent(getApplicationContext());
                     if (kcintent != null) {
+                        kcintent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         PendingIntent pintent = PendingIntent.getActivity(getApplicationContext(), 0, kcintent, 0);
                         try {
                             pintent.send();
@@ -187,7 +188,7 @@ public class KcaAlarmService extends Service {
             } else if (getBooleanPreferences(getApplication(), PREF_KCA_NOTI_NOTIFYATSVCOFF) || KcaService.getServiceStatus()) {
                 loadTranslationData(getApplicationContext());
                 if (intent.getStringExtra("data") != null) {
-                    String locale = LocaleUtils.getLocaleCode(getStringPreferences(getApplicationContext(), PREF_KCA_LANGUAGE));
+                    String locale = LocaleUtils.getResourceLocaleCode(getStringPreferences(getApplicationContext(), PREF_KCA_LANGUAGE));
                     if (type == TYPE_EXPEDITION) {
                         int idx = data.get("idx").getAsInt();
                         KcaExpedition2.clearMissionData(idx);

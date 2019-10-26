@@ -12,9 +12,6 @@ import android.widget.TextView;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.antest1.kcanotify.h5.KcaApiData.getUserItemStatusById;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
 

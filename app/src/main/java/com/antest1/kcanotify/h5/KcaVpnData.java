@@ -1,8 +1,6 @@
 package com.antest1.kcanotify.h5;
 
 
-import android.content.Context;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.util.SparseArray;
@@ -15,18 +13,12 @@ import com.google.gson.JsonObject;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_RESOURCE_URL;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_VPN_DATA_ERROR;
 import static com.antest1.kcanotify.h5.KcaUtils.byteArrayToHex;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
@@ -77,25 +69,6 @@ public class KcaVpnData {
         handler = h;
     }
 
-    // Called from native code
-    private static int containsKcaServer(int type, byte[] source, byte[] target) {
-
-        String saddrstr = new String(source);
-        String taddrstr = new String(target);
-        if (type == REQUEST) {
-            for (String prefix: kcaServerPrefixList) {
-                if (taddrstr.startsWith(prefix)) return 1;
-            }
-            if(KcaConstants.hostAddressIp != null && KcaConstants.hostAddressIp.equals(taddrstr)) return 1;
-        } else if (type == RESPONSE) {
-            for (String prefix: kcaServerPrefixList) {
-                if (saddrstr.startsWith(prefix)) return 1;
-            }
-            if(KcaConstants.hostAddressIp != null && KcaConstants.hostAddressIp.equals(saddrstr)) return 1;
-        }
-        //Log.e("KCAV", KcaUtils.format("containsKcaServer[%d] %s:%d => %s:%d", type, saddrstr, sport, taddrstr, tport));
-        return 0;
-    }
 
     // Called from native code
     private static void getDataFromNative(byte[] data, int size, int type, byte[] source, byte[] target, int sport, int tport) {

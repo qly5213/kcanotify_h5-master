@@ -75,7 +75,7 @@ public class GameWebViewActivity extends GameBaseActivity {
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
-//        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(true);
         //设置WebChromeClient类
         mWebview.setWebChromeClient(new WebChromeClient() {
             //获取网站标题

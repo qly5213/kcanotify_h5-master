@@ -1,10 +1,8 @@
 package com.antest1.kcanotify.h5;
 
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -13,8 +11,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -22,27 +18,13 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.AlphaAnimation;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.util.Calendar;
-
-import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_BATTLEINFO;
-import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
-import static com.antest1.kcanotify.h5.KcaConstants.KCA_MSG_BATTLE_INFO;
-import static com.antest1.kcanotify.h5.KcaConstants.KCA_MSG_BATTLE_VIEW_REFRESH;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_NOTI_LONGCLICK;
-import static com.antest1.kcanotify.h5.KcaDevelopPopupService.DEV_DATA_ACTION;
 import static com.antest1.kcanotify.h5.KcaUtils.adjustAlpha;
-import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
-import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getWindowLayoutType;
-import static com.antest1.kcanotify.h5.R.id.ed_icon;
 
 public class KcaCustomToastService extends Service {
     public static final String TOAST_SHOW_ACTION = "toast_show_action";

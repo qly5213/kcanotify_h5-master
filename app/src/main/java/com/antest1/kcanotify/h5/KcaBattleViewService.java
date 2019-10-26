@@ -41,6 +41,7 @@ import java.util.List;
 import static com.antest1.kcanotify.h5.KcaApiData.checkUserPortEnough;
 import static com.antest1.kcanotify.h5.KcaApiData.getAirForceResultString;
 import static com.antest1.kcanotify.h5.KcaApiData.getCurrentNodeAlphabet;
+import static com.antest1.kcanotify.h5.KcaApiData.getCurrentNodeSubExist;
 import static com.antest1.kcanotify.h5.KcaApiData.getEngagementString;
 import static com.antest1.kcanotify.h5.KcaApiData.getFormationString;
 import static com.antest1.kcanotify.h5.KcaApiData.getItemString;
@@ -57,6 +58,9 @@ import static com.antest1.kcanotify.h5.KcaApiData.isItemAircraft;
 import static com.antest1.kcanotify.h5.KcaConstants.*;
 import static com.antest1.kcanotify.h5.KcaFleetViewService.SHOW_FLEETVIEW_ACTION;
 import static com.antest1.kcanotify.h5.KcaQuestViewService.SHOW_QUESTVIEW_ACTION_NEW;
+import static com.antest1.kcanotify.h5.KcaUseStatConstant.BV_BTN_PRESS;
+import static com.antest1.kcanotify.h5.KcaUseStatConstant.CLOSE_BATTEVIEW;
+import static com.antest1.kcanotify.h5.KcaUseStatConstant.OPEN_BATTEVIEW;
 import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getContextWithLocale;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
@@ -64,6 +68,7 @@ import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getWindowLayoutType;
 import static com.antest1.kcanotify.h5.KcaUtils.joinStr;
+import static com.antest1.kcanotify.h5.KcaUtils.sendUserAnalytics;
 import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
 
 
@@ -229,11 +234,12 @@ public class KcaBattleViewService extends Service {
                 int api_maparea_id = api_data.get("api_maparea_id").getAsInt();
                 int api_mapinfo_no = api_data.get("api_mapinfo_no").getAsInt();
                 int api_no = api_data.get("api_no").getAsInt();
-                String currentNode = getCurrentNodeAlphabet(api_maparea_id, api_mapinfo_no, api_no);
+                String current_node = getCurrentNodeAlphabet(api_maparea_id, api_mapinfo_no, api_no);
+                boolean sub_exist = getCurrentNodeSubExist(api_maparea_id, api_mapinfo_no, api_no);
                 int api_event_id = api_data.get("api_event_id").getAsInt();
                 int api_event_kind = api_data.get("api_event_kind").getAsInt();
                 int api_color_no = api_data.get("api_color_no").getAsInt();
-                currentNodeInfo = getNodeFullInfo(contextWithLocale, currentNode, api_event_id, api_event_kind, true);
+                currentNodeInfo = getNodeFullInfo(contextWithLocale, current_node, api_event_id, api_event_kind, true);
                 currentNodeInfo = currentNodeInfo.replaceAll("[()]", "");
 
                 // View Settings
@@ -352,6 +358,8 @@ public class KcaBattleViewService extends Service {
 
                 battleview.findViewById(R.id.battle_node)
                         .setBackgroundColor(getNodeColor(getApplicationContext(), api_event_id, api_event_kind, api_color_no));
+                if (is_practice) battleview.findViewById(R.id.battle_node_ss).setVisibility(View.GONE);
+                else battleview.findViewById(R.id.battle_node_ss).setVisibility(sub_exist ? View.VISIBLE : View.GONE);
             }
 
             if (api_data.has("api_deck_port")) { // common sortie, practice
@@ -701,6 +709,8 @@ public class KcaBattleViewService extends Service {
                     }
                 }
 
+                if (is_practice) battleview.findViewById(R.id.battle_node_ss).setVisibility(View.GONE);
+
                 api_f_maxhps = api_data.getAsJsonArray("api_f_maxhps");
                 api_f_nowhps = api_data.getAsJsonArray("api_f_nowhps");
                 api_f_afterhps = api_data.getAsJsonArray("api_f_afterhps");
@@ -913,7 +923,7 @@ public class KcaBattleViewService extends Service {
 
                 String api_url = api_data.get("api_url").getAsString();
                 JsonObject rankData;
-                if (api_url.equals(API_REQ_SORTIE_LDAIRBATTLE) || api_url.equals(API_REQ_COMBINED_LDAIRBATTLE)|| api_url.equals(API_REQ_SORTIE_LDSHOOTING)) {
+                if (api_url.equals(API_REQ_SORTIE_LDAIRBATTLE) || api_url.equals(API_REQ_COMBINED_LDAIRBATTLE) || api_url.equals(API_REQ_SORTIE_LDSHOOTING)) {
                     rankData = KcaBattle.calculateLdaRank(fleetcheckdata);
                 } else {
                     rankData = KcaBattle.calculateRank(fleetcheckdata);
@@ -1415,6 +1425,7 @@ public class KcaBattleViewService extends Service {
         }
         infoList.add(tpValue);
         ((TextView) menuView.findViewById(R.id.view_menu_fleetinfo)).setText(joinStr(infoList, "\n"));
+        sendUserAnalytics(BV_BTN_PRESS, null);
     }
 
     private void setAirCombatContact(String prefix, JsonObject data) {
@@ -1668,11 +1679,15 @@ public class KcaBattleViewService extends Service {
                     battleview.findViewById(getId(KcaUtils.format("fm_%d_lv", 7), R.id.class)).setOnTouchListener(shipViewTouchListener);
                     battleview.findViewById(getId(KcaUtils.format("fm_%d_exp", 7), R.id.class)).setOnTouchListener(shipViewTouchListener);
                     if (mView != null) mView.setVisibility(View.VISIBLE);
+                    sendUserAnalytics(OPEN_BATTEVIEW, null);
                 }
             }
             if (intent.getAction().equals(HIDE_BATTLEVIEW_ACTION)) {
                 if (mView != null) mView.setVisibility(View.GONE);
                 if (itemView != null) itemView.setVisibility(View.GONE);
+                JsonObject statProperties = new JsonObject();
+                statProperties.addProperty("manual", true);
+                sendUserAnalytics(CLOSE_BATTEVIEW, statProperties);
             }
         }
         return super.onStartCommand(intent, flags, startId);
@@ -1706,6 +1721,9 @@ public class KcaBattleViewService extends Service {
                         if (clickDuration < MAX_CLICK_DURATION) {
                             if (mView != null) mView.setVisibility(View.GONE);
                             if (itemView != null) itemView.setVisibility(View.GONE);
+                            JsonObject statProperties = new JsonObject();
+                            statProperties.addProperty("manual", false);
+                            sendUserAnalytics(CLOSE_BATTEVIEW, statProperties);
                         }
                     }
                     break;
@@ -1883,10 +1901,13 @@ public class KcaBattleViewService extends Service {
         @Override
         public void onClick(View v) {
             Intent qintent;
-
             Log.e("KCA-BV", getResources().getResourceEntryName(v.getId()));
+            JsonObject statProperties = new JsonObject();
+
             switch (v.getId()) {
                 case R.id.view_item0:
+                    statProperties.addProperty("type", "air_calulation");
+                    sendUserAnalytics(BV_BTN_PRESS.concat("Menu"), statProperties);
                     initAcViewParams();
                     if (acView != null && acView.getParent() != null) {
                         mManager.updateViewLayout(acView, acViewParams);
@@ -1896,11 +1917,15 @@ public class KcaBattleViewService extends Service {
                     }
                     break;
                 case R.id.view_item1:
+                    statProperties.addProperty("type", "quest_view");
+                    sendUserAnalytics(BV_BTN_PRESS.concat("Menu"), statProperties);
                     qintent = new Intent(getBaseContext(), KcaQuestViewService.class);
                     qintent.setAction(SHOW_QUESTVIEW_ACTION_NEW);
                     startService(qintent);
                     break;
                 case R.id.view_item2:
+                    statProperties.addProperty("type", "enter_fleetview");
+                    sendUserAnalytics(BV_BTN_PRESS.concat("Menu"), statProperties);
                     qintent = new Intent(getBaseContext(), KcaFleetViewService.class);
                     qintent.setAction(SHOW_FLEETVIEW_ACTION);
                     startService(qintent);

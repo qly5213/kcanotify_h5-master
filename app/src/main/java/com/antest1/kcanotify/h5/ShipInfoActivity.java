@@ -1,36 +1,35 @@
 package com.antest1.kcanotify.h5;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.Vibrator;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 import static android.widget.Toast.makeText;
@@ -39,20 +38,18 @@ import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_DECKPORT;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_SHIPIFNO;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_AKASHI_FILTERLIST;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_AKASHI_STARLIST;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_AKASHI_STAR_CHECKED;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_FILTCOND;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_SORTKEY;
-import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_SPEQUIPS;
+import static com.antest1.kcanotify.h5.KcaUtils.doVibrate;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
-import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
 
 
 public class ShipInfoActivity extends AppCompatActivity {
     static final int SHIPINFO_GET_SORT_KEY = 1;
     static final int SHIPINFO_GET_FILTER_RESULT = 2;
+    static final int SHIPINFO_SET_QUERY = 3;
 
     Toolbar toolbar;
     static Gson gson = new Gson();
@@ -60,8 +57,15 @@ public class ShipInfoActivity extends AppCompatActivity {
     TextView totalcountview, totalexpview;
 
     KcaDBHelper dbHelper;
-    Button sortButton, filterButton;
+    Button sortButton, filterButton, searchButton;
     KcaShipListViewAdpater adapter;
+    EditText searchEditText;
+    Vibrator vibrator;
+
+    boolean is_popup_on;
+    boolean is_search_on;
+    View export_popup, export_exit;
+    TextView export_clipboard, export_openpage, export_openfa;
 
     public ShipInfoActivity() {
         LocaleUtils.updateConfig(this);
@@ -79,6 +83,7 @@ public class ShipInfoActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(getResources().getString(R.string.action_shipinfo));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         dbHelper = new KcaDBHelper(getApplicationContext(), null, KCANOTIFY_DB_VERSION);
         KcaApiData.setDBHelper(dbHelper);
@@ -97,20 +102,50 @@ public class ShipInfoActivity extends AppCompatActivity {
         totalexpview = findViewById(R.id.shipinfo_total_exp);
         sortButton = findViewById(R.id.shipinfo_btn_sort);
         filterButton = findViewById(R.id.shipinfo_btn_filter);
+        searchButton = findViewById(R.id.shipinfo_btn_search);
+        searchEditText = findViewById(R.id.shipinfo_search);
 
-        sortButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        is_popup_on = false;
+        is_search_on = false;
+
+        sortButton.setOnClickListener(view -> {
+            if (!is_popup_on) {
                 Intent aIntent = new Intent(ShipInfoActivity.this, ShipInfoSortActivity.class);
                 startActivityForResult(aIntent, SHIPINFO_GET_SORT_KEY);
             }
         });
 
-        filterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        filterButton.setOnClickListener(view -> {
+            if (!is_popup_on) {
                 Intent aIntent = new Intent(ShipInfoActivity.this, ShipInfoFilterActivity.class);
                 startActivityForResult(aIntent, SHIPINFO_GET_FILTER_RESULT);
+            }
+        });
+
+        searchButton.setOnClickListener(view -> {
+            is_search_on = !is_search_on;
+            setButtonStyle(searchButton, is_search_on);
+            if (is_search_on) {
+                findViewById(R.id.shipinfo_search_area).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.shipinfo_search_area).setVisibility(View.GONE);
+            }
+        });
+
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                setSearchResult(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
         });
 
@@ -121,10 +156,58 @@ public class ShipInfoActivity extends AppCompatActivity {
 
         String sortkey = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_SORTKEY);
         String filtcond = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_FILTCOND);
-        setFilterButton(filtcond.length() > 1);
-        adapter.setListViewItemList(data, deckdata, sortkey, filtcond);
+        String special_equip = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_SPEQUIPS);
+        setButtonStyle(filterButton, filtcond.length() > 1);
+        adapter.setSpecialEquipment(KcaApiData.loadSpecialEquipmentShipInfo(getAssets()));
+        adapter.setListViewItemList(data, deckdata, sortkey, filtcond, special_equip);
+
         totalcountview.setText(KcaUtils.format(getStringWithLocale(R.string.shipinfo_btn_total_format), adapter.getCount()));
         totalexpview.setText(KcaUtils.format(getStringWithLocale(R.string.shipinfo_btn_total_exp_format), adapter.getTotalExp()));
+        setButtonStyle(searchButton, is_search_on);
+        findViewById(R.id.shipinfo_search_area).setVisibility(View.GONE);
+
+        export_popup = findViewById(R.id.export_popup);
+        ((TextView) export_popup.findViewById(R.id.export_title))
+                .setText(getStringWithLocale(R.string.shipinfo_export_title));
+        export_popup.setVisibility(View.GONE);
+
+        export_exit = export_popup.findViewById(R.id.export_exit);
+        ((ImageView) export_exit).setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                R.color.colorAccent), PorterDuff.Mode.SRC_ATOP);
+
+        export_popup.findViewById(R.id.export_bar).setOnClickListener(v -> {
+            is_popup_on = false;
+            export_popup.setVisibility(View.GONE);
+        });
+
+        export_clipboard = export_popup.findViewById(R.id.export_clipboard);
+        export_clipboard.setText(getStringWithLocale(R.string.shipinfo_export_clipboard));
+        export_clipboard.setOnClickListener(v -> {
+            CharSequence text = ((TextView) findViewById(R.id.export_content)).getText();
+            ClipboardManager clip = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            clip.setPrimaryClip(ClipData.newPlainText("text", text));
+            doVibrate(vibrator, 100);
+            Toast.makeText(getApplicationContext(),
+                    getStringWithLocale(R.string.copied_to_clipboard), Toast.LENGTH_LONG).show();
+        });
+
+        export_openpage = export_popup.findViewById(R.id.export_openpage);
+        export_openpage.setText(getStringWithLocale(R.string.shipinfo_export_openpage));
+        export_openpage.setOnClickListener(v -> {
+            String data1 = ((TextView) findViewById(R.id.export_content)).getText().toString();
+            String encoded = KcaUtils.encode64(data1);
+            Intent bIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://kancolle-calc.net/kanmusu_list.html?data=".concat(encoded)));
+            startActivity(bIntent);
+        });
+
+        export_openfa = export_popup.findViewById(R.id.export_openfa);
+        export_openfa.setText(getStringWithLocale(R.string.shipinfo_export_openfa));
+        export_openfa.setOnClickListener(v -> {
+            Intent bIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://kancolle-fleetanalysis.firebaseapp.com/#/"));
+            startActivity(bIntent);
+        });
 
         listview = findViewById(R.id.shipinfo_listview);
         listview.setAdapter(adapter);
@@ -134,37 +217,56 @@ public class ShipInfoActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        String sortkey = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_SORTKEY);
-        String filtcond = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_FILTCOND);
 
         if (resultCode == RESULT_OK && adapter != null && requestCode > 0) {
-            if (requestCode == SHIPINFO_GET_SORT_KEY) {
-                adapter.resortListViewItem(sortkey);
-            }
-            if (requestCode == SHIPINFO_GET_FILTER_RESULT) {
-                JsonArray deckdata = dbHelper.getJsonArrayValue(DB_KEY_DECKPORT);
-                JsonArray shipdata = dbHelper.getJsonArrayValue(DB_KEY_SHIPIFNO);
-                if (deckdata == null) deckdata = new JsonArray();
-                if (shipdata == null) shipdata = new JsonArray();
-
-                adapter.setListViewItemList(shipdata, deckdata, sortkey, filtcond);
-                setFilterButton(filtcond.length() > 1);
-            }
-            adapter.notifyDataSetChanged();
-            listview.setAdapter(adapter);
-            totalcountview.setText(KcaUtils.format(getStringWithLocale(R.string.shipinfo_btn_total_format), adapter.getCount()));
-            totalexpview.setText(KcaUtils.format(getStringWithLocale(R.string.shipinfo_btn_total_exp_format), adapter.getTotalExp()));
+            setList(requestCode);
         }
     }
 
-    private void setFilterButton(boolean is_active) {
-        if (is_active) {
-            filterButton.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorBtnTextAccent));
-            filterButton.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent));
-        } else {
-            filterButton.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorBtnText));
-            filterButton.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorBtn));
+    private void setList(int requestCode) {
+        String sortkey = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_SORTKEY);
+        String filtcond = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_FILTCOND);
+        String special_equip = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_SPEQUIPS);
+        export_popup.setVisibility(View.GONE);
+        if (requestCode == SHIPINFO_GET_SORT_KEY) {
+            adapter.resortListViewItem(sortkey);
         }
+        else {
+            JsonArray deckdata = dbHelper.getJsonArrayValue(DB_KEY_DECKPORT);
+            JsonArray shipdata = dbHelper.getJsonArrayValue(DB_KEY_SHIPIFNO);
+            if (deckdata == null) deckdata = new JsonArray();
+            if (shipdata == null) shipdata = new JsonArray();
+
+            adapter.setListViewItemList(shipdata, deckdata, sortkey, filtcond, special_equip);
+            if (requestCode == SHIPINFO_GET_FILTER_RESULT) {
+                setButtonStyle(filterButton, filtcond.length() > 1);
+            }
+        }
+        adapter.notifyDataSetChanged();
+        listview.setAdapter(adapter);
+        totalcountview.setText(KcaUtils.format(getStringWithLocale(R.string.shipinfo_btn_total_format), adapter.getCount()));
+        totalexpview.setText(KcaUtils.format(getStringWithLocale(R.string.shipinfo_btn_total_exp_format), adapter.getTotalExp()));
+    }
+
+    private void setSearchResult(String query) {
+        adapter.setSearchQuery(query);
+        setList(SHIPINFO_SET_QUERY);
+    }
+
+    private void setButtonStyle(Button button, boolean is_active) {
+        if (is_active) {
+            button.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorBtnTextAccent));
+            button.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent));
+        } else {
+            button.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorBtnText));
+            button.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorBtn));
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.shipinfo, menu);
+        return true;
     }
 
     @Override
@@ -175,6 +277,13 @@ public class ShipInfoActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_ship_export:
+                String data = adapter.getKanmusuListText();
+                String encoded_data = KcaUtils.encode64(data);
+                ((TextView) export_popup.findViewById(R.id.export_content)).setText(data);
+                is_popup_on = true;
+                export_popup.setVisibility(View.VISIBLE);
+                return true;
             case android.R.id.home:
                 finish();
                 return true;

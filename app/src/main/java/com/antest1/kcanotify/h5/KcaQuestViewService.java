@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import static android.R.attr.id;
 import static com.antest1.kcanotify.h5.KcaApiData.getQuestTrackInfo;
 import static com.antest1.kcanotify.h5.KcaApiData.isQuestTrackable;
 import static com.antest1.kcanotify.h5.KcaApiData.kcQuestInfoData;
@@ -41,11 +40,13 @@ import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_QUESTVIEW;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_QTDB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCAQSYNC_USE;
+import static com.antest1.kcanotify.h5.KcaUseStatConstant.OPEN_QUESTVIEW;
 import static com.antest1.kcanotify.h5.KcaUtils.getContextWithLocale;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 import static com.antest1.kcanotify.h5.KcaUtils.getWindowLayoutType;
 import static com.antest1.kcanotify.h5.KcaUtils.joinStr;
+import static com.antest1.kcanotify.h5.KcaUtils.sendUserAnalytics;
 
 
 public class KcaQuestViewService extends Service {
@@ -412,6 +413,7 @@ public class KcaQuestViewService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        JsonObject statProperties = new JsonObject();
         if (intent != null && intent.getAction() != null && mView != null) {
             if (intent.getAction().equals(REFRESH_QUESTVIEW_ACTION)) {
                 int extra = intent.getIntExtra("tab_id", -1);
@@ -421,14 +423,20 @@ public class KcaQuestViewService extends Service {
                 currentPage = 1;
                 updateView(setView(isquestlist, false, 0), false);
                 mView.setVisibility(View.VISIBLE);
+                statProperties.addProperty("type", "no_reset");
+                sendUserAnalytics(OPEN_QUESTVIEW, statProperties);
             } else if (intent.getAction().equals(SHOW_QUESTVIEW_ACTION_NEW)) {
                 currentPage = 1;
                 updateView(setView(isquestlist, false, 0), true);
                 mView.setVisibility(View.VISIBLE);
+                statProperties.addProperty("type", "new");
+                sendUserAnalytics(OPEN_QUESTVIEW, statProperties);
             } else if (intent.getAction().equals(CLOSE_QUESTVIEW_ACTION)) {
                 if (mView.getParent() != null) {
                     mView.setVisibility(View.GONE);
                     mManager.removeViewImmediate(mView);
+                    statProperties.addProperty("manual", false);
+                    sendUserAnalytics(OPEN_QUESTVIEW, statProperties);
                 }
             }
         }
@@ -442,6 +450,9 @@ public class KcaQuestViewService extends Service {
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+            JsonObject statProperties = new JsonObject();
+            statProperties.addProperty("manual", true);
+
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     startClickTime = Calendar.getInstance().getTimeInMillis();
@@ -453,6 +464,7 @@ public class KcaQuestViewService extends Service {
                         if (id == questview.findViewById(R.id.quest_head).getId()) {
                             mView.setVisibility(View.GONE);
                             mManager.removeViewImmediate(mView);
+                            sendUserAnalytics(OPEN_QUESTVIEW, statProperties);
                         } else if (id == questamenubtn.getId()) {
                             if (isamenuvisible) {
                                 questview.findViewById(R.id.quest_amenu).setVisibility(View.GONE);

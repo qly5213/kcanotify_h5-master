@@ -2,7 +2,7 @@
 
 For Translators:
 Please check original strings.xml at Github:
-https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/strings.xml
+https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings.xml
 
 -->
 
@@ -14,9 +14,13 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="action_settings">設定</string>
     <string name="action_download">下載</string>
     <string name="action_check">檢查</string>
+    <string name="action_server">選擇服務器</string>
+    <string name="action_downloadall">全部下载</string>
     <string name="backpress_msg">再按一次返回鍵退出應用程序</string>
     <string name="notification_appinfo_title">Kcanotify通知</string>
     <string name="app_vpn_name">Kcanotify Sniffer</string>
+    <string name="app_name_kancolle">Android版本的艦これ (公式)</string>
+    <string name="app_name_gotobrowser">GotoBrowser</string>
 
     <!-- Common Text -->
     <string name="dialog_ok">確認</string>
@@ -30,11 +34,13 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
 
     <string name="seek_type_0">加總</string>
     <string name="seek_type_1">33式/1</string>
+    <string name="seek_type_2">33式/2</string>
     <string name="seek_type_3">33式/3</string>
     <string name="seek_type_4">33式/4</string>
 
     <string name="seek_type_0_detail">總和</string>
     <string name="seek_type_1_detail">33式/分歧係數1 (2&#45;5)</string>
+    <string name="seek_type_2_detail">33式/分歧係數2 (5&#45;2,5&#45;4)</string>
     <string name="seek_type_3_detail">33式/分歧係數3 (6&#45;2,6&#45;3)</string>
     <string name="seek_type_4_detail">33式/分歧係數4 (3&#45;5,6&#45;1)</string>
 
@@ -62,9 +68,9 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="node_info_boss_nightdaybattle" formatted="false">%s (Boss/夜轉日)</string>
     <string name="node_info_boss_ecbattle" formatted="false">%s (Boss/深海聯合艦隊)</string>
     <string name="node_info_airbattle" formatted="false">%s (航空戰)</string>
-    <string name="node_info_ldshooting" formatted="false">%s (雷達射擊)</string>
     <string name="node_info_airsearch" formatted="false">%s (偵查)</string>
     <string name="node_info_ldairbattle" formatted="false">%s (敵襲)</string>
+    <string name="node_info_ldshooting" formatted="false">%s (雷達射擊)</string>
     <string name="node_info_nightbattle" formatted="false">%s (夜戰)</string>
     <string name="node_info_nightdaybattle" formatted="false">%s (夜轉日)</string>
     <string name="node_info_tpoint" formatted="false">%s (運輸點)</string>
@@ -78,9 +84,12 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="ma_svc_toggleon">Service ON</string>
     <string name="ma_svc_toggleoff">Service OFF</string>
     <string name="ma_toast_kancolle_not_installed">Android版本的艦これ尚未安裝</string>
+    <string name="ma_toast_gotobrowser_not_installed">GotoBrowser尚未安裝</string>
     <string name="ma_toast_overay_diabled">戰鬥劇透需要取得懸浮視窗權限  請至設定 > 允許懸浮視窗的相關設定</string>
     <string name="ma_hasupdate" formatted="false">有可用的更新。 (%s)</string>
     <string name="ma_hasdataupdate" formatted="false">有可用的遊戲資料更新。 (%s)</string>
+    <string name="ma_nextmaintenance" formatted="false">次服務器維護還有:\n%s</string>
+    <string name="ma_endmaintenance" formatted="false">服務器維護預定的結束時間:\n%s</string>
     <string name="description"><b>Help</b>\n請啟用VPN與SVC服務後再開啟艦これ\n\n※ VPN是為了監測遊戲數據 \n\n<b>主要功能</b>\n - 遠征/入渠通知 \n - 大破警告\n - 索敵/制空/士氣值顯示\n - 羅盤預測\n - 戰鬥劇透 / 任務翻譯\n - 裝備改修表\n - 傳送數據至OpenDB（可選）\n \n可至官網 http://swaytwig.com/kcanotify 了解詳細資料（韓文）</string>
 
     <!-- SettingActivity Strings -->
@@ -156,6 +165,7 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="setting_menu_noti_title_alarm_delay">通知時間提前值（秒）</string>
     <string name="setting_menu_kand_title_language">語言設定</string>
     <string name="setting_menu_kand_title_saku_cal">選擇索敵公式</string>
+    <string name="setting_menu_kand_title_kancolle_app">選擇要運行的應用程序</string>
     <string name="setting_menu_kand_title_sniffer_type">Sniffer模式</string>
     <string name="setting_menu_kand_title_exp_realtime_show">展示遠征時間</string>
     <string name="setting_menu_kand_desc_exp_realtime_show">於裝置的通知欄顯示遠征時間</string>
@@ -164,16 +174,16 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="setting_menu_kand_desc_set_noti_priority">選中時通知將始終位於通知欄頂部</string>
     <string name="setting_menu_kand_title_game_data_down">下載遊戲資料和資源</string>
     <string name="setting_menu_kand_desc_game_data_down">請於遊戲資料未自動載入時使用</string>
-    <string name="setting_menu_kand_desc_fairy_select">選擇輔助妖精</string>
-    <string name="setting_menu_kand_title_fairy_select">選擇你想要攜帶的妖精</string>
+    <string name="setting_menu_kand_desc_fairy_select">選擇你想要攜帶的妖精</string>
+    <string name="setting_menu_kand_title_fairy_select">選擇輔助妖精</string>
     <string name="setting_menu_kand_title_fairy_auto_hide">使妖精只顯示在艦これ屏幕上</string>
     <string name="setting_menu_kand_desc_fairy_auto_hide">在顯示/隱藏妖精時有短暫的延遲</string>
     <string name="current_fairy_changed_in_next">※妖精會於戰鬥劇透/任務瀏覽結束後更換</string>
-    <string name="action_fairy_rev">顛倒</string>
+    <string name="action_fairy_rev">水平翻轉</string>
     <string name="setting_menu_kand_title_adv_network">進階網路設定</string>
     <string name="setting_menu_kand_warn_adv_network">警告：錯誤的設定可能會讓VPN失效。請在你清楚確定每個選項的作用時更改設定！更改設定後你需要重新啟用VPN來使設定生效</string>
     <string name="setting_menu_kand_title_socks5_enable">啟用SOCKS5代理</string>
-    <string name="setting_menu_kand_title_socks5_onlykc">只應用於艦隊收藏/DMM登入</string>
+    <string name="setting_menu_kand_title_socks5_allapps">所有應用皆使用代理</string>
     <string name="setting_menu_kand_title_socks5_address">SOCKS5代理伺服器位址</string>
     <string name="setting_menu_kand_title_socks5_port">SOCKS5代理伺服器埠</string>
     <string name="setting_menu_kand_title_socks5_username">用戶名（可選）</string>
@@ -198,6 +208,10 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="setting_menu_view_desc_battleview_use">戰鬥時顯示最終結果</string>
     <string name="setting_menu_view_title_drop_visible">顯示掉落艦娘</string>
     <string name="setting_menu_view_desc_drop_visible">於預知戰報中顯示掉落艦娘的名稱</string>
+    <string name="setting_menu_view_title_hdmg_locked">僅偵測上鎖船艦的大破狀態</string>
+    <string name="setting_menu_view_desc_hdmg_locked">注意:未上鎖的船艦不會觸發大破警告！</string>
+    <string name="setting_menu_view_title_hdmg_minlevel">船艦觸發大破警告的最低等級要求</string>
+    <string name="setting_menu_view_desc_hdmg_minlevel">不論等級皆顯示大破警告需將數值設為0</string>
     <string name="setting_menu_view_title_questview_use">任務瀏覽</string>
     <string name="setting_menu_view_desc_questview_use">顯示任務內容與翻譯</string>
     <string name="setting_menu_view_title_show_constrship">顯示建造中的船艦名稱</string>
@@ -241,6 +255,8 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="setting_menu_app_title_down">APK下載來源</string>
     <string name="setting_menu_app_title_contact">提交建議/回報錯誤</string>
     <string name="setting_menu_app_desc_contact">傳送郵件給開發人員</string>
+    <string name="setting_menu_app_title_enable_acra">啟用崩潰報錯系統(ACRA)</string>
+    <string name="setting_menu_app_desc_enable_acra">當應用崩潰時將會打開報錯用電郵</string>
     <string name="setting_menu_app_desc_inspector">查詢資料庫及選項數據</string>
     <string name="setting_menu_app_info">關於Kcanotify</string>
 
@@ -388,6 +404,7 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="akashi_term_detail1">改修詳情(1)</string>
     <string name="akashi_term_detail2">改修詳情(2)</string>
     <string name="akashi_term_default">初始裝備艦娘</string>
+    <string name="akashi_term_status">現在改修狀況</string>
     <string name="akashi_term_day_0">週日</string>
     <string name="akashi_term_day_1">週一</string>
     <string name="akashi_term_day_2">週二</string>
@@ -406,6 +423,7 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="item_skilled_crew">熟練搭乘員</string>
     <string name="item_kouku_material">新型航空兵裝資材</string>
     <string name="item_action_report">戰鬥詳報</string>
+    <string name="item_rocket_material">新型噴進裝備開発資材</string>
     <string name="setting_menu_noti_title_notiatsvcoff">當Service服務關閉時啟用通知</string>
     <string name="setting_menu_noti_desc_notiatsvcoff">當Service服務關閉時仍然啟用遠征/入渠等通知</string>
     <string name="kca_toast_renew_currentportdeck">於遊戲內返回母港並刷新相關數據</string>
@@ -418,6 +436,8 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="action_shipinfo">艦船目錄</string>
     <string name="shipinfo_btn_sort">排序</string>
     <string name="shipinfo_btn_filter">過濾</string>
+    <string name="shipinfo_btn_search">檢索</string>
+    <string name="shipinfo_btn_search_hint">按名稱搜索</string>
     <string name="shipinfo_btn_total_format" formatted="false">總計船艦數目：%d</string>
     <string name="shipinfo_btn_total_exp_format" formatted="false">總計經驗：%,d</string>
     <string name="shipinfo_sort_asc">升序</string>
@@ -443,18 +463,25 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="ship_stat_sort_key_18">索敵</string>
     <string name="ship_stat_sort_key_19">運</string>
     <string name="ship_stat_sort_key_20">速度</string>
-    <string name="ship_stat_sort_key_21">標貼</string>
+    <string name="ship_stat_sort_key_21">艦型</string>
+    <string name="ship_stat_sort_key_22">標貼</string>
 
     <string name="shipinfo_filt_list_dialog_title">選擇</string>
     <string name="shipinfo_criteria_count" formatted="false">已應用標籤：%d</string>
+    <string name="ship_stat_equip_stype_label">可以使用特殊裝備</string>
+    <string name="ship_stat_equip_stype1">大發系</string>
+    <string name="ship_stat_equip_stype2">内火艇</string>
+    <string name="ship_stat_equip_stype3">突出部(中)</string>
+    <string name="ship_stat_equip_stype4">司令部</string>
+    <string name="ship_stat_equip_stype5">探照灯(大)</string>
 
     <string name="ship_tag_0">沒有</string>
-    <string name="ship_tag_1">警戒部隊</string>
-    <string name="ship_tag_2">海峽派遣艦隊</string>
-    <string name="ship_tag_3">西方作戦部隊</string>
-    <string name="ship_tag_4">歐洲特務艦隊</string>
-    <string name="ship_tag_5">Force H</string>
-    <string name="ship_tag_6">萊茵演習作戰部隊</string>
+    <string name="ship_tag_1">歐洲防衛艦隊(藍色)</string>
+    <string name="ship_tag_2">聯合艦隊(綠色)</string>
+    <string name="ship_tag_3">地中海艦隊(金色)</string>
+    <string name="ship_tag_4"> </string>
+    <string name="ship_tag_5"> </string>
+    <string name="ship_tag_6"> </string>
 
     <string name="ship_fleet_0">沒有</string>
 
@@ -466,6 +493,8 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="action_equipmentinfo">裝備目錄</string>
     <string name="equipinfo_summary" formatted="false">合計 %d（%d 裝備中, %d 閒置）</string>
     <string name="equipinfo_filter">過濾</string>
+    <string name="equipinfo_search">檢索</string>
+    <string name="equipinfo_search_hint">按名稱搜索</string>
 
     <string name="action_expcalc">經験値計算機</string>
     <string name="expcalc_shipname">艦娘</string>
@@ -487,6 +516,8 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="expdtable_btn_w3">北方</string>
     <string name="expdtable_btn_w4">西方</string>
     <string name="expdtable_btn_w5">南方</string>
+    <string name="expdtable_btn_w6">中部</string>
+    <string name="expdtable_btn_w7">南西</string>
     <string name="expdtable_btn_s1">一般</string>
     <string name="expdtable_btn_s2">大成功</string>
     <string name="expdtable_label_no">編號</string>
@@ -593,6 +624,7 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="excheckview_drum_ship_format" formatted="false">至少裝備於%d個艦娘上</string>
     <string name="excheckview_drum_num_format" formatted="false">總數%d個以上</string>
     <string name="excheckview_total_format" formatted="false">總合：%d+</string>
+    <string name="excheckview_bonus_firepower" formatted="false">火力: %d</string>
     <string name="excheckview_bonus_asw" formatted="false">對潛：%d</string>
     <string name="excheckview_bonus_los" formatted="false">索敵：%d</string>
     <string name="excheckview_bonus_kinu">鬼怒改二</string>
@@ -618,7 +650,7 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="expedition_type_value_2">經過時間</string>
     <string name="fleetcheckview_title">艦隊詳細</string>
     <string name="fleetcheckview_btn_seeklos">索敵/輸送</string>
-    <string name="fleetcheckview_content_seeklos" formatted="false">艦隊索敵值加總: %d\n33式/分歧係數1: %.2f (2&#45;5, 33+)\n33式/分歧係數3: %.2f (6&#45;2, 6&#45;3)\n33式/分歧係數4: %.2f (3&#45;5, 6&#45;1)\n───────────────\nTP 運輸搭載量:\n%d(S) /%d(A)</string>
+    <string name="fleetcheckview_content_seeklos" formatted="false">艦隊索敵值加總: %d\n33式/分歧係數1: %.2f (2&#45;5, 33+)\n33式/分歧係數2: %.2f (5&#45;2, 4&#45;4)\n33式/分歧係數3: %.2f (6&#45;2, 6&#45;3)\n33式/分歧係數4: %.2f (3&#45;5, 6&#45;1)\n───────────────\nTP 運輸搭載量:\n%d(S) /%d(A)</string>
     <string name="fleetcheckview_btn_airbattle">航空戰</string>
     <string name="fleetcheckview_content_airbattle" formatted="false">制空總值: %d ~ %d\n───────────────\n接觸成功機率\n[AS+] 開始率: %.1f%%, 選擇率: %.1f%%\n[AS] 開始率: %.1f%%, 選擇率: %.1f%%\n</string>
     <string name="fleetcheckview_btn_fuelbull">燃弾</string>
@@ -628,7 +660,7 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="fleetview_18spring_nori" formatted="false">苔 %02d</string>
     <string name="fleetview_18spring_tea" formatted="false">茶 %02d</string>
 
-    <string name="special_playstore_1st">一周年紀念！</string>
+    <string name="special_message">傑維斯和雅努斯在秋天</string>
 
     <string name="widget_timer_name">Kcanotify計時Widget</string>
     <string name="fleet_format">第%d艦隊</string>
@@ -649,4 +681,48 @@ https://github.com/antest1/kcanotify/h5/blob/master/app/src/main/res/values/stri
     <string name="download_check_error">從裝置加載時出現錯誤(使用預設資料)</string>
     <string name="download_setting_checkatstart">檢查應用程序啟動時的更新</string>
     <string name="download_use_internal_data">使用內置資源</string>
+
+    <string name="packagefilter_count_format" formatted="false">總計：%d</string>
+    <string name="packagefilter_restart">更改設定後妳需要重新啟用VPN來使設定生效</string>
+    <string name="setting_menu_sniffer_title_head">Sniffer設定</string>
+    <string name="setting_menu_sniffer_title_package_allow">於其他應用程式中使用Sniffer</string>
+    <string name="setting_menu_sniffer_title_extfilter_use">启用進階IP篩選</string>
+    <string name="setting_menu_sniffer_desc_package_allow">為使用其他瀏覽器遊玩艦これ的提督而設</string>
+    <string name="setting_menu_sniffer_desc_extfilter_use">若有使用如ooi.moe的網絡代理服務，請選取此選項</string>
+    <string name="action_export_kanmusu_list">kanmusu_list</string>
+    <string name="shipinfo_export_title">匯出到 kanmusu_list</string>
+    <string name="shipinfo_export_clipboard">複製到剪貼板</string>
+    <string name="shipinfo_export_openpage">開啟擁有艦隊展示頁網站</string>
+    <string name="shipinfo_export_openfa">開啟擁有艦隊分析頁網站</string>
+    <string name="action_export_deckbuilder">DeckBuilder</string>
+    <string name="fleetinfo_export_clipboard">複製到剪貼板</string>
+    <string name="fleetinfo_export_openpage1">開啟艦隊模擬器網站</string>
+    <string name="fleetinfo_export_openpage2">艦隊編成圖像輸出</string>
+    <string name="fleetinfo_export_title">匯出到 DeckBuilder</string>
+    <string name="action_export_fleetanalysis">艦隊分析</string>
+    <string name="equipinfo_export_title">匯出到 艦隊分析</string>
+    <string name="equipinfo_export_clipboard">复制到剪贴板</string>
+    <string name="equipinfo_export_openpage">開啟擁有艦隊分析頁網站</string>
+
+    <string name="text_api_houg">火力</string>
+    <string name="text_api_raig">雷裝</string>
+    <string name="text_api_tyku">對空</string>
+    <string name="text_api_souk">裝甲</string>
+    <string name="text_api_tais">對潛</string>
+    <string name="text_api_houk">迴避</string>
+    <string name="text_api_saku">索敵</string>
+    <string name="text_api_houm">命中</string>
+    <string name="text_api_baku">爆裝</string>
+    <string name="text_api_leng">射程</string>
+
+    <string name="text_api_leng_1">短</string>
+    <string name="text_api_leng_2">中</string>
+    <string name="text_api_leng_3">長</string>
+    <string name="text_api_leng_4">超長</string>
+
+    <string name="text_api_houm2">對爆</string>
+    <string name="text_api_houk2">迎擊</string>
+    <string name="text_api_cost">配置費用</string>
+    <string name="text_api_distance">行動半徑</string>
+    <string name="ask_to_dev">艦これ 装備王</string>
 </resources>

@@ -6,23 +6,26 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class KcaConstants {
-//    public final static String KC_PACKAGE_NAME = "com.dmm.dmmlabo.kancolle";
-    public static String hostAddressIp = null;
-    public final static String KC_PACKAGE_NAME = "com.antest1.kcanotify.h5";
+    public final static String KC_PACKAGE_NAME = "com.dmm.dmmlabo.kancolle";
     public final static String DMMLOGIN_PACKAGE_NAME = "com.dmm.app.store";
-    public final static String MAINACTIVITY_NAME = "com.antest1.kcanotify.h5.MainActivity";
+    public final static String MAINACTIVITY_NAME = "com.antest1.kcanotify.MainActivity";
+    public final static String GOTO_PACKAGE_NAME = "com.antest1.gotobrowser";
+
+    public static final String REQUEST_PATH = "/request";
 
     public static final String AUTHORITY = "com.antest1.kcasniffer.contentprovider";
-    public static final String PATH  = "/request";
-
-    public static final Uri CONTENT_URI = Uri.parse("content://".concat(AUTHORITY).concat(PATH));
+    public static final Uri CONTENT_URI = Uri.parse("content://".concat(AUTHORITY).concat(REQUEST_PATH));
     public static final String BROADCAST_ACTION = "com.antest1.kcasniffer.broadcast";
+
+    public static final String GOTO_AUTHORITY = "com.antest1.gotobrowser.contentprovider";
+    public static final Uri GOTO_CONTENT_URI = Uri.parse("content://".concat(GOTO_AUTHORITY).concat(REQUEST_PATH));
+    public static final String GOTO_BROADCAST_ACTION = "com.antest1.gotobrowser.broadcast";
 
     public static final String KCA_VERSION = "/kca/version.json";
     public static final String KCANOTIFY_S2 = "/kcanotify/kca_api_start2.php";
     public static final String KCANOTIFY_USERITEM_CACHE_FILENAME = "kca_userslotitem";
     public static final int KCANOTIFY_DB_VERSION = 5;
-    public static final int KCANOTIFY_QTDB_VERSION = 2;
+    public static final int KCANOTIFY_QTDB_VERSION = 3;
     public static final int KCANOTIFY_DROPLOG_VERSION = 1;
     public static final int KCANOTIFY_RESOURCELOG_VERSION = 1;
     public static final int KCANOTIFY_PACKETLOG_VERSION = 2;
@@ -31,6 +34,7 @@ public final class KcaConstants {
     public static final String DB_KEY_DECKPORT = "key_deckport";
     public static final String DB_KEY_USEITEMS = "key_useitems";
     public static final String DB_KEY_MAPEDGES = "key_mapedges";
+    public static final String DB_KEY_MAPSUBDT = "key_mapsubdt";
     public static final String DB_KEY_EXPDINFO = "key_expdinfo";
     public static final String DB_KEY_QUESTTRACK = "key_questtrack";
     public static final String DB_KEY_BATTLEINFO = "key_battleinfo";
@@ -52,6 +56,8 @@ public final class KcaConstants {
     public static final String DB_KEY_EXPCALTRK = "key_expcaltrk";
     public static final String DB_KEY_QUESTNCHK = "key_questnchk";
     public static final String DB_KEY_MATERIALS = "key_materials";
+    public static final String DB_KEY_KCMAINTNC = "key_kcmaintnc";
+    public static final String PREF_DMM_PWD = "dmm_pwd";
 
     public static final String[] DB_KEY_ARRAY = {
             DB_KEY_STARTDATA,
@@ -226,8 +232,8 @@ public final class KcaConstants {
             API_REQ_COMBINED_BATTLE,
             API_REQ_COMBINED_BATTLE_WATER,
             API_REQ_COMBINED_AIRBATTLE,
-            API_REQ_SORTIE_LDSHOOTING,
             API_REQ_COMBINED_LDAIRBATTLE,
+            API_REQ_SORTIE_LDSHOOTING,
             API_REQ_COMBINED_BATTLE_MIDNIGHT,
             API_REQ_COMBINED_BATTLE_MIDNIGHT_SP,
             API_REQ_COMBINED_BATTLE_EC,
@@ -252,6 +258,7 @@ public final class KcaConstants {
     public static final int API_NODE_EVENT_ID_SENDAN = 8;
     public static final int API_NODE_EVENT_ID_TPOINT = 9;
     public static final int API_NODE_EVENT_ID_LDAIRBATTLE = 10;
+
 
     public static final int API_NODE_EVENT_KIND_NOBATTLE = 0;
     public static final int API_NODE_EVENT_KIND_BATTLE = 1;
@@ -290,17 +297,17 @@ public final class KcaConstants {
     public static final String KCA_API_PREF_LANGUAGE_CHANGED = "/kca_api/pref_language_changed";
     public static final String KCA_API_PREF_ALARMDELAY_CHANGED = "/kca_api/pref_alarmdelay_changed";
 
-    public static final String KCA_MSG_FAIRY_CHANGED = "com.antest1.kcanotify.h5.KcaFairySelectActivity.KCA_MSG_FAIRY_CHANGED";
-    public static final String KCA_MSG_BATTLE_NODE = "com.antest1.kcanotify.h5.KcaService.KCA_MSG_BATTLE_NODE";
-    public static final String KCA_MSG_BATTLE_INFO = "com.antest1.kcanotify.h5.KcaService.KCA_MSG_BATTLE_INFO";
-    public static final String KCA_MSG_BATTLE_HDMG = "com.antest1.kcanotify.h5.KcaService.KCA_MSG_BATTLE_HDMG";
-    public static final String KCA_MSG_QUEST_LIST = "com.antest1.kcanotify.h5.KcaService.KCA_MSG_QUEST_LIST";
-    public static final String KCA_MSG_QUEST_COMPLETE = "com.antest1.kcanotify.h5.KcaViewButtonService.KCA_MSG_QUEST_COMPLETE";
+    public static final String KCA_MSG_FAIRY_CHANGED = "com.antest1.kcanotify.KcaFairySelectActivity.KCA_MSG_FAIRY_CHANGED";
+    public static final String KCA_MSG_BATTLE_NODE = "com.antest1.kcanotify.KcaService.KCA_MSG_BATTLE_NODE";
+    public static final String KCA_MSG_BATTLE_INFO = "com.antest1.kcanotify.KcaService.KCA_MSG_BATTLE_INFO";
+    public static final String KCA_MSG_BATTLE_HDMG = "com.antest1.kcanotify.KcaService.KCA_MSG_BATTLE_HDMG";
+    public static final String KCA_MSG_QUEST_LIST = "com.antest1.kcanotify.KcaService.KCA_MSG_QUEST_LIST";
+    public static final String KCA_MSG_QUEST_COMPLETE = "com.antest1.kcanotify.KcaViewButtonService.KCA_MSG_QUEST_COMPLETE";
 
-    public static final String KCA_MSG_BATTLE_VIEW_REFRESH = "com.antest1.kcanotify.h5.KcaService.KCA_MSG_BATTLE_VIEW_REFRESH";
-    public static final String KCA_MSG_BATTLE_VIEW_HDMG = "com.antest1.kcanotify.h5.KcaService.KCA_MSG_BATTLE_VIEW_HDMG";
-    public static final String KCA_MSG_QUEST_VIEW_LIST = "com.antest1.kcanotify.h5.KcaService.KCA_MSG_QUEST_VIEW_LIST";
-    public static final String KCA_MSG_DATA = "com.antest1.kcanotify.h5.KcaService.KCA_MSG_DATA";
+    public static final String KCA_MSG_BATTLE_VIEW_REFRESH = "com.antest1.kcanotify.KcaService.KCA_MSG_BATTLE_VIEW_REFRESH";
+    public static final String KCA_MSG_BATTLE_VIEW_HDMG = "com.antest1.kcanotify.KcaService.KCA_MSG_BATTLE_VIEW_HDMG";
+    public static final String KCA_MSG_QUEST_VIEW_LIST = "com.antest1.kcanotify.KcaService.KCA_MSG_QUEST_VIEW_LIST";
+    public static final String KCA_MSG_DATA = "com.antest1.kcanotify.KcaService.KCA_MSG_DATA";
 
     public static final String KCA_API_PROCESS_BATTLE_FAILED = "/kca_api/process_battle_failed";
     public static final String KCA_API_PROCESS_BATTLEVIEW_FAILED = "/kca_api/process_battleview_failed";
@@ -449,6 +456,7 @@ public final class KcaConstants {
     public static final String PREF_KCA_NOTI_AKASHI = "notify_akashi";
     public static final String PREF_SHIPINFO_SORTKEY = "shipinfo_sortkey";
     public static final String PREF_SHIPINFO_FILTCOND = "shipinfo_filtcond";
+    public static final String PREF_SHIPINFO_SPEQUIPS = "shipinfo_spequips";
     public static final String PREF_EQUIPINFO_SORTKEY = "equipinfo_sortkey";
     public static final String PREF_EQUIPINFO_FILTCOND = "equipinfo_filtcond";
     public static final String PREF_ALARM_DELAY = "alarm_delay";
@@ -470,7 +478,13 @@ public final class KcaConstants {
     public static final String PREF_FAIRY_DOWN_FLAG = "fairy_downloaded_flag";
     public static final String PREF_RES_USELOCAL = "res_uselocal";
     public static final String PREF_FAIRY_REV = "fairy_rev";
-    public static final String PREF_DMM_PWD = "dmm_pwd";
+    public static final String PREF_PACKAGE_ALLOW = "package_allow";
+    public static final String PREF_ALLOW_EXTFILTER = "allow_external_filter";
+    public static final String PREF_DNS_NAMESERVERS = "dns_nameservers";
+    public static final String PREF_KC_PACKAGE = "kc_package";
+    public static final String PREF_HDNOTI_LOCKED = "hdnoti_locked";
+    public static final String PREF_HDNOTI_MINLEVEL = "hdnoti_minlevel";
+
 
     public static final String[] PREF_ARRAY = {
             PREF_CHECK_UPDATE,
@@ -517,6 +531,7 @@ public final class KcaConstants {
             PREF_KCA_NOTI_AKASHI,
             PREF_SHIPINFO_SORTKEY,
             PREF_SHIPINFO_FILTCOND,
+            PREF_SHIPINFO_SPEQUIPS,
             PREF_EQUIPINFO_SORTKEY,
             PREF_EQUIPINFO_FILTCOND,
             PREF_KCA_ACTIVATE_DROPLOG,
@@ -531,7 +546,13 @@ public final class KcaConstants {
             PREF_LAST_QUEST_CHECK,
             PREF_KCAQSYNC_USE,
             PREF_KCAQSYNC_PASS,
-            PREF_FAIRY_REV
+            PREF_FAIRY_REV,
+            PREF_PACKAGE_ALLOW,
+            PREF_ALLOW_EXTFILTER,
+            PREF_DNS_NAMESERVERS,
+            PREF_KC_PACKAGE,
+            PREF_HDNOTI_LOCKED,
+            PREF_HDNOTI_MINLEVEL
     };
 
     public static final String[] PREF_BOOLEAN_ARRAY = {
@@ -563,7 +584,9 @@ public final class KcaConstants {
             PREF_SHOW_CONSTRSHIP_NAME,
             PREF_DATALOAD_ERROR_FLAG,
             PREF_FIX_VIEW_LOC,
-            PREF_KCAQSYNC_USE
+            PREF_KCAQSYNC_USE,
+            PREF_ALLOW_EXTFILTER,
+            PREF_HDNOTI_LOCKED
     };
 
     public static final List<String> PREFS_LIST = Arrays.asList(PREF_ARRAY);

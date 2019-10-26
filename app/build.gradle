@@ -14,7 +14,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 2641
-        versionName "2.6.4r1_1.20"
+        versionName "2.8_2.1"
 
         multiDexEnabled true
         externalNativeBuild {
@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    def appCenterSdkVersion = '2.4.0'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'org.xwalk:xwalk_core_library:23+'
@@ -61,8 +62,8 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:support-v4:27.1.1'
     implementation 'com.android.support:design:27.1.1'
-    implementation 'com.google.guava:guava:23.0-android'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+    api 'com.google.guava:guava:27.0.1-android'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.1.0'
     implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
@@ -84,6 +85,9 @@ dependencies {
     implementation 'com.teprinciple:updateapputils:1.5.1'
     implementation 'com.github.ctiao:DanmakuFlameMaster:0.9.25'
     implementation 'com.github.ctiao:ndkbitmap-armv7a:0.9.21'
+    implementation 'com.mariten:kanatools:1.3.0'
+    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
+    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
     implementation 'com.github.ctiao:ndkbitmap-armv5:0.9.21'
     implementation 'com.github.ctiao:ndkbitmap-x86:0.9.21'

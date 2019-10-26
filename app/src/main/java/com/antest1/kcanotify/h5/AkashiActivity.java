@@ -1,7 +1,6 @@
 package com.antest1.kcanotify.h5;
 
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,14 +17,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,7 +33,6 @@ import java.util.Locale;
 
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_MATERIALS;
-import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_USEITEMS;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_RESOURCELOG_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_AKASHI_FILTERLIST;
@@ -309,7 +304,7 @@ public class AkashiActivity extends AppCompatActivity {
             if (isStarChecked && !checkStarred(starlist, equipid)) continue;
             KcaAkashiListViewItem item = new KcaAkashiListViewItem();
             item.setEquipDataById(equipid);
-            Log.e("KCA", String.valueOf(equipid));
+            // Log.e("KCA", String.valueOf(equipid));
             item.setEquipImprovementData(akashiData.getAsJsonObject(String.valueOf(equipid)));
             item.setEquipImprovementElement(day, checked);
             listViewItemList.add(item);
