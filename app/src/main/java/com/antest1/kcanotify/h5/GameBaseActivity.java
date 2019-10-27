@@ -1049,6 +1049,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
 
     public void updateFpsCounter(String newFps) {
-       fpsCounter.setText(newFps);
-   }
+        runOnUiThread(new Runnable(){
+            public void run(){
+                fpsCounter.setText(newFps);
+            }
+        });
+    }
 }
