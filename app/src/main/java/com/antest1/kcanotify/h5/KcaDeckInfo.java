@@ -62,11 +62,7 @@ import static com.antest1.kcanotify.h5.KcaApiData.getUserShipDataById;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.LAB_STATUS_DEFENSE;
 import static com.antest1.kcanotify.h5.KcaConstants.LAB_STATUS_SORTIE;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_HDNOTI_LOCKED;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_HDNOTI_MINLEVEL;
 import static com.antest1.kcanotify.h5.KcaConstants.SEEK_PURE;
-import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
-import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.joinStr;
 import static com.antest1.kcanotify.h5.KcaUtils.setDefaultGameData;
 
@@ -707,8 +703,8 @@ public class KcaDeckInfo {
 
     public int checkHeavyDamageExist(JsonArray deckPortData, int deckid) {
         int[] status = {0, 0, 0, 0, 0, 0, 0};
-        boolean check_locked = getBooleanPreferences(ac, PREF_HDNOTI_LOCKED);
-        int min_level = Integer.parseInt(getStringPreferences(ac, PREF_HDNOTI_MINLEVEL));
+        boolean check_locked = false;//getBooleanPreferences(ac, PREF_HDNOTI_LOCKED);
+        int min_level = 0;//Integer.parseInt(getStringPreferences(ac, PREF_HDNOTI_MINLEVEL));
         JsonArray deckShipIdList = deckPortData.get(deckid).getAsJsonObject().getAsJsonArray("api_ship");
         for (int i = 0; i < deckShipIdList.size(); i++) {
             int shipId = deckShipIdList.get(i).getAsInt();
@@ -762,8 +758,8 @@ public class KcaDeckInfo {
     }
 
     public boolean[] getHeavyDmgCheckStatus(JsonArray deckPortData, int deckid) {
-        boolean check_locked = getBooleanPreferences(ac, PREF_HDNOTI_LOCKED);
-        int min_level = Integer.parseInt(getStringPreferences(ac, PREF_HDNOTI_MINLEVEL));
+        boolean check_locked = false;//getBooleanPreferences(ac, PREF_HDNOTI_LOCKED);
+        int min_level = 0;//Integer.parseInt(getStringPreferences(ac, PREF_HDNOTI_MINLEVEL));
         boolean[] heavyDmgCheckStatus = {true, true, true, true, true, true, true};
         JsonArray deckShipIdList = deckPortData.get(deckid).getAsJsonObject().getAsJsonArray("api_ship");
         for (int i = 0; i < deckShipIdList.size(); i++) {
