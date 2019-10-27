@@ -2,7 +2,6 @@ package com.antest1.kcanotify.h5;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
@@ -22,36 +21,37 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_CVE;
 import static com.antest1.kcanotify.h5.KcaApiData.TAG_COUNT;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_FILTCOND;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_SPEQUIPS;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
 
 
 public class ShipInfoFilterActivity extends AppCompatActivity {
+    public final static int SPECIAL_EQUIPMENT_COUNT = 5;
+
     Toolbar toolbar;
     static Gson gson = new Gson();
+    List<CheckBox> filterSpecialEquipment = new ArrayList<>();
     TextView listcounter;
     LinearLayout listview;
     public int count;
@@ -102,11 +102,33 @@ public class ShipInfoFilterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         loadTranslationData(getApplicationContext());
-        setContentView(R.layout.activity_shipinfo_sort_filter);
+        setContentView(R.layout.activity_shipinfo_filter);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(getStringWithLocale(R.string.shipinfo_btn_filter));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        String pref_special_equips = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_SPEQUIPS);
+        List<String> specialEquipsFilterList = new ArrayList<String>(Arrays.asList(pref_special_equips.split(",")));
+
+        for (int i = 0; i < SPECIAL_EQUIPMENT_COUNT; i++) {
+            final String key = KcaUtils.format("stype%d", i+1);
+            Log.e("KCA", KcaUtils.format("equip_%s", key));
+            filterSpecialEquipment.add(findViewById(
+                    KcaUtils.getId(KcaUtils.format("equip_%s", key), R.id.class)
+            ));
+            CheckBox item = filterSpecialEquipment.get(i);
+            item.setText(getStringWithLocale(
+                    KcaUtils.getId(KcaUtils.format("ship_stat_equip_%s", key), R.string.class)
+            ));
+            item.setChecked(specialEquipsFilterList.contains(key));
+            item.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) specialEquipsFilterList.add(key);
+                else specialEquipsFilterList.remove(key);
+                setPreferences(getApplicationContext(), PREF_SHIPINFO_SPEQUIPS,
+                        KcaUtils.joinStr(specialEquipsFilterList, ","));
+            });
+        }
 
         listview = findViewById(R.id.ship_stat_sort_list);
         listcounter = findViewById(R.id.ship_stat_count);
@@ -325,23 +347,18 @@ public class ShipInfoFilterActivity extends AppCompatActivity {
         } else if (position == 20) {
             adapter = getSpeedArray();
             fnc = 2;
-        } else if (position == 21) {
+        } else if (position == 22) {
             adapter = getTagArray();
         }
 
         final AlertDialog dialog = makeDialog(sp_val, target, key, fnc, adapter);
-        sp_val.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.show();
-            }
-        });
+        sp_val.setOnClickListener(view -> dialog.show());
         if (value != null) {
             sp_val.setText(KcaUtils.format("%d/%d", value, adapter.length));
         }
     }
 
-        private AlertDialog makeDialog(final TextView sp_val, final int target, final String key, final int fnc, final String[] arr) {
+    private AlertDialog makeDialog(final TextView sp_val, final int target, final String key, final int fnc, final String[] arr) {
         final List<Integer> selectedItems = new ArrayList<>();
         boolean[] selected_arr = new boolean[arr.length];
         Arrays.fill(selected_arr, false);
@@ -361,44 +378,39 @@ public class ShipInfoFilterActivity extends AppCompatActivity {
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(getStringWithLocale(R.string.shipinfo_filt_list_dialog_title))
-                .setMultiChoiceItems(arr, selected_arr, new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int indexSelected, boolean isChecked) {
-                        if (isChecked) {
-                            // If the user checked the item, add it to the selected items
-                            selectedItems.add(indexSelected);
-                        } else if (selectedItems.contains(indexSelected)) {
-                            // Else, if the item is already in the array, remove it
-                            selectedItems.remove(Integer.valueOf(indexSelected));
-                        }
+                .setMultiChoiceItems(arr, selected_arr, (dialog13, indexSelected, isChecked) -> {
+                    if (isChecked) {
+                        // If the user checked the item, add it to the selected items
+                        selectedItems.add(indexSelected);
+                    } else if (selectedItems.contains(indexSelected)) {
+                        // Else, if the item is already in the array, remove it
+                        selectedItems.remove(Integer.valueOf(indexSelected));
                     }
-                }).setPositiveButton(getStringWithLocale(R.string.dialog_ok), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        sp_val.setText(KcaUtils.format("%d/%d", selectedItems.size(), arr.length));
+                }).setPositiveButton(getStringWithLocale(R.string.dialog_ok), (dialog12, id) -> {
+                    sp_val.setText(KcaUtils.format("%d/%d", selectedItems.size(), arr.length));
 
-                        List<String> vals = new ArrayList<String>();
-                        for (int selected: selectedItems) {
-                            switch (fnc) {
-                                case 1:
+                    List<String> vals = new ArrayList<>();
+                    for (int selected: selectedItems) {
+                        switch (fnc) {
+                            case 1:
+                                if (selected == 22) {
+                                    vals.add(String.valueOf(STYPE_CVE));
+                                } else {
                                     vals.add(String.valueOf(selected + 1));
-                                    break;
-                                case 2:
-                                    vals.add(String.valueOf((selected + 1) * 5));
-                                    break;
-                                default:
-                                    vals.add(String.valueOf(selected));
-                                    break;
-                            }
+                                }
+                                break;
+                            case 2:
+                                vals.add(String.valueOf((selected + 1) * 5));
+                                break;
+                            default:
+                                vals.add(String.valueOf(selected));
+                                break;
                         }
-                        obj.addProperty(key, KcaUtils.joinStr(vals, "_"));
-                        sort_values.put(target, makeStatPrefValue(obj));
                     }
-                }).setNegativeButton(getStringWithLocale(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
+                    obj.addProperty(key, KcaUtils.joinStr(vals, "_"));
+                    sort_values.put(target, makeStatPrefValue(obj));
+                }).setNegativeButton(getStringWithLocale(R.string.dialog_cancel), (dialog1, id) -> {
 
-                    }
                 }).create();
         return dialog;
     }
@@ -406,7 +418,8 @@ public class ShipInfoFilterActivity extends AppCompatActivity {
     private String[] getStypeArray() {
         List<String> stype_list = new ArrayList<>();
         for (int i = 1; i < KcaApiData.getShipTypeSize(); i++) {
-            stype_list.add(KcaApiData.getShipTypeAbbr(i));
+            String value = KcaApiData.getShipTypeAbbr(i);
+            if (value.length() > 0) stype_list.add(value);
         }
         String[] stype_arr = new String[stype_list.size()];
         stype_arr = stype_list.toArray(stype_arr);
@@ -459,7 +472,13 @@ public class ShipInfoFilterActivity extends AppCompatActivity {
         return tag_arr;
     }
 
-    private int getStypePosition(int i) { return i - 1; }
+    private int getStypePosition(int i) {
+        if (i == STYPE_CVE) {
+            return 22;
+        } else {
+            return i - 1;
+        }
+    }
     private int getSpeedPosition(int i) { return (i - 1) / 5; }
     private int getRealPosition(int fnc, int i) {
         switch (fnc) {

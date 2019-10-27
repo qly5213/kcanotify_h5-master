@@ -6,9 +6,13 @@
     <string name="action_settings">깡들리티 설정</string>
     <string name="action_download">다운로드</string>
     <string name="action_check">확인</string>
+    <string name="action_server">서버 선택</string>
+    <string name="action_downloadall">모두 받기</string>
     <string name="backpress_msg">\'뒤로\'버튼을 한번 더 누르시면 종료됩니다.</string>
     <string name="notification_appinfo_title">깡들리티 알림</string>
     <string name="app_vpn_name">시제 깡들리티 스니퍼</string>
+    <string name="app_name_kancolle">안드로이드판 칸코레 (공식)</string>
+    <string name="app_name_gotobrowser">고토브라우저</string>
 
     <!-- Link Information, Do Not Translate Here -->
 
@@ -24,11 +28,13 @@
 
     <string name="seek_type_0">단순합</string>
     <string name="seek_type_1">33식/1</string>
+    <string name="seek_type_2">33식/2</string>
     <string name="seek_type_3">33식/3</string>
     <string name="seek_type_4">33식/4</string>
 
     <string name="seek_type_0_detail">단순합산</string>
     <string name="seek_type_1_detail">33식/Cn=1 (2&#45;5)</string>
+    <string name="seek_type_2_detail">33식/Cn=2 (5&#45;2,4&#45;4)</string>
     <string name="seek_type_3_detail">33식/Cn=3 (6&#45;2,6&#45;3)</string>
     <string name="seek_type_4_detail">33식/Cn=4 (3&#45;5,6&#45;1)</string>
 
@@ -56,9 +62,9 @@
     <string name="node_info_boss_nightdaybattle" formatted="false">%s (보스방/야간전->주간전)</string>
     <string name="node_info_boss_ecbattle" formatted="false">%s (보스방/적 연합함대)</string>
     <string name="node_info_airbattle" formatted="false">%s (아웃레인지)</string>
-    <string name="node_info_ldshooting" formatted="false">%s (레이더사격)</string>
     <string name="node_info_airsearch" formatted="false">%s (항공정찰)</string>
     <string name="node_info_ldairbattle" formatted="false">%s (공습전)</string>
+    <string name="node_info_ldshooting" formatted="false">%s (레이더사격)</string>
     <string name="node_info_nightbattle" formatted="false">%s (야간전)</string>
     <string name="node_info_nightdaybattle" formatted="false">%s (야간전->주간전)</string>
     <string name="node_info_tpoint" formatted="false">%s (수송포인트)</string>
@@ -72,9 +78,12 @@
     <string name="ma_svc_toggleon">서비스 On</string>
     <string name="ma_svc_toggleoff">서비스 Off</string>
     <string name="ma_toast_kancolle_not_installed">칸코레가 설치되어 있지 않습니다.</string>
+    <string name="ma_toast_gotobrowser_not_installed">고토브라우저가 설치되어 있지 않습니다.</string>
     <string name="ma_toast_overay_diabled">전투예보에 필요한 화면 오버레이 권한이 설정되지 않았습니다. 설정 > 화면 오버레이 설정에서 권한을 설정하세요.</string>
     <string name="ma_hasupdate" formatted="false">업데이트가 있습니다. (%s)</string>
     <string name="ma_hasdataupdate" formatted="false">새 게임 데이터가 있습니다. (%s)</string>
+    <string name="ma_nextmaintenance" formatted="false">차회 서버 메인테이넌스:\n%s</string>
+    <string name="ma_endmaintenance" formatted="false">메인테이넌스 종료 예정 시간:\n%s</string>
     <string name="description"><b>Help</b>\n상단 2개 버튼(VPN, SVC) 활성화 이후 게임 실행\n\n※ VPN을 끄면 칸코레에서 데이터를 받아오지 않음\n\n<b>주요 기능</b>\n - 원정 및 입거 알림\n - 대파 알림 (출격 중 및 출격 전)\n - 색적/제공치/피로도 표시\n - 출격 중 현재 위치 표시\n - 전투 예보 / 임무 번역\n - 개수공창표\n - OpenDB에 데이터 전송\n \n자세한 내용은 http://swaytwig.com/kcanotify 참고</string>
 
     <!-- SettingActivity Strings -->
@@ -145,6 +154,7 @@
     <!-- Setting Strings -->
     <string name="setting_menu_kand_head">깡들리티 설정</string>
     <string name="setting_menu_kand_title_saku_cal">색적 계산방식 선택</string>
+    <string name="setting_menu_kand_title_kancolle_app">칸코레 어플리케이션 선택</string>
     <string name="setting_menu_kand_title_sniffer_type">스니퍼 모드</string>
     <string name="setting_menu_kand_title_exp_realtime_show">원정 남은 시간 실시간 표시</string>
     <string name="setting_menu_kand_desc_exp_realtime_show">상단의 원정 시간 표시 여부</string>
@@ -175,6 +185,10 @@
     <string name="setting_menu_view_desc_battleview_use">출격 및 연습전에서의 전투예보 사용 여부</string>
     <string name="setting_menu_view_title_drop_visible">함선 드랍 정보 표시</string>
     <string name="setting_menu_view_desc_drop_visible">전투예보에서 드랍된 칸무스 이름 표시</string>
+    <string name="setting_menu_view_title_hdmg_locked">잠금된 함선에 대해서만 대파 경고 사용</string>
+    <string name="setting_menu_view_desc_hdmg_locked">주의: 잠금되지 않은 함선에 대해서는 경고가 발생하지 않습니다!</string>
+    <string name="setting_menu_view_title_hdmg_minlevel">대파 경고를 사용할 최소 함선 레벨</string>
+    <string name="setting_menu_view_desc_hdmg_minlevel">모든 함선에 대해서 사용할 경우 0으로 설정</string>
     <string name="setting_menu_view_desc_questview_use">임무 화면에서 임무 번역 및 정보 표시</string>
     <string name="setting_menu_view_title_questview_use">임무번역 사용</string>
     <string name="setting_menu_view_title_show_constrship">건조 중인 칸무스 이름 표시</string>
@@ -218,6 +232,8 @@
     <string name="setting_menu_app_title_updatecheckserver">업데이트 확인 서버 선택</string>
     <string name="setting_menu_app_title_contact">건의/오류 보고</string>
     <string name="setting_menu_app_desc_contact">개발자에게 메일 전송</string>
+    <string name="setting_menu_app_title_enable_acra">Crash 보고 시스템 사용 (ACRA)</string>
+    <string name="setting_menu_app_desc_enable_acra">앱 Crash 발생 시 메일 클라이언트 열림</string>
     <string name="setting_menu_app_desc_inspector">내부 속성 및 데이터베이스 정보 값 보기</string>
     <string name="setting_menu_app_info">시제 깡들리티 정보</string>
 
@@ -366,6 +382,7 @@
     <string name="akashi_term_resource">소모자원</string>
     <string name="akashi_term_support">2번함</string>
     <string name="akashi_term_default">초기 장비 함선</string>
+    <string name="akashi_term_status">현재 개수 상태</string>
     <string name="akashi_term_day_6">토</string>
     <string name="akashi_term_day_5">금</string>
     <string name="akashi_term_day_0">일</string>
@@ -387,11 +404,12 @@
     <string name="item_skilled_crew">숙련탑승원</string>
     <string name="item_kouku_material">신형항공병장자재</string>
     <string name="item_action_report">전투상보</string>
+    <string name="item_rocket_material">신형분진장비개발자재</string>
     <string name="setting_menu_kand_desc_bypass_address">CIDR 형식으로 프록시를 사용하지 않을 주소 설정 (각 CIDR는 쉼표로 구분)</string>
     <string name="settings_menu_kand_title_bypass_address">예외 주소</string>
     <string name="setting_menu_kand_warn_adv_network">경고: 해당 설정을 올바르게 하지 않은 경우 VPN이 작동하지 않을 수 있습니다. 이 설정이 무엇을 하는지 모르는 경우 설정하지 마십시오. 해당 설정을 적용하기 위해서는 VPN을 재시작하여야 합니다.</string>
     <string name="setting_menu_kand_title_socks5_enable">SOCKS5 프록시 사용</string>
-    <string name="setting_menu_kand_title_socks5_onlykc">칸코레 관련 어플리케이션에만 적용</string>
+    <string name="setting_menu_kand_title_socks5_allapps">모든 어플리케이션에 프록시 적용</string>
     <string name="setting_menu_kand_title_socks5_port">SOCKS5 프록시 포트</string>
     <string name="setting_menu_kand_title_socks5_address">SOCKS5 프록시 주소</string>
     <string name="setting_menu_kand_title_socks5_username">사용자명(선택)</string>
@@ -410,6 +428,8 @@
     <string name="action_shipinfo">함선 리스트</string>
     <string name="shipinfo_btn_sort">정렬</string>
     <string name="shipinfo_btn_filter">필터</string>
+    <string name="shipinfo_btn_search">검색</string>
+    <string name="shipinfo_btn_search_hint">이름으로 검색</string>
     <string name="shipinfo_btn_total_format" formatted="false">합계: %d</string>
     <string name="shipinfo_btn_total_exp_format" formatted="false">누적경험치: %,d</string>
     <string name="shipinfo_sort_asc">오름차순</string>
@@ -435,18 +455,26 @@
     <string name="ship_stat_sort_key_18">색적</string>
     <string name="ship_stat_sort_key_19">운</string>
     <string name="ship_stat_sort_key_20">속도</string>
-    <string name="ship_stat_sort_key_21">딱지</string>
+    <string name="ship_stat_sort_key_21">함급</string>
+    <string name="ship_stat_sort_key_22">딱지</string>
 
     <string name="shipinfo_filt_list_dialog_title">선택</string>
     <string name="shipinfo_criteria_count" formatted="false">적용된 기준: %d개</string>
 
+    <string name="ship_stat_equip_stype_label">특수장비 필터</string>
+    <string name="ship_stat_equip_stype1">대발계</string>
+    <string name="ship_stat_equip_stype2">내화정</string>
+    <string name="ship_stat_equip_stype3">중형벌지</string>
+    <string name="ship_stat_equip_stype4">함대사령부</string>
+    <string name="ship_stat_equip_stype5">대형탐조등</string>
+
     <string name="ship_tag_0">없음</string>
-    <string name="ship_tag_1">경계부대</string>
-    <string name="ship_tag_2">해협파견부대</string>
-    <string name="ship_tag_3">서방작전부대</string>
-    <string name="ship_tag_4">구주특무부대</string>
-    <string name="ship_tag_5">Force H</string>
-    <string name="ship_tag_6">라인연습부대</string>
+    <string name="ship_tag_1">구주방위함대 (청색)</string>
+    <string name="ship_tag_2">연합함대 (녹색)</string>
+    <string name="ship_tag_3">지중해함대 (황색)</string>
+    <string name="ship_tag_4"> </string>
+    <string name="ship_tag_5"> </string>
+    <string name="ship_tag_6"> </string>
 
     <string name="ship_fleet_0">없음</string>
 
@@ -458,6 +486,8 @@
     <string name="action_equipmentinfo">장비 리스트</string>
     <string name="equipinfo_summary" formatted="false">합계 %d (%d 장비중, %d 장비가능)</string>
     <string name="equipinfo_filter">필터</string>
+    <string name="equipinfo_search">검색</string>
+    <string name="equipinfo_search_hint">이름으로 검색</string>
 
     <string name="action_expcalc">경험치 계산기</string>
     <string name="expcalc_shipname">함선</string>
@@ -479,6 +509,8 @@
     <string name="expdtable_btn_w3">3해역</string>
     <string name="expdtable_btn_w4">4해역</string>
     <string name="expdtable_btn_w5">5해역</string>
+    <string name="expdtable_btn_w6">6해역</string>
+    <string name="expdtable_btn_w7">7해역</string>
     <string name="expdtable_btn_s1">일반</string>
     <string name="expdtable_btn_s2">대성공</string>
 
@@ -587,6 +619,7 @@
     <string name="excheckview_drum_ship_format" formatted="false">%d척 이상 장비</string>
     <string name="excheckview_drum_num_format" formatted="false">총 %d개 이상</string>
     <string name="excheckview_total_format" formatted="false">합계 %d+</string>
+    <string name="excheckview_bonus_firepower" formatted="false">화력: %d</string>
     <string name="excheckview_bonus_asw" formatted="false">대잠: %d</string>
     <string name="excheckview_bonus_los" formatted="false">색적: %d</string>
     <string name="excheckview_bonus_kinu">키누改2</string>
@@ -612,7 +645,7 @@
     <string name="expedition_type_value_2">경과 시간</string>
     <string name="fleetcheckview_title">함대상세</string>
     <string name="fleetcheckview_btn_seeklos">색적/수송</string>
-    <string name="fleetcheckview_content_seeklos" formatted="false">함대 색적 총합: %d\n33식: %.2f (2&#45;5, 33 이상)\n33식/3: %.2f (6&#45;2, 6&#45;3)\n33식/4: %.2f (3&#45;5, 6&#45;1)\n───────────────\n수송 게이지:\n%d(S승)/%d(A승)</string>
+    <string name="fleetcheckview_content_seeklos" formatted="false">함대 색적 총합: %d\n33식: %.2f (2&#45;5, 33 이상)\n33식/2: %.2f (5&#45;2, 4&#45;4)\n33식/3: %.2f (6&#45;2, 6&#45;3)\n33식/4: %.2f (3&#45;5, 6&#45;1)\n───────────────\n수송 게이지:\n%d(S승)/%d(A승)</string>
     <string name="fleetcheckview_btn_airbattle">항공전</string>
     <string name="fleetcheckview_content_airbattle" formatted="false">총 제공치: %d ~ %d\n───────────────\n촉접률:\n[확보] 개시 확률: %.1f%%, 선택 확률: %.1f%%\n[우세] 개시 확률: %.1f%%, 선택 확률: %.1f%%</string>
     <string name="fleetcheckview_btn_fuelbull">연비</string>
@@ -622,7 +655,7 @@
     <string name="fleetview_18spring_nori" formatted="false">김 %02d</string>
     <string name="fleetview_18spring_tea" formatted="false">차 %02d</string>
 
-    <string name="special_playstore_1st">구글 플레이 출시 1주년!</string>
+    <string name="special_message">가을의 저비스와 제너스</string>
 
     <string name="widget_timer_name">시제 깡들리티 타이머</string>
     <string name="fleet_format">제%d함대</string>
@@ -643,4 +676,49 @@
     <string name="download_check_error">데이터 로딩 중 오류 발생 (기본 데이터 사용)</string>
     <string name="download_setting_checkatstart">어플리케이션 시작 시 업데이트 확인</string>
     <string name="download_use_internal_data">내장 리소스 사용</string>
+
+    <string name="packagefilter_count_format" formatted="false">합계: %d</string>
+    <string name="packagefilter_restart">해당 설정을 적용하기 위해서는 VPN을 재시작하여야 합니다.</string>
+    <string name="setting_menu_sniffer_title_head">스니퍼 설정</string>
+    <string name="setting_menu_sniffer_title_package_allow">다른 어플리케이션에 스니퍼 적용</string>
+    <string name="setting_menu_sniffer_title_extfilter_use">확장 IP 필터 사용</string>
+    <string name="setting_menu_sniffer_desc_package_allow">다른 브라우저로 칸코레를 플레이하는 경우</string>
+    <string name="setting_menu_sniffer_desc_extfilter_use">ooi.moe와 같은 웹 프록시를 사용하는 경우 선택</string>
+    <string name="action_export_kanmusu_list">kanmusu_list</string>
+    <string name="shipinfo_export_title">함선목록 내보내기</string>
+    <string name="shipinfo_export_clipboard">클립보드에 복사</string>
+    <string name="shipinfo_export_openpage">kanmusu_list 페이지 열기</string>
+    <string name="shipinfo_export_openfa">함대분석 페이지 열기</string>
+    <string name="action_export_deckbuilder">DeckBuilder</string>
+    <string name="fleetinfo_export_title">DeckBuilder 내보내기</string>
+    <string name="fleetinfo_export_clipboard">클립보드에 복사</string>
+    <string name="fleetinfo_export_openpage1">함대시뮬레이터 열기</string>
+    <string name="fleetinfo_export_openpage2">편성화면 출력</string>
+    <string name="action_export_fleetanalysis">함대분석</string>
+    <string name="equipinfo_export_title">함대분석 내보내기</string>
+    <string name="equipinfo_export_clipboard">클립보드에 복사</string>
+    <string name="equipinfo_export_openpage">함대분석 페이지 열기</string>
+
+    <string name="text_api_houg">화력</string>
+    <string name="text_api_raig">뇌장</string>
+    <string name="text_api_tyku">대공</string>
+    <string name="text_api_souk">장갑</string>
+    <string name="text_api_tais">대잠</string>
+    <string name="text_api_houk">회피</string>
+    <string name="text_api_saku">색적</string>
+    <string name="text_api_houm">명중</string>
+    <string name="text_api_baku">폭장</string>
+    <string name="text_api_leng">사거리</string>
+
+    <string name="text_api_leng_1">단</string>
+    <string name="text_api_leng_2">중</string>
+    <string name="text_api_leng_3">장</string>
+    <string name="text_api_leng_4">초장</string>
+
+    <string name="text_api_houm2">대폭</string>
+    <string name="text_api_houk2">영격</string>
+    <string name="text_api_cost">배치비용</string>
+    <string name="text_api_distance">행동반경</string>
+    <string name="ask_to_dev">칸코레 장비왕</string>
+
 </resources>

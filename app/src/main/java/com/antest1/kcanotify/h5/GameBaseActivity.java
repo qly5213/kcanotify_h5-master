@@ -175,7 +175,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
         battleResultVibrate = prefs.getBoolean("battle_result_vibrate", true);
 
         //proxy init
-        boolean proxyEnable = prefs.getBoolean("host_proxy_enable", true);
+        boolean proxyEnable = prefs.getBoolean("host_proxy_enable", false);
         String proxyIP = prefs.getString("host_proxy_address", "167.179.91.86");
         if(proxyEnable) {
             AndHook.ensureNativeLibraryLoaded(null);

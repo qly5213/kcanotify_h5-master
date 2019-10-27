@@ -21,15 +21,10 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.antest1.kcanotify.h5.KcaDBHelper;
-import com.antest1.kcanotify.h5.KcaUtils;
-import com.antest1.kcanotify.h5.R;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,7 +35,6 @@ import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_BATTLEINFO;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_MSG_BATTLE_INFO;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_MSG_BATTLE_VIEW_REFRESH;
-import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getWindowLayoutType;
 
 public class KcaMapHpPopupService extends Service {
@@ -225,7 +219,7 @@ public class KcaMapHpPopupService extends Service {
 
     private String getMapHpStr(int type, int num, int id, int current, int total) {
         String num_text = "";
-        if (id == 72 || id > 100) num_text = KcaUtils.format("(#%d)", num);
+        if (num > 0 && (id == 72 || id > 100)) num_text = KcaUtils.format("(#%d)", num);
         if (type == 3) {
             return KcaUtils.format(maphp_format, getMapString(id), "TP".concat(num_text), current, total);
         } else {

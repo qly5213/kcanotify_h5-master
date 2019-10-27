@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,13 +17,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
-import org.w3c.dom.Text;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.R.attr.name;
 import static com.antest1.kcanotify.h5.KcaApiData.getExpeditionInfo;
 import static com.antest1.kcanotify.h5.KcaApiData.getShipTypeAbbr;
 import static com.antest1.kcanotify.h5.KcaUtils.joinStr;
@@ -239,30 +235,12 @@ public class KcaExpeditionTableViewAdpater extends BaseAdapter {
 
     private void setRewardData(ImageView type_view, int type, TextView count_view, int count) {
         type_view.setVisibility(type > 0 ? View.VISIBLE : View.INVISIBLE);
-        switch(type) {
-            case 1:
-                type_view.setImageResource(R.mipmap.icon_instant_repair);
-                break;
-            case 2:
-                type_view.setImageResource(R.mipmap.icon_instant_construction);
-                break;
-            case 3:
-                type_view.setImageResource(R.mipmap.icon_development_material);
-                break;
-            case 10:
-                type_view.setImageResource(R.mipmap.icon_furniture_box_small);
-                break;
-            case 11:
-                type_view.setImageResource(R.mipmap.icon_furniture_box_medium);
-                break;
-            case 12:
-                type_view.setImageResource(R.mipmap.icon_furniture_box_large);
-                break;
-            default:
-                type_view.setImageResource(R.color.transparent);
-                break;
+        if (type == 0) {
+            type_view.setImageResource(R.color.transparent);
+        } else {
+            int item_id = KcaUtils.getId("common_itemicons_id_" + type, R.mipmap.class);
+            type_view.setImageResource(item_id);
         }
-
         if (count_view != null) {
             count_view.setText(KcaUtils.format("x%d", count));
             count_view.setVisibility(type > 0 ? View.VISIBLE : View.GONE);
@@ -270,6 +248,8 @@ public class KcaExpeditionTableViewAdpater extends BaseAdapter {
     }
 
     private void setConditionContent(View root_view, JsonObject data) {
+        if (data == null) return;
+
         int total_num = data.get("total-num").getAsInt();
         boolean has_flag_lv = data.has("flag-lv");
         boolean has_flag_cond = data.has("flag-cond");
@@ -298,9 +278,12 @@ public class KcaExpeditionTableViewAdpater extends BaseAdapter {
             }
             setItemViewVisibilityById(root_view, R.id.view_excheck_flagship_cond, has_flag_cond);
             if (has_flag_cond) {
-                int flag_cond = data.get("flag-cond").getAsInt();
-                setItemTextViewById(root_view, R.id.view_excheck_flagship_cond,
-                        getShipTypeAbbr(flag_cond));
+                String[] flag_cond = data.get("flag-cond").getAsString().split("/");
+                List<String> abbr_text_list = new ArrayList<>();
+                for (int i = 0; i < flag_cond.length; i++) {
+                    abbr_text_list.add(getShipTypeAbbr(Integer.parseInt(flag_cond[i])));
+                }
+                setItemTextViewById(root_view, R.id.view_excheck_flagship_cond, joinStr(abbr_text_list, "/"));
             }
         }
 
@@ -347,7 +330,7 @@ public class KcaExpeditionTableViewAdpater extends BaseAdapter {
                     KcaUtils.format(getStringWithLocale(R.string.excheckview_total_format), total_asw));
         }
 
-        setItemViewVisibilityById(root_view, R.id.view_excheck_fp, has_total_asw);
+        setItemViewVisibilityById(root_view, R.id.view_excheck_fp, has_total_fp);
         if (has_total_fp) {
             int total_fp = data.get("total-fp").getAsInt();
             setItemTextViewById(root_view, R.id.view_excheck_total_fp,
@@ -389,7 +372,7 @@ public class KcaExpeditionTableViewAdpater extends BaseAdapter {
             for (String sc : shipcond) {
                 cond_value.add(convertTotalCond(sc));
             }
-            cond_tv.setText("- ".concat(KcaUtils.joinStr(cond_value, " ")));
+            cond_tv.setText("- ".concat(joinStr(cond_value, " ")));
             views.add(cond_tv);
         }
         return views;
@@ -435,7 +418,7 @@ public class KcaExpeditionTableViewAdpater extends BaseAdapter {
     }
 
     public int getAreaColor(int area) {
-        if (area < 1 || area > 5) area = 99;
+        if (area < 1 || area > 7) area = 99;
         return KcaUtils.getId(KcaUtils.format("colorExpeditionTable%d", area), R.color.class);
     }
 

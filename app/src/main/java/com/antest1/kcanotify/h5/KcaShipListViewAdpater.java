@@ -2,6 +2,7 @@ package com.antest1.kcanotify.h5;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +11,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -22,29 +23,35 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import static android.R.id.list;
-import static android.media.CamcorderProfile.get;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_CVE;
 import static com.antest1.kcanotify.h5.KcaApiData.getKcShipDataById;
 import static com.antest1.kcanotify.h5.KcaApiData.getUserItemStatusById;
+import static com.antest1.kcanotify.h5.KcaApiData.isShipCVE;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
+import static com.antest1.kcanotify.h5.KcaUtils.searchStringFromStart;
 
 public class KcaShipListViewAdpater extends BaseAdapter {
     private long exp_sum = 0L;
     private JsonArray deckInfo = new JsonArray();
     private List<JsonObject> listViewItemList = new ArrayList<>();
+    private String searchQuery = "";
+    private JsonObject specialEquipment = new JsonObject();
 
     private static final String[] total_key_list = {
             "api_id", "api_lv", "api_stype", "api_cond", "api_locked",
             "api_deck_id", "api_docking", "api_damage", "api_repair", "api_mission", "api_exslot",
             "api_karyoku", "api_raisou", "api_taiku", "api_soukou", "api_yasen",
-            "api_taisen", "api_kaihi", "api_sakuteki", "api_lucky", "api_soku", "api_sally_area"};
+            "api_taisen", "api_kaihi", "api_sakuteki", "api_lucky", "api_soku", "api_sort_id", "api_sally_area"};
 
     public long getTotalExp() { return exp_sum; }
 
-    private static int[] sort_table = {0, 1, 2, 3, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-    private static int[] filt_table = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
+    private static int[] sort_table = {0, 1, 2, 3, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
+    private static int[] filt_table = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22};
 
     public static int getSortKeyIndex(int position) {
         return sort_table[position];
@@ -63,7 +70,7 @@ public class KcaShipListViewAdpater extends BaseAdapter {
     }
 
     public static boolean isList(int idx) {
-        int[] list = {2, 5, 7, 20, 21};  // ship_filt_array
+        int[] list = {2, 5, 7, 20, 22};  // ship_filt_array
         return (Arrays.binarySearch(list, idx) >= 0);
     }
 
@@ -90,6 +97,12 @@ public class KcaShipListViewAdpater extends BaseAdapter {
     public long getItemId(int position) {
         return position;
     }
+
+    public void setSearchQuery(String query) {
+        searchQuery = query;
+    }
+
+    public void setSpecialEquipment(JsonObject data) { specialEquipment = data; }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -138,6 +151,8 @@ public class KcaShipListViewAdpater extends BaseAdapter {
         JsonObject item = listViewItemList.get(position);
         int kc_ship_id = item.get("api_ship_id").getAsInt();
         JsonObject kcShipData = getKcShipDataById(kc_ship_id, "name,stype,houg,raig,tyku,souk,tais,luck,afterlv,slot_num");
+        if (kcShipData == null) return v;
+
         String ship_name = kcShipData.get("name").getAsString();
         int ship_stype = kcShipData.get("stype").getAsInt();
         int ship_init_ka = kcShipData.getAsJsonArray("houg").get(0).getAsInt();
@@ -406,10 +421,65 @@ public class KcaShipListViewAdpater extends BaseAdapter {
         ImageView ship_sally_area;
     }
 
-    public void setListViewItemList(JsonArray ship_list, JsonArray deck_list, String sort_key) {
-        setListViewItemList(ship_list, deck_list, sort_key, "|");
+    public void setListViewItemList(JsonArray ship_list, JsonArray deck_list, String sort_key, String special_equip) {
+        setListViewItemList(ship_list, deck_list, sort_key, "|", special_equip);
     }
 
+    public String getKanmusuListText() {
+        JsonObject data = KcaApiData.buildShipUpdateData();
+        JsonObject frombefore = data.getAsJsonObject("frombefore");
+        JsonObject fromafter = data.getAsJsonObject("fromafter");
+        JsonObject afterlv = data.getAsJsonObject("afterlv");
+
+        List<String> items = new ArrayList<>();
+        Map<String, List<String>> ship_base = new LinkedHashMap<>();
+        items.add(".2");
+        if (listViewItemList != null) {
+            for (JsonObject v: listViewItemList) {
+                String lv = v.get("api_lv").getAsString();
+                String shipId = v.get("api_ship_id").getAsString();
+
+                String targetId = shipId;
+                String baseId = shipId;
+                int minlv = 100;
+                int k = 0;
+                while (fromafter.has(targetId)) {
+                    baseId = fromafter.get(targetId).getAsString();
+                    String key = KcaUtils.format("%s->%s", baseId, targetId);
+                    minlv = afterlv.get(key).getAsInt();
+                    targetId = baseId;
+                    k += 1;
+                }
+
+                targetId = baseId;
+                String afterId = baseId;
+                int l = 0;
+                while (frombefore.has(targetId)) {
+                    afterId = frombefore.get(targetId).getAsString();
+                    String key = KcaUtils.format("%s->%s", targetId, afterId);
+                    if (Integer.parseInt(lv) < afterlv.get(key).getAsInt()) break;
+                    targetId = afterId;
+                    l += 1;
+                }
+
+                String postfix = (k != l) ? "." + String.valueOf(k+1) : "";
+                if (!ship_base.containsKey(baseId)) ship_base.put(baseId, new ArrayList<>());
+                ship_base.get(baseId).add(lv + postfix);
+            }
+        }
+
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<String, List<String>> item: ship_base.entrySet()) {
+            result.put(item.getKey(), KcaUtils.joinStr(item.getValue(), ","));
+        }
+        List<Map.Entry<String, String>> list = new ArrayList<>(result.entrySet());
+        Collections.sort(list, (o1, o2) -> o1.getKey().equals(o2.getKey()) ? 0 :
+                Integer.parseInt(o1.getKey()) < Integer.parseInt(o2.getKey()) ? -1 : 1);
+        for (Map.Entry<String, String> item: list) {
+            items.add(item.getKey() + ":" + item.getValue());
+        }
+        return KcaUtils.joinStr(items, "|");
+    }
 
     /*
     *
@@ -424,7 +494,9 @@ public class KcaShipListViewAdpater extends BaseAdapter {
         }
     *
     * */
-    private List<JsonObject> addShipInformation(List<JsonObject> data) {
+
+    private List<JsonObject> addShipInformation(List<JsonObject> data, String sp_eqlist) {
+        List<JsonObject> filteredShipInformation = new ArrayList<>();
         JsonObject deck_ship_info = new JsonObject();
         for (int i = 0; i < deckInfo.size(); i++) {
             JsonObject fleet_item = deckInfo.get(i).getAsJsonObject();
@@ -449,8 +521,33 @@ public class KcaShipListViewAdpater extends BaseAdapter {
             item.addProperty("api_yasen",
                     item.getAsJsonArray("api_karyoku").get(0).getAsInt() +
                             item.getAsJsonArray("api_raisou").get(0).getAsInt());
-            JsonObject kcShipData = getKcShipDataById(kc_ship_id, "api_name,api_stype");
-            int stype = kcShipData.get("api_stype").getAsInt();
+            JsonObject kcShipData = getKcShipDataById(kc_ship_id, "api_name,api_yomi,api_stype,api_sort_id");
+            String name = kcShipData != null ? kcShipData.get("api_name").getAsString() : "";
+            name = KcaApiData.getShipTranslation(name, false);
+            String yomi = kcShipData != null ? kcShipData.get("api_yomi").getAsString() : "";
+            int stype = kcShipData != null ? kcShipData.get("api_stype").getAsInt() : 0;
+
+            boolean name_matched = searchStringFromStart(name, searchQuery, false);
+            boolean yomi_matched = searchStringFromStart(yomi, searchQuery, false);
+            if (!name_matched && !yomi_matched) continue;
+
+            if (sp_eqlist.trim().length() > 0) {
+                String[] special_eq_list = sp_eqlist.split(",");
+                boolean found_flag = false;
+                for (String key: special_eq_list) {
+                    if (specialEquipment.has(key)) {
+                        JsonObject se_item = specialEquipment.getAsJsonObject(key);
+                        boolean match_stype = se_item.getAsJsonArray("stype").contains(new JsonPrimitive(stype));
+                        boolean match_special = se_item.getAsJsonArray("special").contains(new JsonPrimitive(kc_ship_id));
+                        if (match_stype || match_special) {
+                            found_flag = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found_flag) continue;
+            }
+
             int max_hp = item.get("api_maxhp").getAsInt();
             int now_hp = item.get("api_nowhp").getAsInt();
             item.addProperty("api_exslot", item.get("api_slot_ex").getAsInt() != 0 ? 1 : 0);
@@ -467,111 +564,117 @@ public class KcaShipListViewAdpater extends BaseAdapter {
                 item.addProperty("api_deck_id", 0);
                 item.addProperty("api_mission", 0);
             }
-            data.set(i, item);
+            item.addProperty("api_sort_id", kcShipData != null ? kcShipData.get("api_sort_id").getAsInt() : 0);
+            filteredShipInformation.add(item);
         }
-        return data;
+        return filteredShipInformation;
     }
 
-    public void setListViewItemList(JsonArray ship_list, JsonArray deck_list, String sort_key, final String filter) {
+    public void setListViewItemList(JsonArray ship_list, JsonArray deck_list, String sort_key, final String filter, String special_equip) {
         exp_sum = 0;
         deckInfo = deck_list;
-
         Type listType = new TypeToken<List<JsonObject>>() {}.getType();
         listViewItemList = new Gson().fromJson(ship_list, listType);
         if (listViewItemList == null) listViewItemList = new ArrayList<>();
-        listViewItemList = addShipInformation(listViewItemList);
+        listViewItemList = addShipInformation(listViewItemList, special_equip);
         if (!filter.equals("|") && listViewItemList.size() > 1) {
-            listViewItemList = new ArrayList<>(Collections2.filter(listViewItemList, new Predicate<JsonObject>() {
-                @Override
-                public boolean apply(JsonObject input) {
-                    String[] filter_list = filter.split("\\|");
-                    for (String key_op_val: filter_list) {
-                        if (key_op_val.length() != 0) {
-                            String[] kov_split = key_op_val.split(",");
-                            int idx = Integer.valueOf(kov_split[0]);
-                            String key = total_key_list[idx];
-                            int op = Integer.valueOf(kov_split[1]);
+            listViewItemList = new ArrayList<>(Collections2.filter(listViewItemList, input -> {
+                String[] filter_list = filter.split("\\|");
+                for (String key_op_val: filter_list) {
+                    if (key_op_val.length() != 0) {
+                        String[] kov_split = key_op_val.split(",");
+                        int idx = Integer.valueOf(kov_split[0]);
+                        String key = total_key_list[idx];
+                        int op = Integer.valueOf(kov_split[1]);
 
-                            String v1 = KcaShipListViewAdpater.getstrvalue(input, key);
-                            String v2 = kov_split[2].trim();
-                            String[] v2_list = v2.split("_");
+                        String v1 = KcaShipListViewAdpater.getstrvalue(input, key);
+                        String v2 = kov_split[2].trim();
+                        String[] v2_list = v2.split("_");
 
-                            int v1_int = KcaShipListViewAdpater.getintvalue(input, key);
+                        int v1_int = KcaShipListViewAdpater.getintvalue(input, key);
 
-                            boolean flag = false;
-                            switch (op) {
-                                case 0:
-                                    for (String v2_val: v2_list) {
-                                        int v2_int = Integer.valueOf(v2_val);
+                        boolean flag = false;
+                        switch (op) {
+                            case 0:
+                                for (String v2_val: v2_list) {
+                                    int v2_int = Integer.valueOf(v2_val);
+                                    if (key.equals("api_stype") && v2_int == STYPE_CVE) {
+                                        int shipid = KcaShipListViewAdpater.getintvalue(input, "api_ship_id");
+                                        if (isShipCVE(shipid)) {
+                                            flag = true;
+                                            break;
+                                        }
+                                    } else {
                                         if (v1_int == v2_int) {
                                             flag = true;
                                             break;
                                         }
                                     }
-                                    if (!flag) return false;
-                                    break;
-                                case 1:
-                                    for (String v2_val: v2_list) {
-                                        int v2_int = Integer.valueOf(v2_val);
-                                        if (v1_int != v2_int) {
-                                            flag = true;
-                                            break;
-                                        }
+                                }
+                                if (!flag) return false;
+                                break;
+                            case 1:
+                                for (String v2_val: v2_list) {
+                                    int v2_int = Integer.valueOf(v2_val);
+                                    if (v1_int != v2_int) {
+                                        flag = true;
+                                        break;
                                     }
-                                    if (!flag) return false;
-                                    break;
-                                case 2:
-                                    for (String v2_val: v2_list) {
-                                        int v2_int = Integer.valueOf(v2_val);
-                                        if (v1_int < v2_int) {
-                                            flag = true;
-                                            break;
-                                        }
+                                }
+                                if (!flag) return false;
+                                break;
+                            case 2:
+                                for (String v2_val: v2_list) {
+                                    int v2_int = Integer.valueOf(v2_val);
+                                    if (v1_int < v2_int) {
+                                        flag = true;
+                                        break;
                                     }
-                                    if (!flag) return false;
-                                    break;
-                                case 3:
-                                    for (String v2_val: v2_list) {
-                                        int v2_int = Integer.valueOf(v2_val);
-                                        if (v1_int > v2_int) {
-                                            flag = true;
-                                            break;
-                                        }
+                                }
+                                if (!flag) return false;
+                                break;
+                            case 3:
+                                for (String v2_val: v2_list) {
+                                    int v2_int = Integer.valueOf(v2_val);
+                                    if (v1_int > v2_int) {
+                                        flag = true;
+                                        break;
                                     }
-                                    if (!flag) return false;
-                                    break;
-                                case 4:
-                                    for (String v2_val: v2_list) {
-                                        int v2_int = Integer.valueOf(v2_val);
-                                        if (v1_int <= v2_int) {
-                                            flag = true;
-                                            break;
-                                        }
+                                }
+                                if (!flag) return false;
+                                break;
+                            case 4:
+                                for (String v2_val: v2_list) {
+                                    int v2_int = Integer.valueOf(v2_val);
+                                    if (v1_int <= v2_int) {
+                                        flag = true;
+                                        break;
                                     }
-                                    if (!flag) return false;
-                                    break;
-                                case 5:
-                                    for (String v2_val: v2_list) {
-                                        int v2_int = Integer.valueOf(v2_val);
-                                        if (v1_int >= v2_int) {
-                                            flag = true;
-                                            break;
-                                        }
+                                }
+                                if (!flag) return false;
+                                break;
+                            case 5:
+                                for (String v2_val: v2_list) {
+                                    int v2_int = Integer.valueOf(v2_val);
+                                    if (v1_int >= v2_int) {
+                                        flag = true;
+                                        break;
                                     }
-                                    if (!flag) return false;
-                                    break;
-                                default:
-                                    break;
-                            }
+                                }
+                                if (!flag) return false;
+                                break;
+                            default:
+                                break;
                         }
                     }
-                    return true;
                 }
+                return true;
             }));
         }
 
         StatComparator cmp = new StatComparator(sort_key);
         Collections.sort(listViewItemList, cmp);
+        Log.e("KCA", "list size: " + listViewItemList.size());
         for (int i = 0; i < listViewItemList.size(); i++) {
             exp_sum += listViewItemList.get(i).getAsJsonArray("api_exp").get(0).getAsLong();
         }

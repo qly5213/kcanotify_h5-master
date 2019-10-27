@@ -38,13 +38,15 @@ import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_PREF_FAIRY_CHANGED;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_DOWN_FLAG;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_ICON;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_REV;
+import static com.antest1.kcanotify.h5.KcaUseStatConstant.SELECT_FAIRY;
 import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
+import static com.antest1.kcanotify.h5.KcaUtils.sendUserAnalytics;
 import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
 
 public class KcaFairySelectActivity extends AppCompatActivity {
     public final static String FAIRY_INFO_FILENAME = "icon_info.json";
-    public final static boolean FAIRY_SPECIAL_FLAG = true;
+    public final static boolean FAIRY_SPECIAL_FLAG = false;
     public final static int FAIRY_SPECIAL_PREFIX = 900;
     public final static int FAIRY_SPECIAL_COUNT = 8;
 
@@ -172,6 +174,8 @@ public class KcaFairySelectActivity extends AppCompatActivity {
                     int current_id = Integer.parseInt(getStringPreferences(getApplicationContext(), PREF_FAIRY_ICON));
                     JsonObject data = new JsonObject();
                     data.addProperty("id", current_id);
+                    sendUserAnalytics(SELECT_FAIRY, data);
+
                     Bundle bundle = new Bundle();
                     bundle.putString("url", KCA_API_PREF_FAIRY_CHANGED);
                     bundle.putString("data", data.toString());
@@ -198,15 +202,17 @@ public class KcaFairySelectActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mWakeLock.acquire();
+            mWakeLock.acquire(10*60*1000L /*10 minutes*/);
             mProgressDialog.show();
         }
 
         private void workFinished()  {
-            mWakeLock.release();
+            if (mWakeLock.isHeld()) mWakeLock.release();
             Log.e("KCA-FS", KcaUtils.format("%d %d %d", totalFiles, successedFiles, failedFiles));
             setPreferences(getApplicationContext(), PREF_FAIRY_DOWN_FLAG, true);
-            mProgressDialog.dismiss();
+            if (!KcaFairySelectActivity.this.isFinishing() && mProgressDialog != null) {
+                mProgressDialog.dismiss();
+            }
             if (totalFiles == 0) {
                 Toast.makeText(getApplicationContext(), "no file to download", Toast.LENGTH_LONG).show();
             } else {

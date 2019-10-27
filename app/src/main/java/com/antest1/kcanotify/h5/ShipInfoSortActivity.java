@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static android.widget.Toast.makeText;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_SORTKEY;
@@ -74,7 +73,7 @@ public class ShipInfoSortActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_shipinfo_sort_filter);
+        setContentView(R.layout.activity_shipinfo_sort);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(getStringWithLocale(R.string.shipinfo_btn_sort));

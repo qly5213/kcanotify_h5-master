@@ -14,12 +14,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,11 +29,74 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.antest1.kcanotify.h5.KcaConstants.*;
+import static com.antest1.kcanotify.h5.KcaConstants.AIR_DENIAL;
+import static com.antest1.kcanotify.h5.KcaConstants.AIR_INCAPABILITY;
+import static com.antest1.kcanotify.h5.KcaConstants.AIR_PARITY;
+import static com.antest1.kcanotify.h5.KcaConstants.AIR_SUPERIORITY;
+import static com.antest1.kcanotify.h5.KcaConstants.AIR_SUPERMACY;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_AIR;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_BOSS;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_LDAIRBATTLE;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_LOSS;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_NOEVENT;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_NORMAL;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_OBTAIN;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_SENDAN;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_ID_TPOINT;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_AIRBATTLE;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_AIRSEARCH;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_BATTLE;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_ECBATTLE;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_LDAIRBATTLE;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_LDSHOOTING;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_NIGHTBATTLE;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_NIGHTDAYBATTLE_EC;
+import static com.antest1.kcanotify.h5.KcaConstants.API_NODE_EVENT_KIND_SELECTABLE;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_BASICIFNO;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_EXPSHIP;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_EXPSORTIE;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_MAPEDGES;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_MAPSUBDT;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_QUESTTRACK;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_SHIPIFNO;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_USEITEMS;
+import static com.antest1.kcanotify.h5.KcaConstants.ENGAGE_HDON;
+import static com.antest1.kcanotify.h5.KcaConstants.ENGAGE_PARL;
+import static com.antest1.kcanotify.h5.KcaConstants.ENGAGE_TADV;
+import static com.antest1.kcanotify.h5.KcaConstants.ENGAGE_TDIS;
+import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_BATTLEVIEW;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_C1;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_C2;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_C3;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_C4;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_DEF;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_DIA;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_DLN;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_ECH;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_LAB;
+import static com.antest1.kcanotify.h5.KcaConstants.FORMATION_LAH;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_AMMO;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_BAUX;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_BGTZ;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_BOXL;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_BOXM;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_BOXS;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_BRNR;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_FUEL;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_KMAT;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_MMAT;
+import static com.antest1.kcanotify.h5.KcaConstants.ITEM_STEL;
+import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_DATA_LOADED;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
+import static com.antest1.kcanotify.h5.KcaConstants.STATE_HEAVYDMG;
+import static com.antest1.kcanotify.h5.KcaConstants.STATE_LIGHTDMG;
+import static com.antest1.kcanotify.h5.KcaConstants.STATE_MODERATEDMG;
+import static com.antest1.kcanotify.h5.KcaConstants.STATE_NORMAL;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.joinStr;
-import static com.antest1.kcanotify.h5.LocaleUtils.getLocaleCode;
+import static com.antest1.kcanotify.h5.LocaleUtils.getResourceLocaleCode;
+
 
 public class KcaApiData {
     public static JsonObject kcGameData = null;
@@ -88,6 +153,7 @@ public class KcaApiData {
     public static final int STYPE_CT = 21;
     public static final int STYPE_AO = 22;
 
+    public static final int STYPE_CVE = 27;
 
     // Equipment Constants (api_type 2)
     public static final int T2_GUN_SMALL = 1;
@@ -138,6 +204,7 @@ public class KcaApiData {
     public static final int T2_AMP_TANK = 46;
     public static final int T2_LBA_AIRCRAFT = 47;
     public static final int T2_ITCP_FIGHTER = 48;
+    public static final int T2_LAND_SCOUT = 49;
 
     public static final int T2_SAIUN_PART = 50;
     public static final int T2_SUBMARINE_RADER = 51;
@@ -151,13 +218,15 @@ public class KcaApiData {
     public static final int T2_SCOUT_II = 94;
 
     public static final int[] T2LIST_AIRCRAFTS = {T2_FIGHTER, T2_BOMBER, T2_TORPEDO_BOMBER, T2_SCOUT, T2_SEA_SCOUT, T2_SEA_BOMBER, T2_FLYING_BOAT,
-            T2_SEA_FIGHTER, T2_LBA_AIRCRAFT, T2_ITCP_FIGHTER, T2_JET_FIGHTER, T2_JET_BOMBER, T2_JET_TORPEDO_BOMBER, T2_JET_SCOUT};
+            T2_SEA_FIGHTER, T2_LBA_AIRCRAFT, T2_ITCP_FIGHTER, T2_JET_FIGHTER, T2_JET_BOMBER, T2_JET_TORPEDO_BOMBER, T2_JET_SCOUT, T2_LAND_SCOUT};
 
     public static final int[] T2LIST_FIGHT_AIRCRAFTS = {T2_FIGHTER, T2_BOMBER, T2_TORPEDO_BOMBER, T2_SEA_BOMBER,
             T2_SEA_FIGHTER, T2_LBA_AIRCRAFT, T2_ITCP_FIGHTER, T2_JET_FIGHTER, T2_JET_BOMBER, T2_JET_TORPEDO_BOMBER};
 
+    public static final int[] T2LIST_LANDBASE = {T2_LBA_AIRCRAFT, T2_ITCP_FIGHTER, T2_LAND_SCOUT};
+
     public static final int T3_COUNT = 47;
-    public static final int[] T3LIST_IMPROVABLE = {1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 13, 15, 16, 17, 18, 19, 20, 23, 24, 30, 34, 36, 38, 42, 43, 44};
+    public static final int[] T3LIST_IMPROVABLE = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 23, 24, 30, 31, 34, 36, 38, 42, 43, 44, 46};
 
     public static final int[] BASIC_MASTERY_MIN_BONUS = {0, 10, 25, 40, 55, 70, 85, 100};
     public static final int[] BASIC_MASTERY_MAX_BONUS = {9, 24, 39, 54, 69, 84, 99, 120};
@@ -478,6 +547,16 @@ public class KcaApiData {
         }
     }
 
+    public static int loadSubMapInfoFromStorage(Context context) {
+        JsonObject data = getJsonObjectFromStorage(context, "map_sub.json");
+        if (data != null) {
+            helper.putValue(DB_KEY_MAPSUBDT, data.toString());
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
     public static int loadShipExpInfoFromAssets(AssetManager am) {
         try {
             AssetManager.AssetInputStream ais = (AssetManager.AssetInputStream) am.open("exp_ship.json");
@@ -512,7 +591,7 @@ public class KcaApiData {
 
     public static int loadShipTranslationDataFromStorage(Context context, String locale) {
         try {
-            locale = getLocaleCode(locale);
+            locale = getResourceLocaleCode(locale);
             JsonObject data = getJsonObjectFromStorage(context, KcaUtils.format("ships-%s.json", locale));
             AssetManager.AssetInputStream ais_abbr =
                     (AssetManager.AssetInputStream) context.getResources().getAssets().open("en-abbr.json");
@@ -532,7 +611,7 @@ public class KcaApiData {
     }
 
     public static int loadItemTranslationDataFromStorage(Context context, String locale) {
-        locale = getLocaleCode(locale);
+        locale = getResourceLocaleCode(locale);
         JsonObject data = getJsonObjectFromStorage(context, KcaUtils.format("items-%s.json", locale));
         if (data != null) {
             kcItemTranslationData = data.getAsJsonObject();
@@ -543,7 +622,7 @@ public class KcaApiData {
     }
 
     public static int loadStypeTranslationDataFromStorage(Context context, String locale) {
-        locale = getLocaleCode(locale);
+        locale = getResourceLocaleCode(locale);
         JsonArray data = getJsonArrayFromStorage(context, KcaUtils.format("stype-%s.json", locale));
         if (data != null) {
             kcStypeData = data;
@@ -554,7 +633,7 @@ public class KcaApiData {
     }
 
     public static int loadQuestInfoDataFromStorage(Context context, String locale) {
-        locale = getLocaleCode(locale);
+        locale = getResourceLocaleCode(locale);
         JsonObject data = getJsonObjectFromStorage(context, KcaUtils.format("quests-%s.json", locale));
         if (data != null) {
             kcQuestInfoData = data.getAsJsonObject();
@@ -565,12 +644,16 @@ public class KcaApiData {
     }
 
     public static void loadTranslationData(Context context) {
+        loadTranslationData(context, false);
+    }
+
+    public static void loadTranslationData(Context context, boolean force) {
         boolean isDataLoaded = (kcShipTranslationData.entrySet().size() != 0) &&
                 (kcItemTranslationData.entrySet().size() != 0) &&
                 (kcQuestInfoData.entrySet().size() != 0);
         String locale = getStringPreferences(context, PREF_KCA_LANGUAGE);
-        if (!isDataLoaded || !currentLocaleCode.equals(getLocaleCode(locale))) {
-            currentLocaleCode = getLocaleCode(locale);
+        if (force || !isDataLoaded || !currentLocaleCode.equals(getResourceLocaleCode(locale))) {
+            currentLocaleCode = getResourceLocaleCode(locale);
             if (!currentLocaleCode.equals("jp")) {
                 int loadShipTranslationDataResult = loadShipTranslationDataFromStorage(context, locale);
                 if (loadShipTranslationDataResult != 1) {
@@ -622,6 +705,21 @@ public class KcaApiData {
             return 1;
         } else {
             return -1;
+        }
+    }
+
+    public static JsonObject loadSpecialEquipmentShipInfo(AssetManager am) {
+        try {
+            AssetManager.AssetInputStream ais = (AssetManager.AssetInputStream) am.open("equip_special.json");
+            byte[] bytes = ByteStreams.toByteArray(ais);
+            JsonElement data = new JsonParser().parse(new String(bytes));
+            if (data.isJsonObject()) {
+                return data.getAsJsonObject();
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+            return null;
         }
     }
 
@@ -679,8 +777,8 @@ public class KcaApiData {
         String currentMapString = KcaUtils.format("%d-%d", maparea, mapno);
         String no_str = String.valueOf(no);
         if (helper != null) {
-            JsonObject mapEdgeInfo = new JsonParser().parse(helper.getValue(DB_KEY_MAPEDGES)).getAsJsonObject();
-            if (mapEdgeInfo.has(currentMapString)) {
+            JsonObject mapEdgeInfo = helper.getJsonObjectValue(DB_KEY_MAPEDGES);
+            if (mapEdgeInfo != null && mapEdgeInfo.has(currentMapString)) {
                 JsonObject currentMapInfo = mapEdgeInfo.getAsJsonObject(currentMapString);
                 if (currentMapInfo.has(no_str)) {
                     JsonArray nodeInfo = currentMapInfo.getAsJsonArray(no_str);
@@ -691,9 +789,36 @@ public class KcaApiData {
         return no_str;
     }
 
+    public static boolean getCurrentNodeSubExist(int maparea, int mapno, int no) {
+        String currentMapString = KcaUtils.format("%d-%d", maparea, mapno);
+        if (helper != null) {
+            JsonObject subEdgeInfo = helper.getJsonObjectValue(DB_KEY_MAPSUBDT);
+            if (subEdgeInfo != null && subEdgeInfo.has(currentMapString)) {
+                JsonArray sub_edges = subEdgeInfo.getAsJsonArray(currentMapString);
+                return sub_edges.contains(new JsonPrimitive(no));
+            }
+        }
+        return false;
+    }
+
     public static boolean isExpeditionDataLoaded() {
         return kcExpeditionData.entrySet().size() > 0;
     }
+
+    public static List<Integer> getExpeditionNumByWorld(int world) {
+        List<Integer> list = new ArrayList<>();
+        if (isExpeditionDataLoaded()) {
+            for (String key: kcExpeditionData.keySet()) {
+                JsonObject rawdata = kcExpeditionData.getAsJsonObject(String.valueOf(key));
+                int w = rawdata.get("area").getAsInt();
+                if (world == w) {
+                    list.add(Integer.parseInt(key));
+                }
+            }
+        }
+        return list;
+    }
+
 
     public static JsonObject getExpeditionInfo(int mission_no, String locale) {
         int mission_key = mission_no;
@@ -701,13 +826,17 @@ public class KcaApiData {
             if (mission_no % 2 == 1) mission_key = 133;
             else mission_key = 134;
         }
-        JsonObject rawdata = kcExpeditionData.getAsJsonObject(String.valueOf(mission_key));
-        JsonObject data = new JsonParser().parse(rawdata.toString()).getAsJsonObject();
-        JsonObject name = data.getAsJsonObject("name");
-        if (name.has(locale)) {
-            data.addProperty("name", name.get(locale).getAsString());
-        } else {
-            data.addProperty("name", name.get("en").getAsString());
+        JsonObject data = null;
+        String key = String.valueOf(mission_key);
+        if (kcExpeditionData.has(key)) {
+            JsonObject rawdata = kcExpeditionData.getAsJsonObject(String.valueOf(mission_key));
+            data = new JsonParser().parse(rawdata.toString()).getAsJsonObject();
+            JsonObject name = data.getAsJsonObject("name");
+            if (name.has(locale)) {
+                data.addProperty("name", name.get(locale).getAsString());
+            } else {
+                data.addProperty("name", name.get("en").getAsString());
+            }
         }
         return data;
     }
@@ -718,13 +847,17 @@ public class KcaApiData {
             if (mission_no % 2 == 1) mission_key = 133;
             else mission_key = 134;
         }
-        JsonObject data = kcExpeditionData.getAsJsonObject(String.valueOf(mission_key));
-        JsonObject name = data.getAsJsonObject("name");
-        if (name.has(locale)) {
-            return name.get(locale).getAsString();
-        } else {
-            return name.get("en").getAsString();
+        String key = String.valueOf(mission_key);
+        if (kcExpeditionData.has(key)) {
+            JsonObject data = kcExpeditionData.getAsJsonObject(String.valueOf(mission_key));
+            JsonObject name = data.getAsJsonObject("name");
+            if (name.has(locale)) {
+                return name.get(locale).getAsString();
+            } else {
+                return name.get("en").getAsString();
+            }
         }
+        return "";
     }
 
     public static long getExpeditionDuration(int mission_no) {
@@ -788,6 +921,16 @@ public class KcaApiData {
         return userShipData.size();
     }
 
+    public static void updateShipHpOnBattle(int api_id, int hp_value) {
+        if (userShipData != null && userShipData.containsKey(api_id)) {
+            JsonObject data = userShipData.get(api_id);
+            if (data != null) {
+                data.addProperty("api_nowhp", hp_value);
+                userShipData.put(api_id, data);
+            }
+        }
+    }
+
     public static int updatePortDataOnBattle(JsonObject api_data) {
         if (api_data.has("api_ship_data")) {
             JsonArray shipDataArray = (JsonArray) api_data.get("api_ship_data");
@@ -816,12 +959,23 @@ public class KcaApiData {
         helper.removeItemValue(requestList);
     }
 
+    public static JsonArray updateDevelopItemData(JsonObject api_data) {
+        JsonArray get_items = null;
+        if (api_data.has("api_get_items")) {
+            get_items = api_data.getAsJsonArray("api_get_items");
+            for (int i = 0; i < get_items.size(); i++) {
+                JsonObject item = get_items.get(i).getAsJsonObject();
+                int item_id = item.get("api_id").getAsInt();
+                if (item_id > 0) updateSlotItemData(item);
+            }
+        }
+        return get_items;
+    }
+
     public static int updateSlotItemData(JsonObject api_data) {
         if (helper == null) return -1;
         JsonObject item = null;
-        if (api_data.has("api_create_flag") && api_data.get("api_create_flag").getAsInt() == 1) {
-            item = (JsonObject) api_data.get("api_slot_item");
-        } else if (api_data.has("api_slotitem_id")) {
+        if (api_data.has("api_slotitem_id")) {
             item = api_data;
         }
         if (item != null) {
@@ -985,6 +1139,11 @@ public class KcaApiData {
         return result > -1;
     }
 
+    public static boolean isShipCVE(int id) {
+        int[] ship_cve = {396, 380, 381, 526, 529, 534, 536, 544, 560};
+        return Arrays.binarySearch(ship_cve, id) >= 0;
+    }
+
     public static void addUserShip(JsonObject api_data) {
         if (kcGameData == null) return;
         if (api_data.has("api_id")) {
@@ -1095,7 +1254,8 @@ public class KcaApiData {
     public static int getStatus(int value) {
         if (value > 75) return STATE_NORMAL;
         else if (value > 50) return STATE_LIGHTDMG;
-        else if (value > 25) return STATE_MODERATEDMG;
+        else if (value > 25) return STATE_MODERATEDMG
+                ;
         else return STATE_HEAVYDMG;
     }
 
@@ -1189,7 +1349,7 @@ public class KcaApiData {
                     }
                 } else if (api_event_kind == API_NODE_EVENT_KIND_NIGHTBATTLE) {
                     return ContextCompat.getColor(context, R.color.colorNightBattle);
-                } else{
+                } else {
                     return ContextCompat.getColor(context, R.color.colorBattle);
                 }
             case 5:
@@ -1202,6 +1362,8 @@ public class KcaApiData {
             case 11:
             case 12:
                 return ContextCompat.getColor(context, R.color.colorNightBattle);
+            case 13:
+                return ContextCompat.getColor(context, R.color.colorLdShooting);
             default:
                 return ContextCompat.getColor(context, R.color.colorPrimaryDark);
         }
@@ -1353,6 +1515,38 @@ public class KcaApiData {
             if (target.length == 0) break;
         }
         return result;
+    }
+
+    public static JsonObject buildShipUpdateData() {
+        List<Map.Entry<Integer, JsonObject>> list = new ArrayList<>(kcShipData.entrySet());
+        Collections.sort(list, (o1, o2) -> o1.getKey().compareTo(o2.getKey()));
+
+        JsonObject frombefore = new JsonObject();
+        JsonObject fromafter = new JsonObject();
+        JsonObject afterlv_data = new JsonObject();
+        Set<String> checked = new HashSet<>();
+        for (Map.Entry<Integer, JsonObject> entry : list) {
+            JsonObject data = entry.getValue();
+            String api_id = data.get("api_id").getAsString();
+            if (data.has("api_aftershipid")) {
+                String after_id = data.get("api_aftershipid").getAsString();
+                String key = KcaUtils.format("%s->%s", api_id, after_id);
+                String revkey = KcaUtils.format("%s->%s", after_id, api_id);
+                if (!after_id.equals("0")) checked.add(api_id);
+                int afterlv = data.get("api_afterlv").getAsInt();
+                checked.add(key);
+                if (!checked.contains(revkey) && !after_id.equals("0")) {
+                    afterlv_data.addProperty(key, afterlv);
+                    frombefore.addProperty(api_id, after_id);
+                    fromafter.addProperty(after_id, api_id);
+                }
+            }
+        }
+        JsonObject sdata = new JsonObject();
+        sdata.add("afterlv", afterlv_data);
+        sdata.add("frombefore", frombefore);
+        sdata.add("fromafter", fromafter);
+        return sdata;
     }
 
     public static int findAfterShipId(int startid, int level) {

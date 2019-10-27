@@ -137,45 +137,138 @@
                 android:layout_weight="1.0"
                 android:background="@color/colorQuestTrackProgress"
                 android:ellipsize="marquee"
-                android:maxLines="1"
-                android:paddingBottom="2dp"
                 android:paddingLeft="8dp"
-                android:paddingRight="8dp"
                 android:paddingTop="2dp"
+                android:paddingRight="8dp"
+                android:paddingBottom="2dp"
                 android:singleLine="true"
                 android:textColor="@color/white"
                 android:textSize="@dimen/excheckview_text_statusarea" />
 
-            <ScrollView
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1.0"
-                android:fadeScrollbars="false"
-                android:scrollbarAlwaysDrawHorizontalTrack="false"
-                android:scrollbarAlwaysDrawVerticalTrack="true"
-                android:scrollbarStyle="insideInset">
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/expd_world_1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/colorFleetInfoBtn"
+                    android:padding="6dp"
+                    android:text="@string/expdtable_btn_w1"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_normal" />
+
+                <TextView
+                    android:id="@+id/expd_world_2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/colorFleetInfoBtn"
+                    android:padding="6dp"
+                    android:text="@string/expdtable_btn_w2"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_normal" />
+
+                <TextView
+                    android:id="@+id/expd_world_3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/colorFleetInfoBtn"
+                    android:padding="6dp"
+                    android:text="@string/expdtable_btn_w3"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_normal" />
+
+                <TextView
+                    android:id="@+id/expd_world_7"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/colorFleetInfoBtn"
+                    android:padding="6dp"
+                    android:text="@string/expdtable_btn_w7"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_normal" />
+
+                <TextView
+                    android:id="@+id/expd_world_4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/colorFleetInfoBtn"
+                    android:padding="6dp"
+                    android:text="@string/expdtable_btn_w4"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_normal" />
+
+                <TextView
+                    android:id="@+id/expd_world_5"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/colorFleetInfoBtn"
+                    android:padding="6dp"
+                    android:text="@string/expdtable_btn_w5"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_normal" />
+
+                <TextView
+                    android:id="@+id/expd_world_6"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/colorFleetInfoBtn"
+                    android:padding="6dp"
+                    android:text="@string/expdtable_btn_w6"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/popup_text_normal"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_weight="1.0"
+                android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="fill_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="2"
                     android:orientation="vertical">
 
                     <LinearLayout
                         android:id="@+id/excheck_row_1"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:layout_marginBottom="2dp"
-                        android:layout_marginTop="2dp"
-                        android:orientation="horizontal"
-                        android:weightSum="8.0">
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/expedition_btn_1"
+                            android:id="@+id/expd_btn_0"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -185,12 +278,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_2"
+                            android:id="@+id/expd_btn_1"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -200,12 +292,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_3"
+                            android:id="@+id/expd_btn_2"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -214,98 +305,20 @@
                             android:textColor="@color/white"
                             android:textSize="@dimen/popup_text_large" />
 
-                        <TextView
-                            android:id="@+id/expedition_btn_4"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="4"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_5"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="5"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_6"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="6"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_7"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="7"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_8"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="8"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/excheck_row_2"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:layout_marginBottom="2dp"
-                        android:layout_marginTop="2dp"
-                        android:orientation="horizontal"
-                        android:weightSum="8.0">
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/expedition_btn_9"
+                            android:id="@+id/expd_btn_3"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -315,12 +328,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_10"
+                            android:id="@+id/expd_btn_4"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -330,12 +342,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_11"
+                            android:id="@+id/expd_btn_5"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -344,98 +355,20 @@
                             android:textColor="@color/white"
                             android:textSize="@dimen/popup_text_large" />
 
-                        <TextView
-                            android:id="@+id/expedition_btn_12"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="12"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_13"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="13"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_14"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="14"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_15"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="15"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_16"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="16"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/excheck_row_3"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:layout_marginBottom="2dp"
-                        android:layout_marginTop="2dp"
-                        android:orientation="horizontal"
-                        android:weightSum="8.0">
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/expedition_btn_17"
+                            android:id="@+id/expd_btn_6"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -445,12 +378,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_18"
+                            android:id="@+id/expd_btn_7"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -460,12 +392,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_19"
+                            android:id="@+id/expd_btn_8"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -474,98 +405,20 @@
                             android:textColor="@color/white"
                             android:textSize="@dimen/popup_text_large" />
 
-                        <TextView
-                            android:id="@+id/expedition_btn_20"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="20"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_21"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="21"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_22"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="22"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_23"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="23"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_24"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="24"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/excheck_row_4"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:layout_marginBottom="2dp"
-                        android:layout_marginTop="2dp"
-                        android:orientation="horizontal"
-                        android:weightSum="8.0">
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/expedition_btn_25"
+                            android:id="@+id/expd_btn_9"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -575,12 +428,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_26"
+                            android:id="@+id/expd_btn_10"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -590,12 +442,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_27"
+                            android:id="@+id/expd_btn_11"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -604,98 +455,20 @@
                             android:textColor="@color/white"
                             android:textSize="@dimen/popup_text_large" />
 
-                        <TextView
-                            android:id="@+id/expedition_btn_28"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="28"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_29"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="29"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_30"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="30"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_31"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="31"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_32"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="32"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/excheck_row_5"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:layout_marginBottom="2dp"
-                        android:layout_marginTop="2dp"
-                        android:orientation="horizontal"
-                        android:weightSum="8.0">
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/expedition_btn_33"
+                            android:id="@+id/expd_btn_12"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -705,12 +478,11 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_34"
+                            android:id="@+id/expd_btn_13"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
@@ -720,227 +492,387 @@
                             android:textSize="@dimen/popup_text_large" />
 
                         <TextView
-                            android:id="@+id/expedition_btn_35"
+                            android:id="@+id/expd_btn_14"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
+                            android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
                             android:layout_weight="1.0"
                             android:background="@color/colorFleetInfoNoShip"
                             android:padding="6dp"
-                            android:text="35"
+                            android:text="14"
                             android:textAlignment="center"
                             android:textColor="@color/white"
                             android:textSize="@dimen/popup_text_large" />
 
-                        <TextView
-                            android:id="@+id/expedition_btn_36"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="36"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_37"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="37"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_38"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="38"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_39"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="39"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_40"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="40"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/excheck_row_e"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:layout_marginBottom="2dp"
-                        android:layout_marginTop="2dp"
-                        android:orientation="horizontal"
-                        android:visibility="visible"
-                        android:weightSum="8.0">
-
-                        <TextView
-                            android:id="@+id/expedition_btn_100"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="A1"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_101"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="A2"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_102"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="A3"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_110"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="B1"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_111"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="B2"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_133"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="E1"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:id="@+id/expedition_btn_134"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorFleetInfoNoShip"
-                            android:padding="6dp"
-                            android:text="E2"
-                            android:textAlignment="center"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/popup_text_large" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="4dp"
-                            android:layout_marginRight="4dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_weight="1.0"
-                            android:background="@color/colorExpeditionBtnGoodBack"
-                            android:padding="6dp"
-                            android:textAlignment="center"
-                            android:textColor="@color/colorExpeditionBtnGoodText"
-                            android:textSize="@dimen/popup_text_large"
-                            android:visibility="invisible" />
                     </LinearLayout>
                 </LinearLayout>
-            </ScrollView>
+
+                <LinearLayout
+                    android:id="@+id/view_excheck_detail"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="4"
+                    android:minWidth="@dimen/excheckview_popup_width"
+                    android:orientation="vertical"
+                    android:padding="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/view_excheck_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:singleLine="true"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/popup_text_large" />
+
+                        <TextView
+                            android:id="@+id/view_excheck_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:text="00:00:00"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/popup_text_small" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/imageView4"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_gravity="left|clip_vertical"
+                        android:layout_marginTop="1dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_weight="0"
+                        android:background="@color/grey"
+                        android:paddingLeft="5dp"
+                        android:paddingTop="0dp"
+                        android:paddingRight="5dp"
+                        android:paddingBottom="0.5dp"
+                        android:scaleType="fitXY"
+                        android:src="@android:drawable/divider_horizontal_bright" />
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" >
+
+                            <LinearLayout
+                                android:id="@+id/view_excheck_flagship"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_excheck_flagship_label"
+                                    android:layout_width="@dimen/excheckview_label_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="4dp"
+                                    android:layout_marginRight="4dp"
+                                    android:text="@string/excheckview_flag_info"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_normal" />
+
+                                <LinearLayout
+                                    android:id="@+id/view_excheck_flagship_data"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/view_excheck_flagship_lv"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:layout_weight="1"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_normal" />
+
+                                    <TextView
+                                        android:id="@+id/view_excheck_flagship_cond"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:layout_weight="1"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_normal" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/view_excheck_fleet"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_excheck_fleet_label"
+                                    android:layout_width="@dimen/excheckview_label_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="4dp"
+                                    android:layout_marginRight="4dp"
+                                    android:text="@string/excheckview_total_info"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_normal" />
+
+                                <LinearLayout
+                                    android:id="@+id/view_excheck_fleet_data"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+
+                                    <LinearLayout
+                                        android:id="@+id/view_excheck_fleet_data_total"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            android:id="@+id/view_excheck_fleet_total_num"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginEnd="4dp"
+                                            android:layout_marginRight="4dp"
+                                            android:textColor="@color/white"
+                                            android:textSize="@dimen/popup_text_normal" />
+
+                                        <TextView
+                                            android:id="@+id/view_excheck_fleet_total_lv"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginEnd="4dp"
+                                            android:layout_marginRight="4dp"
+                                            android:textColor="@color/white"
+                                            android:textSize="@dimen/popup_text_normal" />
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:id="@+id/view_excheck_fleet_condition"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:orientation="vertical">
+
+                                    </LinearLayout>
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/view_excheck_drum"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_excheck_drum_label"
+                                    android:layout_width="@dimen/excheckview_label_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="4dp"
+                                    android:layout_marginRight="4dp"
+                                    android:text="@string/excheckview_drum_info"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_normal" />
+
+                                <LinearLayout
+                                    android:id="@+id/view_excheck_drum_data"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/view_excheck_drum_ship"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_normal" />
+
+                                    <TextView
+                                        android:id="@+id/view_excheck_drum_count"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_normal" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/view_excheck_asw"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_excheck_asw_label"
+                                    android:layout_width="@dimen/excheckview_label_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="4dp"
+                                    android:layout_marginRight="4dp"
+                                    android:text="@string/excheckview_asw_info"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_normal" />
+
+                                <LinearLayout
+                                    android:id="@+id/view_excheck_asw_data"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/view_excheck_total_asw"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_normal" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/view_excheck_fp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_excheck_fp_label"
+                                    android:layout_width="@dimen/excheckview_label_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="4dp"
+                                    android:layout_marginRight="4dp"
+                                    android:text="@string/excheckview_fp_info"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_normal" />
+
+                                <LinearLayout
+                                    android:id="@+id/view_excheck_fp_data"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/view_excheck_total_fp"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_normal" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/view_excheck_los"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_excheck_los_label"
+                                    android:layout_width="@dimen/excheckview_label_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="4dp"
+                                    android:layout_marginRight="4dp"
+                                    android:text="@string/excheckview_los_info"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_normal" />
+
+                                <LinearLayout
+                                    android:id="@+id/view_excheck_los_data"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/view_excheck_total_los"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_normal" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/view_excheck_firepower"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/view_excheck_firepower_label"
+                                    android:layout_width="@dimen/excheckview_label_width"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="4dp"
+                                    android:layout_marginRight="4dp"
+                                    android:text="@string/excheckview_firepower_info"
+                                    android:textAlignment="center"
+                                    android:textColor="@color/white"
+                                    android:textSize="@dimen/popup_text_normal" />
+
+                                <LinearLayout
+                                    android:id="@+id/view_excheck_firepower_data"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/view_excheck_total_firepower"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="4dp"
+                                        android:layout_marginRight="4dp"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/popup_text_normal" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </ScrollView>
+
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

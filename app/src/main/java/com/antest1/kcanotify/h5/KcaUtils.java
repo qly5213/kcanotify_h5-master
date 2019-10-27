@@ -25,13 +25,16 @@ import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Base64;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
@@ -40,6 +43,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.mariten.kanatools.KanaConverter;
+import com.microsoft.appcenter.Flags;
+import com.microsoft.appcenter.analytics.Analytics;
 
 import org.apache.commons.httpclient.ChunkedInputStream;
 
@@ -51,10 +57,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -82,22 +91,24 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_STARTDATA;
 import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_DATALOAD;
-import static com.antest1.kcanotify.h5.KcaConstants.KC_PACKAGE_NAME;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_DATALOAD_ERROR_FLAG;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_DISABLE_CUSTOMTOAST;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_DATA_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_VERSION;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_KC_PACKAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_RES_USELOCAL;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_UPDATE_SERVER;
 import static com.antest1.kcanotify.h5.KcaFairySelectActivity.FAIRY_SPECIAL_FLAG;
 import static com.antest1.kcanotify.h5.KcaFairySelectActivity.FAIRY_SPECIAL_PREFIX;
+import static com.mariten.kanatools.KanaConverter.OP_ZEN_KATA_TO_ZEN_HIRA;
 
 
 public class KcaUtils {
@@ -254,14 +265,9 @@ public class KcaUtils {
     }
 
     public static Intent getKcIntent(Context context) {
-        Intent kcIntent;
-        if (isPackageExist(context, KC_PACKAGE_NAME)) {
-            kcIntent = context.getPackageManager().getLaunchIntentForPackage(KC_PACKAGE_NAME);
-            kcIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            return kcIntent;
-        } else {
-            return null;
-        }
+        String package_name = getStringPreferences(context, PREF_KC_PACKAGE);
+        Intent kcIntent = context.getPackageManager().getLaunchIntentForPackage(package_name);
+        return kcIntent;
     }
 
     public static Context getContextWithLocale(Context ac, Context bc) {
@@ -526,11 +532,45 @@ public class KcaUtils {
         }
     }
 
+    public static boolean searchStringFromStart(String name, String query, boolean match_case) {
+        if (name == null) return false;
+        if (query.trim().length() == 0) return true;
+        // katakana to hiragana
+        name = KanaConverter.convertKana(name, OP_ZEN_KATA_TO_ZEN_HIRA);
+        query = KanaConverter.convertKana(query, OP_ZEN_KATA_TO_ZEN_HIRA);
+        if (match_case) {
+            return name.trim().startsWith(query.trim());
+        } else {
+            return name.trim().toLowerCase().startsWith(query.trim().toLowerCase());
+        }
+    }
+
+    public static boolean searchStringContains(String name, String query, boolean match_case) {
+        if (name == null) return false;
+        if (query.trim().length() == 0) return true;
+        // katakana to hiragana
+        name = KanaConverter.convertKana(name, OP_ZEN_KATA_TO_ZEN_HIRA);
+        query = KanaConverter.convertKana(query, OP_ZEN_KATA_TO_ZEN_HIRA);
+        if (match_case) {
+            return name.trim().contains(query.trim());
+        } else {
+            return name.trim().toLowerCase().contains(query.trim().toLowerCase());
+        }
+    }
+
     public static KcaDownloader getInfoDownloader(Context context){
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(1, TimeUnit.MINUTES)
-                .build();
+                .readTimeout(1, TimeUnit.MINUTES);
+        builder.addInterceptor(chain -> {
+            Request original = chain.request();
+            Request request = original.newBuilder()
+                    .header("User-Agent", "Kcanotify/".concat(BuildConfig.VERSION_NAME).replace("r", "."))
+                    .method(original.method(), original.body()).build();
+            return chain.proceed(request);
+        });
+
+        OkHttpClient okHttpClient = builder.build();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(KcaUtils.getUpdateServer(context))
@@ -567,8 +607,6 @@ public class KcaUtils {
                 .build();
         return retrofit.create(KcaDownloader.class);
     }
-
-
     public static KcaDownloader getSubTitleInfoDownloader(Context context){
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
@@ -582,7 +620,6 @@ public class KcaUtils {
                 .build();
         return retrofit.create(KcaDownloader.class);
     }
-
     public static boolean checkFairyImageInStorage(Context context, String name) {
         ContextWrapper cw = new ContextWrapper(context);
         File directory = cw.getDir("fairy", Context.MODE_PRIVATE);
@@ -601,7 +638,8 @@ public class KcaUtils {
             try {
                 Reader reader = new FileReader(jsonFile);
                 data = new JsonParser().parse(reader).getAsJsonObject();
-            } catch (FileNotFoundException | IllegalStateException | JsonSyntaxException e ) {
+                reader.close();
+            } catch (IOException | IllegalStateException | JsonSyntaxException e) {
                 e.printStackTrace();
                 setPreferences(context, PREF_DATALOAD_ERROR_FLAG, true);
                 if (helper != null) helper.recordErrorLog(ERROR_TYPE_DATALOAD, name, "getJsonObjectFromStorage", "0", getStringFromException(e));
@@ -620,6 +658,7 @@ public class KcaUtils {
                     (AssetManager.AssetInputStream) am.open(name);
             byte[] bytes = ByteStreams.toByteArray(ais);
             data = new JsonParser().parse(new String(bytes)).getAsJsonObject();
+            ais.close();
         } catch (IOException e1) {
             e1.printStackTrace();
             if (helper != null) helper.recordErrorLog(ERROR_TYPE_DATALOAD, name, "getJsonObjectFromStorage", "1", getStringFromException(e1));
@@ -639,7 +678,8 @@ public class KcaUtils {
             try {
                 Reader reader = new FileReader(jsonFile);
                 data = new JsonParser().parse(reader).getAsJsonArray();
-            } catch (FileNotFoundException | IllegalStateException | JsonSyntaxException e ) {
+                reader.close();
+            } catch (IOException | IllegalStateException | JsonSyntaxException e ) {
                 e.printStackTrace();
                 setPreferences(context, PREF_DATALOAD_ERROR_FLAG, true);
                 if (helper != null) helper.recordErrorLog(ERROR_TYPE_DATALOAD, name, "getJsonArrayFromStorage", "0", getStringFromException(e));
@@ -658,6 +698,7 @@ public class KcaUtils {
                     (AssetManager.AssetInputStream) am.open(name);
             byte[] bytes = ByteStreams.toByteArray(ais);
             data = new JsonParser().parse(new String(bytes)).getAsJsonArray();
+            ais.close();
         } catch (IOException e1) {
             e1.printStackTrace();
             if (helper != null) helper.recordErrorLog(ERROR_TYPE_DATALOAD, name, "getJsonArrayFromStorage", "1", getStringFromException(e1));
@@ -673,8 +714,10 @@ public class KcaUtils {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         try {
-            bitmap = BitmapFactory.decodeStream(new FileInputStream(myImageFile), null, options);
-        } catch (FileNotFoundException e) {
+            InputStream is = new FileInputStream(myImageFile);
+            bitmap = BitmapFactory.decodeStream(is, null, options);
+            is.close();
+        } catch (IOException e) {
             // Log.e("KCA", getStringFromException(e));
             return false;
         }
@@ -694,7 +737,9 @@ public class KcaUtils {
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
         int fairy_id = Integer.parseInt(name.replace("noti_icon_", ""));
-        if (FAIRY_SPECIAL_FLAG && fairy_id >= FAIRY_SPECIAL_PREFIX) {
+        if (fairy_id == 0) {
+            bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.noti_icon_0);
+        } else if (FAIRY_SPECIAL_FLAG && fairy_id >= FAIRY_SPECIAL_PREFIX) {
             bitmap = BitmapFactory.decodeResource(context.getResources(), getId(name, R.mipmap.class));
         } else {
             try {
@@ -738,13 +783,13 @@ public class KcaUtils {
     public static void showDataLoadErrorToast(Context ac, Context bc, String text) {
         if (getBooleanPreferences(ac, PREF_DATALOAD_ERROR_FLAG)) {
             KcaCustomToast customToast = new KcaCustomToast(ac);
-//            showCustomToast(ac, bc, customToast, text, Toast.LENGTH_LONG, ContextCompat.getColor(ac, R.color.colorHeavyDmgStatePanel));
+            showCustomToast(ac, bc, customToast, text, Toast.LENGTH_LONG, ContextCompat.getColor(ac, R.color.colorHeavyDmgStatePanel));
         }
     }
 
     public static void showDataLoadErrorToast(Context context, String text) {
         if (getBooleanPreferences(context, PREF_DATALOAD_ERROR_FLAG)) {
-//            Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+            Toast.makeText(context, text, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -842,32 +887,46 @@ public class KcaUtils {
         return week_data;
     }
 
+    public static int convertDpToPixel (float dp) {
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        float px = dp * (metrics.densityDpi / 160f);
+        return Math.round(px);
+    }
+
     // Fix width for specific device has notch design:
-    // currently LG G7 (LM-G710) now
+    // Reference: https://stackoverflow.com/questions/53579164/check-if-device-has-notch-in-service
     public static void resizeFullWidthView(Context context, View v) {
-        String model = Build.MODEL;
         if (v == null) return;
-        if (!model.contains("LM-G710")) return;
-        int orientation = context.getResources().getConfiguration().orientation;
-        if (orientation == ORIENTATION_LANDSCAPE) {
-            final float scale = context.getResources().getDisplayMetrics().density;
-            int padding_px_width = (int) (28 * scale + 0.5f);
-            v.setPadding(padding_px_width, 0, padding_px_width, 0);
+        int statusBarHeight = 0;
+        int defaultHeight = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? 24 : 25;
+        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusBarHeight = context.getResources().getDimensionPixelSize(resourceId);
+            Log.e("KCA", "" + statusBarHeight + " " + convertDpToPixel(defaultHeight));
+            if (statusBarHeight > convertDpToPixel(defaultHeight)) {
+                int orientation = context.getResources().getConfiguration().orientation;
+                if (orientation == ORIENTATION_LANDSCAPE) {
+                    final float scale = context.getResources().getDisplayMetrics().density;
+                    int padding_px_width = (int) (28 * scale + 0.5f);
+                    v.setPadding(padding_px_width, 0, padding_px_width, 0);
+                }
+            }
         }
     }
 
-    public static KcaQSyncAPI getQuestSync(Context context){
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(1, TimeUnit.MINUTES)
-                .build();
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(context.getString(R.string.app_kcaqsync_link))
-                .client(okHttpClient)
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .build();
-        return retrofit.create(KcaQSyncAPI.class);
+    public static String[] getIpAddress(String host) {
+        List<String> addresses = new ArrayList<>();
+        InetAddress[] machines;
+        try {
+            machines = InetAddress.getAllByName(host);
+            for(InetAddress address : machines){
+                addresses.add(address.getHostAddress());
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return addresses.toArray(new String[0]);
     }
 
     public static byte[] addAll(final byte[] array1, byte[] array2) {
@@ -929,5 +988,81 @@ public class KcaUtils {
 
         String result = Base64.encodeToString(rsa.doFinal(value.getBytes("utf-8")), Base64.DEFAULT).replace("\n", "");
         return result;
+    }
+
+
+    // Customized base64 encoding: http://kancolle-calc.net/data/share.js
+    static String BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-";
+    static String[] CODE = { "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
+            "1000", "1001", "1010", "1011", "1100", "1101" };
+
+
+    public static String encode64(String dataString) {
+        StringBuilder buff = new StringBuilder();
+        StringBuilder outputString = new StringBuilder();
+        for (int j = 0; j < dataString.length(); j++) {
+            char c = dataString.charAt(j);
+            int pos;
+            if (c == ',') pos = 10;
+            else if (c == '|') pos = 11;
+            else if (c == '.') pos = 12;
+            else if (c == ':') pos = 13;
+            else pos = Integer.parseInt(String.valueOf(c));
+
+            buff.append(CODE[pos]);
+            if (buff.length() >= 6) {
+                String seg = buff.substring(0, 6);
+                outputString.append(BASE64.charAt(Integer.parseInt(seg, 2)));
+                buff = new StringBuilder(buff.substring(6));
+            }
+        }
+        if (buff.length() > 0) {
+            while (buff.length() < 6) {
+                buff.append('1');
+            }
+            outputString.append(BASE64.charAt(Integer.parseInt(buff.toString(), 2)));
+        }
+        return outputString.toString();
+    }
+
+    public static String decode64(String inputString) {
+        List<String> codeList = new ArrayList<String>(Arrays.asList(CODE));
+        StringBuilder dataString = new StringBuilder();
+        StringBuilder buff = new StringBuilder();
+        for (int j = 0; j < inputString.length(); j++) {
+            StringBuilder inp = new StringBuilder(Integer.toBinaryString(BASE64.indexOf(inputString.charAt(j))));
+            while (inp.length() < 6) {
+                inp.insert(0, '0');
+            }
+            buff.append(inp);
+            while (buff.length() >= 4) {
+                String seg = buff.substring(0, 4);
+                int pos = codeList.indexOf(seg);
+                if (pos == -1); // Padding, do nothing
+                else if (pos == 10) {
+                    dataString.append(',');
+                } else if (pos == 11) {
+                    dataString.append('|');
+                } else if (pos == 12) {
+                    dataString.append('.');
+                } else if (pos == 13) {
+                    dataString.append(':');
+                } else {
+                    dataString.append(pos);
+                }
+                buff = new StringBuilder(buff.substring(4));
+            }
+        }
+        return dataString.toString();
+    }
+
+    public static void sendUserAnalytics(String event, JsonObject value) {
+        Map<String, String> properties = new HashMap<>();
+        if (value != null) {
+            for (String key: value.keySet()) {
+                properties.put(key, value.get(key).getAsString());
+            }
+        }
+        Analytics.trackEvent(event, properties, Flags.NORMAL);
     }
 }

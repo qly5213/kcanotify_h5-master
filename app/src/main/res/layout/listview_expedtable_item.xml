@@ -188,7 +188,7 @@
                                 android:paddingBottom="2dp"
                                 android:paddingTop="2dp"
                                 android:visibility="visible"
-                                app:srcCompat="@mipmap/icon_development_material" />
+                                app:srcCompat="@mipmap/common_itemicons_id_3" />
 
                             <ImageView
                                 android:id="@+id/value_spitem2_abs"
@@ -199,7 +199,7 @@
                                 android:paddingBottom="2dp"
                                 android:paddingTop="2dp"
                                 android:visibility="visible"
-                                app:srcCompat="@mipmap/icon_instant_repair" />
+                                app:srcCompat="@mipmap/common_itemicons_id_1" />
 
                         </LinearLayout>
 
@@ -553,7 +553,7 @@
                                     android:layout_weight="1"
                                     android:paddingBottom="2dp"
                                     android:paddingTop="2dp"
-                                    app:srcCompat="@mipmap/icon_development_material" />
+                                    app:srcCompat="@mipmap/common_itemicons_id_3" />
 
                                 <TextView
                                     android:id="@+id/value_spitem1_count"
@@ -581,7 +581,7 @@
                                     android:layout_weight="1"
                                     android:paddingBottom="2dp"
                                     android:paddingTop="2dp"
-                                    app:srcCompat="@mipmap/icon_instant_repair" />
+                                    app:srcCompat="@mipmap/common_itemicons_id_1" />
 
                                 <TextView
                                     android:id="@+id/value_spitem2_count"
@@ -622,7 +622,7 @@
                         <LinearLayout
                             android:id="@+id/value_condition"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical"
                             android:padding="4dp">
@@ -630,7 +630,7 @@
                             <LinearLayout
                                 android:id="@+id/view_excheck_flagship"
                                 android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:layout_weight="2"
                                 android:orientation="horizontal">
 
@@ -676,7 +676,7 @@
                             <LinearLayout
                                 android:id="@+id/view_excheck_fleet"
                                 android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:orientation="horizontal">
 
                                 <TextView
@@ -724,10 +724,8 @@
                                     <LinearLayout
                                         android:id="@+id/view_excheck_fleet_condition"
                                         android:layout_width="match_parent"
-                                        android:layout_height="match_parent"
-                                        android:orientation="vertical">
-
-                                    </LinearLayout>
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"/>
 
                                 </LinearLayout>
 
@@ -736,7 +734,7 @@
                             <LinearLayout
                                 android:id="@+id/view_excheck_drum"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:layout_weight="1.0"
                                 android:orientation="horizontal">
 
@@ -752,7 +750,7 @@
                                 <LinearLayout
                                     android:id="@+id/view_excheck_drum_data"
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
+                                    android:layout_height="wrap_content"
                                     android:orientation="horizontal">
 
                                     <TextView
@@ -782,7 +780,7 @@
                             <LinearLayout
                                 android:id="@+id/view_excheck_asw"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:layout_weight="1.0"
                                 android:orientation="horizontal">
 
@@ -818,7 +816,7 @@
                             <LinearLayout
                                 android:id="@+id/view_excheck_fp"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:layout_weight="1.0"
                                 android:orientation="horizontal">
 
@@ -854,7 +852,7 @@
                             <LinearLayout
                                 android:id="@+id/view_excheck_los"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:layout_weight="1.0"
                                 android:orientation="horizontal">
 
@@ -890,7 +888,7 @@
                             <LinearLayout
                                 android:id="@+id/view_excheck_firepower"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:layout_weight="1.0"
                                 android:orientation="horizontal">
 

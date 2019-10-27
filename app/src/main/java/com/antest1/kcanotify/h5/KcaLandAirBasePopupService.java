@@ -26,21 +26,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.antest1.kcanotify.h5.KcaApiData;
-import com.antest1.kcanotify.h5.KcaDBHelper;
-import com.antest1.kcanotify.h5.KcaDeckInfo;
-import com.antest1.kcanotify.h5.KcaUtils;
-import com.antest1.kcanotify.h5.R;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.Calendar;
 
-import static android.R.attr.value;
 import static com.antest1.kcanotify.h5.KcaApiData.getItemTranslation;
 import static com.antest1.kcanotify.h5.KcaApiData.getUserItemStatusById;
-import static com.antest1.kcanotify.h5.KcaApiData.isItemAircraft;
-import static com.antest1.kcanotify.h5.KcaApiData.kcItemData;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_LABSIFNO;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.LAB_STATUS_DEFENSE;
@@ -436,19 +428,21 @@ public class KcaLandAirBasePopupService extends Service {
                     }
                     if (tag != -1) {
                         JsonArray api_air_base = dbHelper.getJsonArrayValue(DB_KEY_LABSIFNO);
-                        JsonObject item = api_air_base.get(tag).getAsJsonObject();
-                        setItemViewLayout(item);
-                        itemView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-                        itemViewWidth = itemView.getMeasuredWidth();
-                        itemViewHeight = itemView.getMeasuredHeight();
+                        if (tag < api_air_base.size()) {
+                            JsonObject item = api_air_base.get(tag).getAsJsonObject();
+                            setItemViewLayout(item);
+                            itemView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                            itemViewWidth = itemView.getMeasuredWidth();
+                            itemViewHeight = itemView.getMeasuredHeight();
 
-                        itemViewParams.x = (int) (event.getRawX() - xMargin - itemViewWidth);
-                        itemViewParams.y = (int) (event.getRawY() - itemViewHeight / 2);
-                        itemViewParams.gravity = Gravity.TOP | Gravity.LEFT;
-                        if (itemView.getParent() != null) {
-                            mManager.removeViewImmediate(itemView);
+                            itemViewParams.x = (int) (event.getRawX() - xMargin - itemViewWidth);
+                            itemViewParams.y = (int) (event.getRawY() - itemViewHeight / 2);
+                            itemViewParams.gravity = Gravity.TOP | Gravity.LEFT;
+                            if (itemView.getParent() != null) {
+                                mManager.removeViewImmediate(itemView);
+                            }
+                            mManager.addView(itemView, itemViewParams);
                         }
-                        mManager.addView(itemView, itemViewParams);
                     }
                     break;
 

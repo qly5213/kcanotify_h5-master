@@ -1,33 +1,72 @@
 package com.antest1.kcanotify.h5;
 
 import android.content.Context;
-import android.support.annotation.IntegerRes;
 import android.util.Log;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-import static android.media.CamcorderProfile.get;
-import static com.antest1.kcanotify.h5.KcaApiData.*;
-import static com.antest1.kcanotify.h5.KcaApiData.helper;
+import static com.antest1.kcanotify.h5.KcaApiData.BASIC_MASTERY_MAX_BONUS;
+import static com.antest1.kcanotify.h5.KcaApiData.BASIC_MASTERY_MIN_BONUS;
+import static com.antest1.kcanotify.h5.KcaApiData.FIGHTER_MASTERY_BONUS;
+import static com.antest1.kcanotify.h5.KcaApiData.SEA_BOMBER_MASTERY_BONUS;
+import static com.antest1.kcanotify.h5.KcaApiData.SPEED_FAST;
+import static com.antest1.kcanotify.h5.KcaApiData.SPEED_FASTPLUS;
+import static com.antest1.kcanotify.h5.KcaApiData.SPEED_MIXED_FAST;
+import static com.antest1.kcanotify.h5.KcaApiData.SPEED_MIXED_FASTPLUS;
+import static com.antest1.kcanotify.h5.KcaApiData.SPEED_MIXED_NORMAL;
+import static com.antest1.kcanotify.h5.KcaApiData.SPEED_NONE;
+import static com.antest1.kcanotify.h5.KcaApiData.SPEED_SLOW;
+import static com.antest1.kcanotify.h5.KcaApiData.SPEED_SUPERFAST;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_AO;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_AS;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_AV;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_BBV;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_CAV;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_CL;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_CT;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_DD;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_LHA;
+import static com.antest1.kcanotify.h5.KcaApiData.STYPE_SSV;
+import static com.antest1.kcanotify.h5.KcaApiData.T2LIST_FIGHT_AIRCRAFTS;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_AMP_TANK;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_BOMBER;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_COMBAT_FOOD;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_DAMECON;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_DRUM_CAN;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_FIGHTER;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_FLYING_BOAT;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_ITCP_FIGHTER;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_JET_BOMBER;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_LANDING_CRAFT;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_LBA_AIRCRAFT;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_RADAR_LARGE;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_RADAR_SMALL;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_SCOUT;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_SCOUT_II;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_SEA_BOMBER;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_SEA_FIGHTER;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_SEA_SCOUT;
+import static com.antest1.kcanotify.h5.KcaApiData.T2_TORPEDO_BOMBER;
+import static com.antest1.kcanotify.h5.KcaApiData.getAdmiralLevel;
+import static com.antest1.kcanotify.h5.KcaApiData.getKcShipDataById;
+import static com.antest1.kcanotify.h5.KcaApiData.getUserItemStatusById;
+import static com.antest1.kcanotify.h5.KcaApiData.getUserShipDataById;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.LAB_STATUS_DEFENSE;
 import static com.antest1.kcanotify.h5.KcaConstants.LAB_STATUS_SORTIE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_HDNOTI_LOCKED;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_HDNOTI_MINLEVEL;
 import static com.antest1.kcanotify.h5.KcaConstants.SEEK_PURE;
+import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
+import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.joinStr;
 import static com.antest1.kcanotify.h5.KcaUtils.setDefaultGameData;
 
@@ -219,6 +258,7 @@ public class KcaDeckInfo {
         switch (type) {
             case T2_FIGHTER:
             case T2_SEA_FIGHTER:
+            case T2_ITCP_FIGHTER:
                 return aac + 0.2 * reinforce;
             case T2_BOMBER:
             case T2_JET_BOMBER:
@@ -508,6 +548,10 @@ public class KcaDeckInfo {
                     if (nowhp * 4 <= maxhp) continue;
 
                     JsonObject kcShipData = getKcShipDataById(kcShipId, "stype");
+                    if (kcShipData == null) {
+                        int[] dummy = {-1, -1};
+                        return dummy;
+                    }
                     int stype = kcShipData.get("stype").getAsInt();
 
                     switch (stype) {
@@ -663,13 +707,22 @@ public class KcaDeckInfo {
 
     public int checkHeavyDamageExist(JsonArray deckPortData, int deckid) {
         int[] status = {0, 0, 0, 0, 0, 0, 0};
+        boolean check_locked = getBooleanPreferences(ac, PREF_HDNOTI_LOCKED);
+        int min_level = Integer.parseInt(getStringPreferences(ac, PREF_HDNOTI_MINLEVEL));
         JsonArray deckShipIdList = deckPortData.get(deckid).getAsJsonObject().getAsJsonArray("api_ship");
         for (int i = 0; i < deckShipIdList.size(); i++) {
             int shipId = deckShipIdList.get(i).getAsInt();
             if (shipId != -1) {
                 if (KcaDocking.checkShipInDock(shipId)) continue;
 
-                JsonObject shipData = getUserShipDataById(shipId, "nowhp,maxhp,slot,slot_ex");
+                JsonObject shipData = getUserShipDataById(shipId, "nowhp,maxhp,slot,slot_ex,lv,locked,locked_equip");
+                int level = shipData.get("lv").getAsInt();
+                int locked = shipData.get("locked").getAsInt();
+                int locked_eq = shipData.get("locked_equip").getAsInt();
+
+                if (check_locked && (locked == 0 && locked_eq == 0)) continue;
+                if (min_level >= level && locked_eq == 0) continue;
+
                 int shipNowHp = shipData.get("nowhp").getAsInt();
                 int shipMaxHp = shipData.get("maxhp").getAsInt();
                 if (shipNowHp * 4 <= shipMaxHp) {
@@ -706,6 +759,26 @@ public class KcaDeckInfo {
             heavyExist = Math.max(heavyExist, status[i]);
         }
         return heavyExist;
+    }
+
+    public boolean[] getHeavyDmgCheckStatus(JsonArray deckPortData, int deckid) {
+        boolean check_locked = getBooleanPreferences(ac, PREF_HDNOTI_LOCKED);
+        int min_level = Integer.parseInt(getStringPreferences(ac, PREF_HDNOTI_MINLEVEL));
+        boolean[] heavyDmgCheckStatus = {true, true, true, true, true, true, true};
+        JsonArray deckShipIdList = deckPortData.get(deckid).getAsJsonObject().getAsJsonArray("api_ship");
+        for (int i = 0; i < deckShipIdList.size(); i++) {
+            int shipId = deckShipIdList.get(i).getAsInt();
+            if (shipId != -1) {
+                JsonObject shipData = getUserShipDataById(shipId, "lv,locked,locked_equip");
+                int level = shipData.get("lv").getAsInt();
+                int locked = shipData.get("locked").getAsInt();
+                int locked_eq = shipData.get("locked_equip").getAsInt();
+
+                if (check_locked && (locked == 0 && locked_eq == 0)) heavyDmgCheckStatus[i] = false;
+                if (min_level >= level && locked_eq == 0) heavyDmgCheckStatus[i] = false;
+            }
+        }
+        return heavyDmgCheckStatus;
     }
 
     public boolean[] getDameconStatus(JsonArray deckPortData, int deckid) {
@@ -803,6 +876,7 @@ public class KcaDeckInfo {
     // Reference: http://kancolle.wikia.com/wiki/Land_Base_Aerial_Support#Fighter_Power_Calculations
     public int getAirPowerInAirBase(int status, JsonArray plane_info) {
         int air_power = 0;
+        double reconBonus = 1;
         if (status == LAB_STATUS_SORTIE) {
             for (int i = 0; i < plane_info.size(); i++) {
                 JsonObject item = plane_info.get(i).getAsJsonObject();
@@ -811,8 +885,9 @@ public class KcaDeckInfo {
 
                 int count = item.get("api_count").getAsInt();
                 int slotid = item.get("api_slotid").getAsInt();
-                JsonObject itemData = getUserItemStatusById(slotid, "level,alv", "type,tyku,houk");
+                JsonObject itemData = getUserItemStatusById(slotid, "level,alv", "id,type,tyku,houk");
                 if (itemData == null) continue;
+                int itemId = itemData.get("id").getAsInt();
                 int itemType = itemData.get("type").getAsJsonArray().get(2).getAsInt();
                 int itemLevel = itemData.get("level").getAsInt();
                 int itemMastery = 0;
@@ -820,11 +895,15 @@ public class KcaDeckInfo {
                     itemMastery = itemData.get("alv").getAsInt();
                 }
                 double profiencyBonus = calcSlotAACFromMastery(itemType, itemMastery, 0)[0];
+
                 int itemAAC = itemData.get("tyku").getAsInt();
-                int itemITC = itemData.get("houk").getAsInt();
-                int realAAC = (int) Math.floor(Math.sqrt(count) * (1.5 * itemITC + calcReinforcedAAC(itemType, itemAAC, itemLevel)) + profiencyBonus);
+                int itemITC = itemType == T2_ITCP_FIGHTER ? itemData.get("houk").getAsInt() : 0;
+                if (itemId == 311) reconBonus = Math.max(reconBonus, 1.15);
+                if (itemId == 312) reconBonus = Math.max(reconBonus, 1.18);
+                int realAAC = (int) Math.floor(Math.sqrt(count) * (itemITC * 1.5 + calcReinforcedAAC(itemType, itemAAC, itemLevel)) + profiencyBonus);
                 air_power += realAAC;
             }
+            air_power = (int) Math.floor(air_power * reconBonus);
         } else if (status == LAB_STATUS_DEFENSE) {
             for (int i = 0; i < plane_info.size(); i++) {
                 JsonObject item = plane_info.get(i).getAsJsonObject();
@@ -833,8 +912,9 @@ public class KcaDeckInfo {
 
                 int count = item.get("api_count").getAsInt();
                 int slotid = item.get("api_slotid").getAsInt();
-                JsonObject itemData = getUserItemStatusById(slotid, "level,alv", "type,tyku,houk,houm,saku");
+                JsonObject itemData = getUserItemStatusById(slotid, "level,alv", "id,type,tyku,houk,houm,saku");
                 if (itemData == null) continue;
+                int itemId = itemData.get("id").getAsInt();
                 int itemType = itemData.get("type").getAsJsonArray().get(2).getAsInt();
                 int itemLevel = itemData.get("level").getAsInt();
                 int itemMastery = 0;
@@ -843,23 +923,30 @@ public class KcaDeckInfo {
                 }
                 double profiencyBonus = calcSlotAACFromMastery(itemType, itemMastery, 0)[0];
                 int itemAAC = itemData.get("tyku").getAsInt();
-                int itemITC = itemData.get("houk").getAsInt();
+                int itemITC = 0;
                 int itemAB = 0;
-                if (itemType == T2_ITCP_FIGHTER) itemAB += itemData.get("houm").getAsInt();
+                if (itemType == T2_ITCP_FIGHTER) {
+                    itemITC = itemData.get("houk").getAsInt();
+                    itemAB = itemData.get("houm").getAsInt();
+                }
                 int itemSeek = itemData.get("saku").getAsInt();
                 int realAAC = (int) Math.floor(Math.sqrt(count) * (itemITC + itemAB * 2.0 + calcReinforcedAAC(itemType, itemAAC, itemLevel)) + profiencyBonus);
 
-                double recon_bonus = 1.0;
                 if (itemType == T2_SCOUT || itemType == T2_SCOUT_II) {
-                    if(itemSeek >= 9) recon_bonus = 1.3;
-                    else recon_bonus = 1.2;
+                    if(itemSeek >= 9) reconBonus = Math.max(reconBonus, 1.3);
+                    else reconBonus = Math.max(reconBonus, 1.2);
                 } else if (itemType == T2_SEA_SCOUT) {
-                    if (itemSeek >= 9) recon_bonus = 1.16;
-                    else if (itemSeek == 8) recon_bonus = 1.13;
-                    else recon_bonus = 1.1;
+                    if (itemSeek >= 9) reconBonus = Math.max(reconBonus, 1.16);
+                    else if (itemSeek == 8) reconBonus = 1.13;
+                    else reconBonus = Math.max(reconBonus, 1.1);
+                } else if (itemId == 311) {
+                    reconBonus = Math.max(reconBonus, 1.18);
+                } else if (itemId == 312) {
+                    reconBonus = Math.max(reconBonus, 1.24);
                 }
-                air_power += (int) Math.floor(realAAC * recon_bonus);
+                air_power += realAAC;
             }
+            air_power = (int) Math.floor(air_power * reconBonus);
         }
         return air_power;
     }

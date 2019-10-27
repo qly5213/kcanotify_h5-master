@@ -1,6 +1,5 @@
 package com.antest1.kcanotify.h5;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -8,15 +7,10 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.Map;
-import java.util.regex.Pattern;
-
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_VPN_BYPASS_ADDRESS;
 
 public class NestedPreferenceFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final String NESTED_TAG = "NESTED_TAG";
@@ -57,24 +51,7 @@ public class NestedPreferenceFragment extends PreferenceFragment implements Shar
         //SharedPreferences prefs = this.getActivity().getSharedPreferences("pref", MODE_PRIVATE);
         for (String key : allEntries.keySet()) {
             Preference pref = findPreference(key);
-            if (key.equals(PREF_VPN_BYPASS_ADDRESS)) {
-                pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                    @Override
-                    public boolean onPreferenceChange(Preference preference, Object newValue) {
-                        if (newValue.equals(""))
-                            return true;
-                        Pattern cidrPattern = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])/(\\d|[1-2]\\d|3[0-2])$");
-                        String[] cidrs = ((String) newValue).split(",");
-                        for (String cidr : cidrs) {
-                            if (!cidrPattern.matcher(cidr.trim()).find()) {
-                                Toast.makeText(getActivity().getApplicationContext(), getString(R.string.sa_bypass_list_invalid), Toast.LENGTH_LONG).show();
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                });
-            } else if (pref instanceof ListPreference) {
+            if (pref instanceof ListPreference) {
                 ListPreference etp = (ListPreference) pref;
                 pref.setSummary(etp.getEntry());
             } else if (pref instanceof EditTextPreference) {

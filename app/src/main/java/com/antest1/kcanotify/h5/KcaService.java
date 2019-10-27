@@ -39,7 +39,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -89,6 +88,7 @@ import static com.antest1.kcanotify.h5.KcaApiData.loadQuestTrackDataFromStorage;
 import static com.antest1.kcanotify.h5.KcaApiData.loadShipExpInfoFromAssets;
 import static com.antest1.kcanotify.h5.KcaApiData.loadShipInitEquipCountFromStorage;
 import static com.antest1.kcanotify.h5.KcaApiData.loadSimpleExpeditionInfoFromStorage;
+import static com.antest1.kcanotify.h5.KcaApiData.loadSubMapInfoFromStorage;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaApiData.updateUserShip;
 import static com.antest1.kcanotify.h5.KcaConstants.*;
@@ -116,7 +116,7 @@ public class KcaService extends Service {
     public static final String SERVICE_CHANNEL_NAME = "Kcanotify Service";
 
     public static String currentLocale;
-    public static boolean isInitState;
+    public static boolean isInitState = false;
     public static boolean isFirstState;
     public static boolean isPassiveMode = false;
     public static boolean restartFlag = false;
@@ -143,7 +143,6 @@ public class KcaService extends Service {
     KcaPacketLogger packetLogger;
 
     KcaDeckInfo deckInfoCalc;
-    KcaQSyncAPI kcaQSyncEndpoint;
 
     AlarmManager alarmManager;
     AudioManager mAudioManager;
@@ -238,7 +237,7 @@ public class KcaService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e("KCA-S", "onStartCommand Called");
         isServiceOn = true;
-        isInitState = true;
+
         isFirstState = true;
         restartFlag = true;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -251,13 +250,17 @@ public class KcaService extends Service {
         resourceLogger = new KcaResourceLogger(getApplicationContext(), null, KCANOTIFY_RESOURCELOG_VERSION);
         packetLogger = new KcaPacketLogger(getApplicationContext(), null, KCANOTIFY_PACKETLOG_VERSION);
         deckInfoCalc = new KcaDeckInfo(getApplicationContext(), getBaseContext());
-        kcaQSyncEndpoint = KcaUtils.getQuestSync(getApplicationContext());
         KcaApiData.setDBHelper(dbHelper);
 
         AssetManager assetManager = getResources().getAssets();
         int loadMapEdgeInfoResult = loadMapEdgeInfoFromStorage(getApplicationContext());
         if (loadMapEdgeInfoResult != 1) {
             Toast.makeText(this, "Error loading Map Edge Info", Toast.LENGTH_LONG).show();
+        }
+
+        int loadSubMapInfoResult = loadSubMapInfoFromStorage(getApplicationContext());
+        if (loadSubMapInfoResult != 1) {
+            Toast.makeText(this, "Error loading Map Sub Info", Toast.LENGTH_LONG).show();
         }
 
         int loadExpShipInfoResult = loadShipExpInfoFromAssets(assetManager);
@@ -270,7 +273,6 @@ public class KcaService extends Service {
         loadQuestTrackDataFromStorage(dbHelper, getApplicationContext());
         dbHelper.initQuestCheck();
         dbHelper.initExpScore();
-        QSyncRead();
 
         showDataLoadErrorToast(getApplicationContext(), getBaseContext(), getStringWithLocale(R.string.download_check_error));
 
@@ -319,8 +321,8 @@ public class KcaService extends Service {
         isPassiveMode = Integer.parseInt(getStringPreferences(getApplicationContext(), PREF_SNIFFER_MODE)) == SNIFFER_PASSIVE;
         if (isPassiveMode) {
             receiver = new KcaReceiver();
-            IntentFilter filter = new IntentFilter(BROADCAST_ACTION);
-            registerReceiver(receiver, filter);
+            registerReceiver(receiver, new IntentFilter(BROADCAST_ACTION));
+            registerReceiver(receiver, new IntentFilter(GOTO_BROADCAST_ACTION));
         }
 
         notifyFirstTime = true;
@@ -333,25 +335,18 @@ public class KcaService extends Service {
         startForeground(getNotificationId(NOTI_FRONT, 1), notifyBuilder.build());
 
         notificationTimeCounter = -1;
-        timer = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (isMissionTimerViewEnabled()) {
-                        notificationTimeCounter += 1;
-                        if (notificationTimeCounter == 120) {
-                            notificationTimeCounter = 0;
-                        }
-                        updateExpViewNotification();
-                    }
-                    if (KcaAkashiRepairInfo.getAkashiTimerValue() > 0) {
-                        int second = KcaAkashiRepairInfo.getAkashiElapsedTimeInSecond();
-                        if (second >= AKASHI_TIMER_20MIN && isAkashiTimerNotiWait) {
-                            isAkashiTimerNotiWait = false;
-                        }
-                    }
-                } catch (Exception e) {
-                    dbHelper.recordErrorLog(ERROR_TYPE_SERVICE, "tmer", "", "", getStringFromException(e));
+        timer = () -> {
+            if (isMissionTimerViewEnabled()) {
+                notificationTimeCounter += 1;
+                if (notificationTimeCounter == 120) {
+                    notificationTimeCounter = 0;
+                }
+                updateExpViewNotification();
+            }
+            if (KcaAkashiRepairInfo.getAkashiTimerValue() > 0) {
+                int second = KcaAkashiRepairInfo.getAkashiElapsedTimeInSecond();
+                if (second >= AKASHI_TIMER_20MIN && isAkashiTimerNotiWait) {
+                    isAkashiTimerNotiWait = false;
                 }
             }
         };
@@ -377,7 +372,8 @@ public class KcaService extends Service {
         if (receiver != null) unregisterReceiver(receiver);
         receiver = null;
 
-        notifiManager.cancelAll();
+        if (notifiManager != null) notifiManager.cancelAll();
+        notifiManager = null;
         isServiceOn = false;
     }
 
@@ -397,7 +393,7 @@ public class KcaService extends Service {
         setServiceDown();
         KcaAlarmService.clearAlarmCount();
         stopForeground(true);
-        dbHelper.close();
+        if (dbHelper != null) dbHelper.close();
         super.onDestroy();
     }
 
@@ -517,12 +513,6 @@ public class KcaService extends Service {
         if (change_content) {
             updateViewNotificationBuilder(notifyTitle, notifyContent);
         }
-        notifiManager.notify(getNotificationId(NOTI_FRONT, 1), notifyBuilder.build());
-    }
-
-    private void updateNotificationClearFairyButton() {
-        // updateViewNotificationBuilder(notifyTitle, notifyContent);
-        notifyBuilder.mActions.clear();
         notifiManager.notify(getNotificationId(NOTI_FRONT, 1), notifyBuilder.build());
     }
 
@@ -647,7 +637,14 @@ public class KcaService extends Service {
             if (init.contains("svdata=")) {
                 data.skip("svdata=".length());
             }
-            if (raw.length > 0) jsonDataObj = gson.fromJson(data, JsonObject.class);
+            if (raw.length > 0) {
+                JsonElement jsonData = gson.fromJson(data, JsonElement.class);
+                if (jsonData.isJsonObject()) {
+                    jsonDataObj = jsonData.getAsJsonObject();
+                } else {
+                    jsonDataObj = new JsonObject();
+                }
+            }
             else jsonDataObj = new JsonObject();
             if (url.equals(KCA_API_RESOURCE_URL)) {
                 dbHelper.recordErrorLog(ERROR_TYPE_VPN, KCA_API_RESOURCE_URL, "", "", request);
@@ -683,22 +680,28 @@ public class KcaService extends Service {
             }
 
             if (url.startsWith(KCA_VERSION)) {
-                isInitState = false;
+
                 isPortAccessed = false;
                 isInBattle = false;
                 api_start2_init = false;
                 api_start2_loading_flag = true;
                 KcaFleetViewService.setReadyFlag(false);
                 //Toast.makeText(contextWithLocale, "KCA_VERSION", Toast.LENGTH_LONG).show();
-                JsonObject api_version = jsonDataObj.get("api").getAsJsonObject();
-                kca_version = api_version.get("api_start2").getAsString();
-                Log.e("KCA", kca_version);
+                String version_data = new String(raw);
+                JsonObject api_data = gson.fromJson(version_data, JsonObject.class);
 
-                setPreferences(getApplicationContext(), PREF_KCA_VERSION, kca_version);
-                if (!getStringPreferences(getApplicationContext(), PREF_KCA_DATA_VERSION).equals(kca_version)) {
-                    makeToast("new game data detected: " + String.valueOf(kca_version), Toast.LENGTH_LONG,
-                            ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                if (api_data != null && api_data.has("api")) {
+                    JsonObject api_version = api_data.getAsJsonObject("api");
+                    kca_version = api_version.get("api_start2").getAsString();
+                    Log.e("KCA", kca_version);
+
+                    setPreferences(getApplicationContext(), PREF_KCA_VERSION, kca_version);
+                    if (!getStringPreferences(getApplicationContext(), PREF_KCA_DATA_VERSION).equals(kca_version)) {
+                        makeToast("new game data detected: " + String.valueOf(kca_version), Toast.LENGTH_LONG,
+                                ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                    }
                 }
+
                 JsonObject kcDataObj = dbHelper.getJsonObjectValue(DB_KEY_STARTDATA);
                 //Log.e("KCA", kcDataObj.toJSONString());
                 if (kcDataObj != null && kcDataObj.has("api_data")) {
@@ -735,13 +738,9 @@ public class KcaService extends Service {
             }
 
             if (url.equals(API_START2) || url.equals(API_START2_NEW)) {
-                //Log.e("KCA", "Load Kancolle Data");
-                //Toast.makeText(contextWithLocale, "API_START2", Toast.LENGTH_LONG).show();
-
-                api_start2_data = jsonDataObj.toString();
-                dbHelper.putValue(DB_KEY_STARTDATA, api_start2_data);
-
                 if (jsonDataObj.has("api_data")) {
+                    api_start2_data = jsonDataObj.toString();
+                    dbHelper.putValue(DB_KEY_STARTDATA, api_start2_data);
                     //Toast.makeText(contextWithLocale, "Load Kancolle Data", Toast.LENGTH_LONG).show();
                     KcaApiData.getKcGameData(jsonDataObj.getAsJsonObject("api_data"));
                     if (kca_version != null) {
@@ -753,7 +752,7 @@ public class KcaService extends Service {
 
             if (url.startsWith(API_GET_MEMBER_REQUIRED_INFO)) {
                 //Log.e("KCA", "Load Item Data");
-
+                isInitState = true;
                 if (jsonDataObj.has("api_data")) {
                     //dbHelper.putValue(DB_KEY_USEREQUIP, jsonDataObj.getAsJsonObject("api_data").getAsJsonArray("api_slot_item").toString());
                     JsonObject requiredInfoApiData = jsonDataObj.getAsJsonObject("api_data");
@@ -873,6 +872,21 @@ public class KcaService extends Service {
 
                 if (jsonDataObj.has("api_data")) {
                     JsonObject reqPortApiData = jsonDataObj.getAsJsonObject("api_data");
+                    if (reqPortApiData.has("api_basic")) {
+                        JsonObject prev_basic = dbHelper.getJsonObjectValue(DB_KEY_BASICIFNO);
+                        JsonObject current_basic = reqPortApiData.getAsJsonObject("api_basic");
+                        if (prev_basic != null && isInitState) {
+                            long prev_ts = prev_basic.get("api_starttime").getAsLong();
+                            long current_ts = current_basic.get("api_starttime").getAsLong();
+                            if (current_ts - prev_ts < 43200000L) { // in 12h
+                                int prev_exp = prev_basic.get("api_experience").getAsInt();
+                                int current_exp = current_basic.get("api_experience").getAsInt();
+                                int diff = current_exp - prev_exp;
+                                if (diff >= 0) dbHelper.updateExpScore(current_exp - prev_exp, true);
+                            }
+                        }
+                        isInitState = false;
+                    }
                     KcaApiData.getPortData(reqPortApiData);
                     if (reqPortApiData.has("api_deck_port")) {
                         dbHelper.putValue(DB_KEY_DECKPORT, reqPortApiData.getAsJsonArray("api_deck_port").toString());
@@ -966,7 +980,6 @@ public class KcaService extends Service {
                     dbHelper.updateQuestCheck(api_tab_id, api_data);
                     startService(new Intent(getBaseContext(), KcaQuestViewService.class)
                             .setAction(REFRESH_QUESTVIEW_ACTION).putExtra("tab_id", api_tab_id));
-                    if (dbHelper.checkQuestListValid()) QSyncWrite();
                 }
 
                 sendQuestCompletionInfo();
@@ -1228,6 +1241,9 @@ public class KcaService extends Service {
                                     if (ship_id != -1)
                                         api_ship_data.add(KcaApiData.getUserShipDataById(ship_id, "all"));
                                 }
+
+                                KcaBattle.checkhdmgflag = deckInfoCalc.getHeavyDmgCheckStatus(api_deck_data, 0);
+                                KcaBattle.checkhdmgcbflag = deckInfoCalc.getHeavyDmgCheckStatus(api_deck_data, 1);
                                 KcaBattle.dameconflag = deckInfoCalc.getDameconStatus(api_deck_data, 0);
                                 KcaBattle.dameconcbflag = deckInfoCalc.getDameconStatus(api_deck_data, 1);
 
@@ -1248,6 +1264,7 @@ public class KcaService extends Service {
                                     if (ship_id != -1)
                                         api_ship_data.add(KcaApiData.getUserShipDataById(ship_id, "all"));
                                 }
+                                KcaBattle.checkhdmgflag = deckInfoCalc.getHeavyDmgCheckStatus(api_deck_data, 0);
                                 KcaBattle.dameconflag = deckInfoCalc.getDameconStatus(api_deck_data, 0);
                             }
                             api_data.add("api_deck_data", api_deck_data);
@@ -1286,7 +1303,6 @@ public class KcaService extends Service {
                             }
                         }
                         KcaBattle.setDeckPortData(api_data);
-
                         updateFleetView();
                     }
                 }
@@ -1372,11 +1388,12 @@ public class KcaService extends Service {
                     }
 
                     int new_distance = -1;
+                    JsonObject distance_data = new JsonObject();
                     JsonArray api_plane_info = new JsonArray();
                     if (jsonDataObj.has("api_data")) {
                         JsonObject api_data = jsonDataObj.getAsJsonObject("api_data");
                         api_plane_info = api_data.getAsJsonArray("api_plane_info");
-                        new_distance = api_data.get("api_distance").getAsInt();
+                        distance_data = api_data.getAsJsonObject("api_distance");
                     }
 
                     JsonArray airbase_data = dbHelper.getJsonArrayValue(DB_KEY_LABSIFNO);
@@ -1387,7 +1404,7 @@ public class KcaService extends Service {
                             int area_id = airbase_item.get("api_area_id").getAsInt();
                             int rid = airbase_item.get("api_rid").getAsInt();
                             if (area_id == target_area_id && rid == target_base_id) {
-                                airbase_item.addProperty("api_distance", new_distance);
+                                airbase_item.add("api_distance", distance_data);
                                 JsonArray airbase_plane_info = airbase_item.getAsJsonArray("api_plane_info");
                                 for (int j = 0; j < api_plane_info.size(); j++) {
                                     JsonObject plane_item = api_plane_info.get(j).getAsJsonObject();
@@ -1561,37 +1578,28 @@ public class KcaService extends Service {
 
                         if (jsonDataObj.has("api_data")) {
                             JsonObject api_data = jsonDataObj.getAsJsonObject("api_data");
-                            boolean createFlag = api_data.get("api_create_flag").getAsInt() == 1;
-                            int itemKcId = KcaApiData.updateSlotItemData(api_data);
-                            int itemFailKcId = -1;
-                            if (api_data.has("api_fdata")) {
-                                String[] fdata = api_data.get("api_fdata").getAsString().split(",");
-                                itemFailKcId = Integer.parseInt(fdata[1]);
+
+                            // int itemKcId = KcaApiData.updateSlotItemData(api_data);
+                            JsonArray devInfo = KcaApiData.updateDevelopItemData(api_data);
+
+                            for (int i = 0; i < devInfo.size(); i++) {
+                                questTracker.updateIdCountTracker("605");
+                                questTracker.updateIdCountTracker("607");
+                                JsonObject dev_instance = devInfo.get(i).getAsJsonObject();
+                                boolean createFlag = dev_instance.get("api_id").getAsInt() > 0;
+                                int itemKcId = dev_instance.get("api_slotitem_id").getAsInt();
+                                int itemFailKcId = -1;
+                                if (dev_instance.has("api_fdata")) {
+                                    String[] fdata = dev_instance.get("api_fdata").getAsString().split(",");
+                                    itemFailKcId = Integer.parseInt(fdata[1]);
+                                }
+                                if (isOpenDBEnabled()) KcaOpenDBAPI.sendEquipDevData(flagship, materials[0], materials[1], materials[2], materials[3], itemKcId);
+                                if (isPoiDBEnabled()) KcaPoiDBAPI.sendEquipDevData(Arrays.toString(materials), flagship, createFlag ? itemKcId : itemFailKcId, getAdmiralLevel(), createFlag);
                             }
-
-                            if (isOpenDBEnabled()) KcaOpenDBAPI.sendEquipDevData(flagship, materials[0], materials[1], materials[2], materials[3], itemKcId);
-                            if (isPoiDBEnabled()) KcaPoiDBAPI.sendEquipDevData(Arrays.toString(materials), flagship, createFlag ? itemKcId : itemFailKcId, getAdmiralLevel(), createFlag);
-
-                            questTracker.updateIdCountTracker("605");
-                            questTracker.updateIdCountTracker("607");
                             updateQuestView();
 
                             JsonArray material_data = api_data.getAsJsonArray("api_material");
                             recordResourceLog(material_data, false);
-
-                            String itemname = "";
-                            int itemtype = 0;
-                            String itemcount = "";
-
-                            if (createFlag) {
-                                JsonObject itemData = KcaApiData.getKcItemStatusById(itemKcId, "name,type");
-                                itemname = itemData.get("name").getAsString();
-                                itemtype = itemData.get("type").getAsJsonArray().get(3).getAsInt();
-                                itemcount = KcaUtils.format("(%d)", KcaApiData.getItemCountByKcId(itemKcId));
-                            } else {
-                                itemname = "item_fail";
-                                itemtype = 999;
-                            }
 
                             JsonObject shipData = KcaApiData.getKcShipDataById(flagship, "name");
                             String shipname = shipData.get("name").getAsString();
@@ -1601,11 +1609,31 @@ public class KcaService extends Service {
 
                             JsonObject equipdevdata = new JsonObject();
                             equipdevdata.addProperty("flagship", shipname);
-                            equipdevdata.addProperty("name", itemname);
-                            equipdevdata.addProperty("type", itemtype);
-                            equipdevdata.addProperty("count", itemcount);
                             equipdevdata.addProperty("time", timetext);
+                            equipdevdata.add("items", new JsonArray());
 
+                            for (int i = 0; i < devInfo.size(); i++) {
+                                String itemname = "";
+                                int itemtype = 0;
+                                String itemcount = "";
+
+                                JsonObject dev_instance = devInfo.get(i).getAsJsonObject();
+                                int itemKcId = dev_instance.get("api_slotitem_id").getAsInt();
+                                boolean createFlag = dev_instance.get("api_id").getAsInt() > 0;
+                                if (createFlag) {
+                                    JsonObject itemData = KcaApiData.getKcItemStatusById(itemKcId, "name,type");
+                                    itemname = itemData.get("name").getAsString();
+                                    itemtype = itemData.get("type").getAsJsonArray().get(3).getAsInt();
+                                    itemcount = KcaUtils.format("(%d)", KcaApiData.getItemCountByKcId(itemKcId));
+                                } else {
+                                    itemname = "item_fail";
+                                    itemtype = 999;
+                                }
+                                dev_instance.addProperty("name", itemname);
+                                dev_instance.addProperty("type", itemtype);
+                                dev_instance.addProperty("count", itemcount);
+                                equipdevdata.getAsJsonArray("items").add(dev_instance);
+                            }
                             dbHelper.putValue(DB_KEY_LATESTDEV, equipdevdata.toString());
 
                             if (KcaDevelopPopupService.isActive()) {
@@ -2011,7 +2039,10 @@ public class KcaService extends Service {
                         }
                         if (userShipId != -1 && jsonDataObj.has("api_data")) {
                             JsonObject api_data = jsonDataObj.getAsJsonObject("api_data");
-                            KcaApiData.updateUserShipSlot(userShipId, api_data);
+                            if (api_data.has("api_ship_data")) {
+                                JsonObject ship_data = api_data.getAsJsonObject("api_ship_data");
+                                KcaApiData.updateUserShipSlot(userShipId, ship_data);
+                            }
                         }
                         updateFleetView();
                         //toastInfo();
@@ -2129,7 +2160,7 @@ public class KcaService extends Service {
                 e1.printStackTrace();
             }
 
-            String process_data = raw.toString();
+            String process_data = new String(raw);
             if (url.contains(API_PORT)) {
                 process_data = "PORT DATA OMITTED";
             }
@@ -2254,20 +2285,51 @@ public class KcaService extends Service {
             if (url.startsWith(KCA_API_NOTI_BATTLE_INFO)) {
                 // jsonDataObj = dbHelper.getJsonObjectValue(DB_KEY_BATTLEINFO);
                 String api_url = jsonDataObj.get("api_url").getAsString();
-                if (api_url.startsWith(API_REQ_SORTIE_BATTLE_RESULT) || url.startsWith(API_REQ_COMBINED_BATTLERESULT)) {
-                    JsonObject questTrackData = dbHelper.getJsonObjectValue(DB_KEY_QTRACKINFO);
-                    questTracker.updateBattleTracker(questTrackData);
-                    updateQuestView();
-                } else if (api_url.startsWith(API_REQ_PRACTICE_BATTLE_RESULT)) {
-                    JsonObject questTrackData = dbHelper.getJsonObjectValue(DB_KEY_QTRACKINFO);
-                    String rank = questTrackData.get("result").getAsString();
-                    questTracker.updateIdCountTracker("303");
-                    if (rank.equals("S") || rank.equals("A") || rank.equals("B")) {
-                        questTracker.updateIdCountTracker("304");
-                        questTracker.updateIdCountTracker("302");
-                        questTracker.updateIdCountTracker("311");
+                JsonObject battleInfoData = dbHelper.getJsonObjectValue(DB_KEY_BATTLEINFO);
+                if (battleInfoData.has("is_result")) {
+                    JsonArray deck_data = battleInfoData.getAsJsonObject("deck_port").getAsJsonArray("api_deck_data");
+                    if (battleInfoData.has("api_f_afterhps")) {
+                        JsonObject main_fleet = deck_data.get(0).getAsJsonObject();
+                        JsonArray api_ship = main_fleet.getAsJsonArray("api_ship");
+                        JsonArray api_f_afterhps = battleInfoData.getAsJsonArray("api_f_afterhps");
+                        for (int i = 0; i < api_ship.size(); i++) {
+                            int ship_id = api_ship.get(i).getAsInt();
+                            if (ship_id != -1) {
+                                int now_hp = api_f_afterhps.get(i).getAsInt();
+                                KcaApiData.updateShipHpOnBattle(ship_id, now_hp);
+                            }
+                        }
                     }
-                    updateQuestView();
+
+                    if (battleInfoData.has("api_f_afterhps_combined")) {
+                        JsonObject combined_fleet = deck_data.get(1).getAsJsonObject();
+                        JsonArray api_ship = combined_fleet.getAsJsonArray("api_ship");
+                        JsonArray api_f_afterhps_combined = battleInfoData.getAsJsonArray("api_f_afterhps_combined");
+                        for (int i = 0; i < api_ship.size(); i++) {
+                            int ship_id = api_ship.get(i).getAsInt();
+                            if (ship_id != -1) {
+                                int now_hp = api_f_afterhps_combined.get(i).getAsInt();
+                                KcaApiData.updateShipHpOnBattle(ship_id, now_hp);
+                            }
+                        }
+                    }
+                    updateFleetView();
+
+                    if (api_url.startsWith(API_REQ_SORTIE_BATTLE_RESULT) || url.startsWith(API_REQ_COMBINED_BATTLERESULT)) {
+                        JsonObject questTrackData = dbHelper.getJsonObjectValue(DB_KEY_QTRACKINFO);
+                        questTracker.updateBattleTracker(questTrackData);
+                        updateQuestView();
+                    } else if (api_url.startsWith(API_REQ_PRACTICE_BATTLE_RESULT)) {
+                        JsonObject questTrackData = dbHelper.getJsonObjectValue(DB_KEY_QTRACKINFO);
+                        String rank = questTrackData.get("result").getAsString();
+                        questTracker.updateIdCountTracker("303");
+                        if (rank.equals("S") || rank.equals("A") || rank.equals("B")) {
+                            questTracker.updateIdCountTracker("304");
+                            questTracker.updateIdCountTracker("302");
+                            questTracker.updateIdCountTracker("311");
+                        }
+                        updateQuestView();
+                    }
                 }
                 Intent intent = new Intent(KCA_MSG_BATTLE_INFO);
                 broadcaster.sendBroadcast(intent);
@@ -2650,9 +2712,9 @@ public class KcaService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, alarmIntent);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, time, alarmIntent);
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, alarmIntent);
         } else {
-            alarmManager.set(android.app.AlarmManager.RTC_WAKEUP, time, alarmIntent);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, time, alarmIntent);
         }
         Log.e("KCA", "Alarm set to: " + String.valueOf(time) + " " + String.valueOf(code));
     }
@@ -2660,7 +2722,6 @@ public class KcaService extends Service {
     public void updateQuestView() {
         startService(new Intent(getBaseContext(), KcaQuestViewService.class)
                 .setAction(REFRESH_QUESTVIEW_ACTION));
-        if (dbHelper.checkQuestListValid()) QSyncWrite();
     }
 
     public void updateFleetView() {
@@ -2690,118 +2751,6 @@ public class KcaService extends Service {
 
     public void showCustomToast(KcaCustomToast toast, String body, int duration, int color) {
         KcaUtils.showCustomToast(getApplicationContext(), getBaseContext(), toast, body, duration, color);
-    }
-
-    public void QSyncRead() {
-        boolean is_available = getBooleanPreferences(getApplicationContext(), PREF_KCAQSYNC_USE);
-        String qsync_pass = getStringPreferences(getApplicationContext(), PREF_KCAQSYNC_PASS).trim();
-        if (!is_available || qsync_pass.length() == 0) return;
-
-        long recent_check = Long.parseLong(getStringPreferences(getApplicationContext(), PREF_LAST_QUEST_CHECK));
-        int userid = KcaApiData.getUserId();
-        final boolean[] error_flag = {false, false};
-        if (userid > 0) {
-            JsonObject quest_data = new JsonObject();
-            quest_data.addProperty("userid", userid);
-            quest_data.addProperty("pass", qsync_pass);
-            Log.e("KCA", String.valueOf(quest_data.toString().length()));
-            try {
-                final Call<String> qsync_read = kcaQSyncEndpoint.read(KcaUtils.getKcaQSyncHeaderMap(),
-                        KcaUtils.getRSAEncodedString(getApplicationContext(), quest_data.toString()));
-
-                qsync_read.enqueue(new Callback<String>() {
-                    @Override
-                    public void onResponse(Call<String> call, Response<String> response) {
-                        JsonObject response_data = new JsonObject();
-                        if (response.body() != null) {
-                            response_data = gson.fromJson(response.body(), JsonObject.class);
-                            if (response_data.has("status")) {
-                                String result = response_data.get("status").getAsString();
-                                if (result.equals("done")) {
-                                    long recent_ts = response_data.get("timestamp").getAsLong() * 1000;
-                                    if (recent_ts > recent_check) {
-                                        String quest_code = response_data.get("data").getAsString();
-                                        dbHelper.loadQuestDataFromCode(quest_code, true, recent_ts);
-                                    } else {
-                                        error_flag[1] = true;
-                                    }
-                                } else { // error
-                                    String detail = response_data.get("detail").getAsString();
-                                    dbHelper.recordErrorLog(ERROR_TYPE_SERVICE, "qsync_read", "", quest_data.toString(), detail);
-                                    error_flag[0] = true;
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        dbHelper.recordErrorLog(ERROR_TYPE_SERVICE, "qsync_read", "", "", t.getMessage());
-                        error_flag[0] = true;
-                    }
-                });
-            } catch (Exception e) {
-                dbHelper.recordErrorLog(ERROR_TYPE_SERVICE, "qsync_read", "", "", getStringFromException(e));
-                error_flag[0] = true;
-            }
-        }
-        if (error_flag[0]) {
-            makeToast("failed to sync quest data", Toast.LENGTH_LONG,
-                    ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
-        }
-    }
-
-    public void QSyncWrite() {
-        boolean is_available = getBooleanPreferences(getApplicationContext(), PREF_KCAQSYNC_USE);
-        String qsync_pass = getStringPreferences(getApplicationContext(), PREF_KCAQSYNC_PASS).trim();
-        if (!is_available || qsync_pass.length() == 0) return;
-
-        setPreferences(getApplicationContext(), PREF_LAST_QUEST_CHECK,
-                String.valueOf(System.currentTimeMillis()));
-        int userid = KcaApiData.getUserId();
-        final boolean[] error_flag = {false};
-        if (userid > 0) {
-            JsonObject quest_data = new JsonObject();
-            quest_data.addProperty("userid", userid);
-            quest_data.addProperty("data", dbHelper.getCurrentQuestCode());
-            quest_data.addProperty("pass", qsync_pass);
-            Log.e("KCA", String.valueOf(quest_data.toString().length()));
-            try {
-                final Call<String> qsync_write = kcaQSyncEndpoint.write(KcaUtils.getKcaQSyncHeaderMap(),
-                        KcaUtils.getRSAEncodedString(getApplicationContext(), quest_data.toString()));
-
-                qsync_write.enqueue(new Callback<String>() {
-                    @Override
-                    public void onResponse(Call<String> call, Response<String> response) {
-                        JsonObject response_data = new JsonObject();
-                        if (response.body() != null) {
-                            response_data = gson.fromJson(response.body(), JsonObject.class);
-                            if (response_data.has("status")) {
-                                String result = response_data.get("status").getAsString();
-                                if (!result.equals("done")) {
-                                    String detail = response_data.get("detail").getAsString();
-                                    dbHelper.recordErrorLog(ERROR_TYPE_SERVICE, "qsync_write", "", quest_data.toString(), detail);
-                                    error_flag[0] = true;
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        dbHelper.recordErrorLog(ERROR_TYPE_SERVICE, "qsync_write", "", "", t.getMessage());
-                        error_flag[0] = true;
-                    }
-                });
-            } catch (Exception e) {
-                dbHelper.recordErrorLog(ERROR_TYPE_SERVICE, "qsync_write", "", "", getStringFromException(e));
-                error_flag[0] = true;
-            }
-        }
-        if (error_flag[0]) {
-            makeToast("failed to sync quest data", Toast.LENGTH_LONG,
-                    ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
-        }
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -31,11 +32,12 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.antest1.kcanotify.h5.KcaLandAirBasePopupService;
+import com.google.common.io.ByteStreams;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -52,9 +54,7 @@ import static com.antest1.kcanotify.h5.KcaApiData.getShipTypeAbbr;
 import static com.antest1.kcanotify.h5.KcaApiData.getUserItemStatusById;
 import static com.antest1.kcanotify.h5.KcaApiData.isGameDataLoaded;
 import static com.antest1.kcanotify.h5.KcaApiData.isItemAircraft;
-import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_DECKPORT;
-import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_USEITEMS;
 import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_FLEETVIEW;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_FIX_VIEW_LOC;
@@ -63,6 +63,9 @@ import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_SEEK_CN;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_VIEW_YLOC;
 import static com.antest1.kcanotify.h5.KcaConstants.SEEK_PURE;
 import static com.antest1.kcanotify.h5.KcaQuestViewService.SHOW_QUESTVIEW_ACTION_NEW;
+import static com.antest1.kcanotify.h5.KcaUseStatConstant.CLOSE_FLEETVIEW;
+import static com.antest1.kcanotify.h5.KcaUseStatConstant.FV_BTN_PRESS;
+import static com.antest1.kcanotify.h5.KcaUseStatConstant.OPEN_FLEETVIEW;
 import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getContextWithLocale;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
@@ -70,8 +73,8 @@ import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getWindowLayoutType;
 import static com.antest1.kcanotify.h5.KcaUtils.joinStr;
+import static com.antest1.kcanotify.h5.KcaUtils.sendUserAnalytics;
 import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
-import static org.apache.commons.lang3.StringUtils.split;
 
 public class KcaFleetViewService extends Service {
     public static final String SHOW_FLEETVIEW_ACTION = "show_fleetview_action";
@@ -112,6 +115,7 @@ public class KcaFleetViewService extends Service {
     private ImageView fleetMenuArrowUp, fleetMenuArrowDown;
     private static boolean isReady;
     private static int hqinfoState = 0;
+    private JsonObject gunfitData;
 
     int displayWidth = 0;
 
@@ -130,7 +134,7 @@ public class KcaFleetViewService extends Service {
     }
 
     public static void setReadyFlag(boolean flag) {
-        isReady = true;
+        isReady = flag;
     }
 
     private static String makeLvString(int level) {
@@ -207,7 +211,8 @@ public class KcaFleetViewService extends Service {
                             R.color.white), PorterDuff.Mode.MULTIPLY);
                 }
 
-                /* Saury Event */
+                /*
+                // Saury Event Code
                 ImageView saurycntviewicon = fleetHqInfoView.findViewById(R.id.fleetview_cnt3_icon);
                 TextView saurycntview = fleetHqInfoView.findViewById(R.id.fleetview_cnt3);
                 saurycntviewicon.setColorFilter(ContextCompat.getColor(getApplicationContext(),
@@ -225,6 +230,7 @@ public class KcaFleetViewService extends Service {
                     }
                 }
                 break;
+                */
             /*
             case HQINFO_EVENT:
                 TextView spring_item_1 = fleetHqInfoView.findViewById(R.id.fleetview_18spring_1);
@@ -289,6 +295,7 @@ public class KcaFleetViewService extends Service {
 
             contextWithLocale = getContextWithLocale(getApplicationContext(), getBaseContext());
             deckInfoCalc = new KcaDeckInfo(getApplicationContext(), contextWithLocale);
+            gunfitData = loadGunfitData(getAssets());
 
             //mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             mInflater = LayoutInflater.from(contextWithLocale);
@@ -362,6 +369,7 @@ public class KcaFleetViewService extends Service {
         mView.setVisibility(GONE);
         KcaUtils.resizeFullWidthView(getApplicationContext(), mView);
         mView.findViewById(R.id.fleetview_shiparea).setOnTouchListener(mViewTouchListener);
+        mView.findViewById(R.id.fleetview_tool).setOnTouchListener(mViewTouchListener);
         mView.findViewById(R.id.fleetview_head).setOnTouchListener(mViewTouchListener);
         mView.findViewById(R.id.fleetview_cn_change).setOnTouchListener(mViewTouchListener);
         mView.findViewById(R.id.fleetview_fleetswitch).setOnTouchListener(mViewTouchListener);
@@ -441,6 +449,7 @@ public class KcaFleetViewService extends Service {
                         }
                         mManager.addView(mView, mParams);
                     }
+                    sendUserAnalytics(OPEN_FLEETVIEW, null);
                 }
             }
             if (intent.getAction().equals(REFRESH_FLEETVIEW_ACTION)) {
@@ -462,6 +471,9 @@ public class KcaFleetViewService extends Service {
                     if (itemView.getParent() != null) {
                         mManager.removeViewImmediate(itemView);
                     }
+                    JsonObject statProperties = new JsonObject();
+                    statProperties.addProperty("manual", false);
+                    sendUserAnalytics(CLOSE_FLEETVIEW, statProperties);
                 }
             }
         }
@@ -511,13 +523,15 @@ public class KcaFleetViewService extends Service {
                                 kcdata = data.get(i).getAsJsonObject().getAsJsonObject("kc");
                             }
 
+                            String ship_id = udata.get("ship_id").getAsString();
+                            int ship_married = udata.get("lv").getAsInt() >= 100 ? 1 : 0;
                             JsonObject itemdata = new JsonObject();
                             itemdata.add("api_slot", udata.get("slot"));
                             itemdata.add("api_slot_ex", udata.get("slot_ex"));
                             itemdata.add("api_onslot", udata.get("onslot"));
                             itemdata.add("api_maxslot", kcdata.get("maxeq"));
 
-                            setItemViewLayout(itemdata);
+                            setItemViewLayout(itemdata, ship_id, ship_married);
                             itemViewParams = new WindowManager.LayoutParams(
                                     WindowManager.LayoutParams.WRAP_CONTENT,
                                     WindowManager.LayoutParams.WRAP_CONTENT,
@@ -560,13 +574,25 @@ public class KcaFleetViewService extends Service {
 
                     if (clickDuration < MAX_CLICK_DURATION) {
                         if (id == mView.findViewById(R.id.fleetview_head).getId()) {
+                            JsonObject statProperties = new JsonObject();
+                            statProperties.addProperty("manual", true);
+                            sendUserAnalytics(CLOSE_FLEETVIEW, statProperties);
                             if (mView != null) mView.setVisibility(GONE);
                             if (itemView != null) itemView.setVisibility(GONE);
+                        } else if (id == mView.findViewById(R.id.fleetview_tool).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("Tools"), null);
+                            if (mView != null) mView.setVisibility(GONE);
+                            if (itemView != null) itemView.setVisibility(GONE);
+                            Intent toolIntent = new Intent(KcaFleetViewService.this, ToolsActivity.class);
+                            toolIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(toolIntent);
                         } else if (id == mView.findViewById(R.id.fleetview_cn_change).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("CnChange"), null);
                             changeInternalSeekCn();
                             fleetCnChangeBtn.setText(getSeekType());
                             processDeckInfo(selected, isCombinedFlag(selected));
                         } else if (id == mView.findViewById(R.id.fleetview_fleetswitch).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("FleetChange"), null);
                             if (switch_status == 1) {
                                 switch_status = 2;
                                 mView.findViewById(R.id.fleet_list_main).setVisibility(View.GONE);
@@ -580,45 +606,57 @@ public class KcaFleetViewService extends Service {
                             }
                         } else if (id == mView.findViewById(R.id.fleetview_hqinfo).getId()) {
                             hqinfoState = (hqinfoState + 1) % HQINFO_TOTAL;
+                            JsonObject statProperties = new JsonObject();
+                            statProperties.addProperty("state", hqinfoState);
+                            sendUserAnalytics(FV_BTN_PRESS.concat("HqInfo"), statProperties);
                             setHqInfo();
                         } else if (id == mView.findViewById(R.id.viewbutton_quest).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("Quest"), null);
                             qintent = new Intent(getBaseContext(), KcaQuestViewService.class);
                             qintent.setAction(SHOW_QUESTVIEW_ACTION_NEW);
                             startService(qintent);
                         } else if (id == mView.findViewById(R.id.viewbutton_akashi).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("Akashi"), null);
                             qintent = new Intent(getBaseContext(), KcaAkashiViewService.class);
                             qintent.setAction(SHOW_AKASHIVIEW_ACTION);
                             startService(qintent);
                         } else if (id == mView.findViewById(R.id.viewbutton_develop).getId()) {
                             if (isGameDataLoaded()) {
+                                sendUserAnalytics(FV_BTN_PRESS.concat("Develop"), null);
                                 qintent = new Intent(getBaseContext(), KcaDevelopPopupService.class);
                                 startService(qintent);
                             }
                         } else if (id == mView.findViewById(R.id.viewbutton_construction).getId()) {
                             if (isGameDataLoaded()) {
+                                sendUserAnalytics(FV_BTN_PRESS.concat("Constr"), null);
                                 qintent = new Intent(getBaseContext(), KcaConstructPopupService.class);
                                 qintent.setAction(KcaConstructPopupService.CONSTR_DATA_ACTION);
                                 startService(qintent);
                             }
                         } else if (id == mView.findViewById(R.id.viewbutton_docking).getId()) {
                             if (isGameDataLoaded()) {
+                                sendUserAnalytics(FV_BTN_PRESS.concat("Docking"), null);
                                 qintent = new Intent(getBaseContext(), KcaDockingPopupService.class);
                                 qintent.setAction(KcaDockingPopupService.DOCKING_DATA_ACTION);
                                 startService(qintent);
                             }
                         } else if (id == mView.findViewById(R.id.viewbutton_maphp).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("MapHP"), null);
                             qintent = new Intent(getBaseContext(), KcaMapHpPopupService.class);
                             qintent.setAction(KcaMapHpPopupService.MAPHP_SHOW_ACTION);
                             startService(qintent);
                         } else if (id == mView.findViewById(R.id.viewbutton_fchk).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("FleetCheck"), null);
                             qintent = new Intent(getBaseContext(), KcaFleetCheckPopupService.class);
                             qintent.setAction(KcaFleetCheckPopupService.FCHK_SHOW_ACTION);
                             startService(qintent);
                         } else if (id == mView.findViewById(R.id.viewbutton_labinfo).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("LandAirBaseInfo"), null);
                             qintent = new Intent(getBaseContext(), KcaLandAirBasePopupService.class);
                             qintent.setAction(KcaLandAirBasePopupService.LAB_DATA_ACTION);
                             startService(qintent);
                         } else if (id == mView.findViewById(R.id.viewbutton_excheck).getId()) {
+                            sendUserAnalytics(FV_BTN_PRESS.concat("ExpeditionCheck"), null);
                             qintent = new Intent(getBaseContext(), KcaExpeditionCheckViewService.class);
                             qintent.setAction(KcaExpeditionCheckViewService.SHOW_EXCHECKVIEW_ACTION.concat("/").concat(String.valueOf(selected)));
                             startService(qintent);
@@ -1006,8 +1044,12 @@ public class KcaFleetViewService extends Service {
     }
 
 
-    public void setItemViewLayout(JsonObject data) {
+    public void setItemViewLayout(JsonObject data, String ship_id, int married) {
         Log.e("KCA", data.toString());
+        JsonObject item_fit = gunfitData.getAsJsonObject("e_idx");
+        JsonObject ship_fit = gunfitData.getAsJsonObject("s_idx");
+        JsonObject fit_data = gunfitData.getAsJsonObject("f_idx");
+
         JsonArray slot = data.getAsJsonArray("api_slot");
         JsonArray onslot = null;
         JsonArray maxslot = null;
@@ -1033,7 +1075,7 @@ public class KcaFleetViewService extends Service {
                 int alv = -1;
                 if (onslot != null) {
                     Log.e("KCA", "item_id: " + String.valueOf(item_id));
-                    kcItemData = getUserItemStatusById(item_id, "level,alv", "type,name");
+                    kcItemData = getUserItemStatusById(item_id, "level,alv", "id,type,name");
                     if (kcItemData == null) continue;
                     Log.e("KCA", kcItemData.toString());
                     lv = kcItemData.get("level").getAsInt();
@@ -1073,15 +1115,26 @@ public class KcaFleetViewService extends Service {
                         itemView.findViewById(getId(KcaUtils.format("item%d_slot", i + 1), R.id.class)).setVisibility(View.INVISIBLE);
                     }
                 } else {
-                    kcItemData = getKcItemStatusById(item_id, "type,name");
+                    kcItemData = getKcItemStatusById(item_id, "id,type,name");
                     itemView.findViewById(getId(KcaUtils.format("item%d_level", i + 1), R.id.class)).setVisibility(GONE);
                     itemView.findViewById(getId(KcaUtils.format("item%d_alv", i + 1), R.id.class)).setVisibility(GONE);
                     itemView.findViewById(getId(KcaUtils.format("item%d_slot", i + 1), R.id.class)).setVisibility(GONE);
                 }
 
+                String kcItemId = kcItemData.get("id").getAsString();
                 String kcItemName = getItemTranslation(kcItemData.get("name").getAsString());
-                int type = kcItemData.getAsJsonArray("type").get(3).getAsInt();
 
+                int fit_state = -1;
+                if (item_fit.has(kcItemId) && ship_fit.has(ship_id)) {
+                    int ship_idx = ship_fit.get(ship_id).getAsInt();
+                    int item_idx = item_fit.get(kcItemId).getAsInt();
+                    String key = KcaUtils.format("%d_%d", item_idx, ship_idx);
+                    if (fit_data.has(key)) {
+                        fit_state = fit_data.getAsJsonArray(key).get(married).getAsInt() + 2;
+                    }
+                }
+
+                int type = kcItemData.getAsJsonArray("type").get(3).getAsInt();
                 int typeres = 0;
                 try {
                     typeres = getId(KcaUtils.format("item_%d", type), R.mipmap.class);
@@ -1089,6 +1142,14 @@ public class KcaFleetViewService extends Service {
                     typeres = R.mipmap.item_0;
                 }
                 ((TextView) itemView.findViewById(getId(KcaUtils.format("item%d_name", i + 1), R.id.class))).setText(kcItemName);
+                if (fit_state == -1) {
+                    ((TextView) itemView.findViewById(getId(KcaUtils.format("item%d_name", i + 1), R.id.class)))
+                            .setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.white));
+                } else {
+                    ((TextView) itemView.findViewById(getId(KcaUtils.format("item%d_name", i + 1), R.id.class)))
+                            .setTextColor(ContextCompat.getColor(getApplicationContext(), KcaUtils.getId(KcaUtils.format("colorGunfit%d", fit_state), R.color.class)));
+                }
+
                 ((ImageView) itemView.findViewById(getId(KcaUtils.format("item%d_icon", i + 1), R.id.class))).setImageResource(typeres);
                 itemView.findViewById(getId("item".concat(String.valueOf(i + 1)), R.id.class)).setVisibility(View.VISIBLE);
             }
@@ -1152,6 +1213,9 @@ public class KcaFleetViewService extends Service {
             case 1:
                 seekType = getStringWithLocale(R.string.seek_type_1);
                 break;
+            case 2:
+                seekType = getStringWithLocale(R.string.seek_type_2);
+                break;
             case 3:
                 seekType = getStringWithLocale(R.string.seek_type_3);
                 break;
@@ -1166,24 +1230,8 @@ public class KcaFleetViewService extends Service {
     }
 
     private void changeInternalSeekCn() {
-        int new_value = seekcn_internal;
-        switch (seekcn_internal) {
-            case 0:
-                new_value = 1;
-                break;
-            case 1:
-                new_value = 3;
-                break;
-            case 3:
-                new_value = 4;
-                break;
-            case 4:
-                new_value = 0;
-                break;
-            default:
-                break;
-        }
-        seekcn_internal = new_value;
+        seekcn_internal += 1;
+        seekcn_internal %= 5;
     }
 
     private void updateSelectedView(int idx) {
@@ -1208,6 +1256,17 @@ public class KcaFleetViewService extends Service {
                             ContextCompat.getColor(getApplicationContext(), R.color.colorFleetInfoBtn));
                 }
             }
+        }
+    }
+
+
+    public static JsonObject loadGunfitData(AssetManager am) {
+        try {
+            AssetManager.AssetInputStream ais = (AssetManager.AssetInputStream) am.open("gunfit.json");
+            byte[] bytes = ByteStreams.toByteArray(ais);
+            return new JsonParser().parse(new String(bytes)).getAsJsonObject();
+        } catch (IOException e) {
+            return new JsonObject();
         }
     }
 
@@ -1241,13 +1300,6 @@ public class KcaFleetViewService extends Service {
             if (mManager != null) {
                 if (mView.getParent() != null) mManager.removeViewImmediate(mView);
                 initView();
-                mParams = new WindowManager.LayoutParams(
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        getWindowLayoutType(),
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                        PixelFormat.TRANSLUCENT);
-                mParams.gravity = Gravity.CENTER;
                 mManager.addView(mView, mParams);
 
                 int setViewResult = setView();

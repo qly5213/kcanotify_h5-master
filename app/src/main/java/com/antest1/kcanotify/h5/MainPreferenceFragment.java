@@ -47,9 +47,8 @@ import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_PREF_LANGUAGE_CHANGE
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_PREF_PRIORITY_CHANGED;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_ALARM_DELAY;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_APK_DOWNLOAD_SITE;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_CHECK_UPDATE;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_DMM_PWD;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_AUTOHIDE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_HDNOTI_MINLEVEL;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCAQSYNC_PASS;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_DATA_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_EXP_VIEW;
@@ -141,15 +140,6 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
         Map<String, ?> allEntries = getPreferenceManager().getSharedPreferences().getAll();
         for (String key : allEntries.keySet()) {
             Preference pref = findPreference(key);
-            if (key.equals(PREF_CHECK_UPDATE)) {
-                pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                    @Override
-                    public boolean onPreferenceClick(Preference preference) {
-                        checkRecentVersion();
-                        return false;
-                    }
-                });
-            }
             /*if (key.equals(PREF_KCA_DOWNLOAD_DATA)) {
                 pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
@@ -209,18 +199,6 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
 
 
 
-            /*if (key.equals(PREF_SNIFFER_MODE)) {
-                pref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-                    String val = (String) newValue;
-                    if (Integer.parseInt(val) == SNIFFER_PASSIVE && prefs.getBoolean(PREF_VPN_ENABLED, false)) {
-                        KcaVpnService.stop(VPN_STOP_REASON, getActivity());
-                        prefs.edit().putBoolean(PREF_VPN_ENABLED, false).apply();
-                    }
-                    return true;
-                });
-            }*/
-
             if (key.equals(PREF_KCA_LANGUAGE)) {
                 pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
@@ -247,40 +225,34 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
             }
 
             if (key.equals(PREF_ALARM_DELAY)) {
-                pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                    @Override
-                    public boolean onPreferenceChange(Preference preference, Object newValue) {
-                        String new_val = ((String) newValue);
-                        if (new_val.length() == 0) return false;
-                        int value = Integer.parseInt(new_val);
-                        KcaAlarmService.setAlarmDelay(value);
-                        if (sHandler != null) {
-                            Bundle bundle = new Bundle();
-                            bundle.putString("url", KCA_API_PREF_ALARMDELAY_CHANGED);
-                            bundle.putString("data", "");
-                            Message sMsg = sHandler.obtainMessage();
-                            sMsg.setData(bundle);
-                            sHandler.sendMessage(sMsg);
-                        }
-                        return true;
+                pref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    String new_val = ((String) newValue);
+                    if (new_val.length() == 0) return false;
+                    int value = Integer.parseInt(new_val);
+                    KcaAlarmService.setAlarmDelay(value);
+                    if (sHandler != null) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("url", KCA_API_PREF_ALARMDELAY_CHANGED);
+                        bundle.putString("data", "");
+                        Message sMsg = sHandler.obtainMessage();
+                        sMsg.setData(bundle);
+                        sHandler.sendMessage(sMsg);
                     }
+                    return true;
                 });
             }
 
             if (key.equals(PREF_KCA_MORALE_MIN)) {
-                pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                    @Override
-                    public boolean onPreferenceChange(Preference preference, Object newValue) {
-                        String new_val = ((String) newValue);
-                        if (new_val.length() == 0) return false;
-                        int value = Integer.parseInt(new_val);
-                        if (value > 100) {
-                            showToast(getApplicationContext(), "value must be in 0~100", Toast.LENGTH_LONG);
-                            return false;
-                        }
-                        KcaMoraleInfo.setMinMorale(value);
-                        return true;
+                pref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    String new_val = ((String) newValue);
+                    if (new_val.length() == 0) return false;
+                    int value = Integer.parseInt(new_val);
+                    if (value > 100) {
+                        showToast(getApplicationContext(), "value must be in 0~100", Toast.LENGTH_LONG);
+                        return false;
                     }
+                    KcaMoraleInfo.setMinMorale(value);
+                    return true;
                 });
             }
 
@@ -315,16 +287,17 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
             } else if (pref instanceof EditTextPreference) {
                 EditTextPreference etp = (EditTextPreference) pref;
                 pref.setSummary(etp.getText());
+                if (key.equals(PREF_HDNOTI_MINLEVEL)) {
+                    if (etp.getText().equals("0")) {
+                        String current = etp.getText();
+                        pref.setSummary(KcaUtils.format("%s (%s)", current, getStringWithLocale(R.string.setting_menu_view_desc_hdmg_minlevel)));
+                    }
+                }
                 if (key.equals(PREF_KCAQSYNC_PASS)) {
                     if (etp.getText().trim().length() == 0) {
                         pref.setSummary(getStringWithLocale(R.string.setting_menu_stat_desc_kcaqsync_pass_emtpy));
                     }
                     etp.setDialogMessage(getStringWithLocale(R.string.setting_menu_stat_desc_kcaqsync_pass));
-                }
-                if (PREF_DMM_PWD.equals(pref.getKey())) {
-                    pref.setSummary("******");
-                } else {
-                    pref.setSummary(etp.getText());
                 }
             }
         }
@@ -342,7 +315,7 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
             startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION);
         } else {
             try {
-                startActivityForResult(new Intent(android.provider.Settings.ACTION_APPLICATION_SETTINGS), REQUEST_OVERLAY_PERMISSION);
+                startActivityForResult(new Intent(Settings.ACTION_APPLICATION_SETTINGS), REQUEST_OVERLAY_PERMISSION);
             } finally {
                 showToast(getApplicationContext(), getStringWithLocale(R.string.sa_overlay_appearontop), Toast.LENGTH_LONG);
             }
@@ -364,18 +337,18 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
     @TargetApi(Build.VERSION_CODES.M)
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (getActivity() != null) {
+        if (getActivity() != null && getApplicationContext() != null) {
             if (requestCode == REQUEST_OVERLAY_PERMISSION) {
                 int delay = Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? 0 : 1000;
                 new Handler().postDelayed(() -> {
-                    if (Settings.canDrawOverlays(getActivity())) {
+                    if (Settings.canDrawOverlays(getApplicationContext())) {
                         showToast(getActivity(), getStringWithLocale(R.string.sa_overlay_ok), Toast.LENGTH_SHORT);
                     } else {
                         showToast(getActivity(), getStringWithLocale(R.string.sa_overlay_no), Toast.LENGTH_SHORT);
                     }
                 }, delay);
             } else if (requestCode == REQUEST_USAGESTAT_PERMISSION) {
-                if(hasUsageStatPermission(getActivity().getApplicationContext())) {
+                if(hasUsageStatPermission(getApplicationContext())) {
                     showToast(getActivity(), getStringWithLocale(R.string.sa_usagestat_ok), Toast.LENGTH_SHORT);
                 } else {
                     showToast(getActivity(), getStringWithLocale(R.string.sa_usagestat_no), Toast.LENGTH_SHORT);
@@ -418,34 +391,33 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
                 pref.setSummary(silentText);
             } else {
                 Uri ringtoneUri = Uri.parse(uri);
-                getActivity().grantUriPermission(BuildConfig.APPLICATION_ID, ringtoneUri, FLAG_GRANT_READ_URI_PERMISSION);
-                Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), ringtoneUri);
-                if (ringtone == null) {
-                    showToast(getApplicationContext(),
-                            getStringWithLocale(R.string.ma_permission_external_denied),
-                            Toast.LENGTH_LONG);
-                    pref.setSummary(silentText);
-                } else {
-                    String name = ringtone.getTitle(getApplicationContext());
-                    pref.setSummary(name);
+                if (getActivity() != null) {
+                    getActivity().grantUriPermission(BuildConfig.APPLICATION_ID, ringtoneUri, FLAG_GRANT_READ_URI_PERMISSION);
+                    Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), ringtoneUri);
+                    if (ringtone == null) {
+                        showToast(getApplicationContext(),
+                                getStringWithLocale(R.string.ma_permission_external_denied),
+                                Toast.LENGTH_LONG);
+                        pref.setSummary(silentText);
+                    } else {
+                        String name = ringtone.getTitle(getApplicationContext());
+                        pref.setSummary(name);
+                    }
                 }
             }
             Log.e("KCA-S", "sdf");
-            Intent aIntent = new Intent(getActivity(), KcaAlarmService.class);
-            aIntent.setAction(REFRESH_CHANNEL);
-            aIntent.putExtra("uri", uri);
-            getApplicationContext().startService(aIntent);
+            if (getActivity() != null && !getActivity().isFinishing()) {
+                Intent aIntent = new Intent(getActivity(), KcaAlarmService.class);
+                aIntent.setAction(REFRESH_CHANNEL);
+                aIntent.putExtra("uri", uri);
+                getApplicationContext().startService(aIntent);
+            }
         } else if (pref instanceof ListPreference) {
             ListPreference etp = (ListPreference) pref;
             pref.setSummary(etp.getEntry());
         } else if (pref instanceof EditTextPreference) {
             EditTextPreference etp = (EditTextPreference) pref;
             pref.setSummary(etp.getText());
-            if (PREF_DMM_PWD.equals(pref.getKey())) {
-                pref.setSummary("******");
-            } else {
-                pref.setSummary(etp.getText());
-            }
         }
     }
 
@@ -522,10 +494,9 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                if (KcaUtils.checkOnline(getApplicationContext())) {
-                    showToast(getApplicationContext(),
-                            getStringWithLocale(R.string.sa_checkupdate_servererror),
-                            Toast.LENGTH_LONG);
+                Context context = getApplicationContext();
+                if (context != null && KcaUtils.checkOnline(context)) {
+                    showToast(context, getStringWithLocale(R.string.sa_checkupdate_servererror), Toast.LENGTH_LONG);
                     dbHelper.recordErrorLog(ERROR_TYPE_SETTING, "version_check", "", "", t.getMessage());
                 }
             }

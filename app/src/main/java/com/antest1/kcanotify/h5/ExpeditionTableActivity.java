@@ -14,25 +14,19 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
 
-import java.io.IOException;
 import java.util.Locale;
 
-import static android.widget.Toast.makeText;
 import static com.antest1.kcanotify.h5.KcaApiData.loadSimpleExpeditionInfoFromStorage;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
-import static com.antest1.kcanotify.h5.KcaConstants.PREF_DATALOAD_ERROR_FLAG;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
-import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.showDataLoadErrorToast;
-import static com.antest1.kcanotify.h5.LocaleUtils.getLocaleCode;
+import static com.antest1.kcanotify.h5.LocaleUtils.getResourceLocaleCode;
 
 
 public class ExpeditionTableActivity extends AppCompatActivity {
@@ -79,19 +73,16 @@ public class ExpeditionTableActivity extends AppCompatActivity {
         AssetManager assetManager = getAssets();
 
         String locale = getStringPreferences(getApplicationContext(), PREF_KCA_LANGUAGE);
-        adapter = new KcaExpeditionTableViewAdpater(getApplicationContext(), getBaseContext(), getLocaleCode(locale));
+        adapter = new KcaExpeditionTableViewAdpater(getApplicationContext(), getBaseContext(), getResourceLocaleCode(locale));
 
-        for (int i = 0; i <= 5; i++) {
+        for (int i = 0; i <= 7; i++) {
             final int target = i;
             TextView w_btn = findViewById(getId(KcaUtils.format("btn_w%d", i), R.id.class));
-            w_btn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    world_idx = target;
-                    adapter.setListViewItemList(expeditionData, world_idx);
-                    listview = findViewById(R.id.expeditiontable_listiview);
-                    listview.setAdapter(adapter);
-                }
+            w_btn.setOnClickListener(view -> {
+                world_idx = target;
+                adapter.setListViewItemList(expeditionData, world_idx);
+                listview = findViewById(R.id.expeditiontable_listiview);
+                listview.setAdapter(adapter);
             });
         }
 

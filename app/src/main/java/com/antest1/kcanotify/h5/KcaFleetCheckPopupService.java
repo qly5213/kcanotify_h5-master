@@ -12,7 +12,6 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -21,29 +20,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
-import static android.R.attr.id;
-import static com.antest1.kcanotify.h5.KcaApiData.checkUserShipDataLoaded;
-import static com.antest1.kcanotify.h5.KcaApiData.getCurrentNodeAlphabet;
-import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_APIMAPINFO;
 import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_DECKPORT;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_SEEK_CN;
 import static com.antest1.kcanotify.h5.KcaConstants.SEEK_PURE;
-import static com.antest1.kcanotify.h5.KcaMapHpPopupService.MAPHP_RESET_ACTION;
-import static com.antest1.kcanotify.h5.KcaMapHpPopupService.MAPHP_SHOW_ACTION;
 import static com.antest1.kcanotify.h5.KcaUtils.getContextWithLocale;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getWindowLayoutType;
-import static com.antest1.kcanotify.h5.KcaUtils.joinStr;
 
 public class KcaFleetCheckPopupService extends Service {
     public static final String FCHK_SHOW_ACTION = "fchk_show_action";
@@ -210,12 +199,13 @@ public class KcaFleetCheckPopupService extends Service {
                     case FCHK_FUNC_SEEKTP:
                         int seekValue_0 = (int) deckInfoCalc.getSeekValue(portdeckdata, target_str, SEEK_PURE, KcaBattle.getEscapeFlag());
                         double seekValue_1 = deckInfoCalc.getSeekValue(portdeckdata, target_str, 1, KcaBattle.getEscapeFlag());
+                        double seekValue_2 = deckInfoCalc.getSeekValue(portdeckdata, target_str, 2, KcaBattle.getEscapeFlag());
                         double seekValue_3 = deckInfoCalc.getSeekValue(portdeckdata, target_str, 3, KcaBattle.getEscapeFlag());
                         double seekValue_4 = deckInfoCalc.getSeekValue(portdeckdata, target_str, 4, KcaBattle.getEscapeFlag());
 
                         int[] tp = deckInfoCalc.getTPValue(portdeckdata, target_str, KcaBattle.getEscapeFlag());
                         fchk_info.setText(KcaUtils.format(getStringWithLocale(R.string.fleetcheckview_content_seeklos),
-                                seekValue_0, seekValue_1, seekValue_3, seekValue_4, tp[0], tp[1]));
+                                seekValue_0, seekValue_1, seekValue_2, seekValue_3, seekValue_4, tp[0], tp[1]));
                         break;
                     case FCHK_FUNC_AIRBATTLE:
                         int[] airPowerRange = deckInfoCalc.getAirPowerRange(portdeckdata, target, KcaBattle.getEscapeFlag());

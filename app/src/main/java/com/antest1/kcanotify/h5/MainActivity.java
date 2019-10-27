@@ -35,38 +35,48 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.pixplicity.htmlcompat.HtmlCompat;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Locale;
 
 import retrofit2.Call;
-import retrofit2.Callback;
 import util.UpdateAppUtils;
 
-import static com.antest1.kcanotify.h5.KcaAlarmService.DELETE_ACTION;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
+import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_STARTDATA;
 import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_MAIN;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_FAIRY_RETURN;
-import static com.antest1.kcanotify.h5.KcaConstants.NOTI_UPDATE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREFS_LIST;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_DATALOAD_ERROR_FLAG;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_FAIRY_ICON;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_BATTLEVIEW_USE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_DATA_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_QUESTVIEW_USE;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_VERSION;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SNIFFER_MODE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SVC_ENABLED;
+import static com.antest1.kcanotify.h5.KcaUtils.compareVersion;
 import static com.antest1.kcanotify.h5.KcaUtils.getBooleanPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getKcIntent;
-import static com.antest1.kcanotify.h5.KcaUtils.getNotificationId;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
+import static com.antest1.kcanotify.h5.KcaUtils.gzipdecompress;
+import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.showDataLoadErrorToast;
 import static com.antest1.kcanotify.h5.LocaleUtils.getLocaleCode;
 
@@ -133,13 +143,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dbHelper = new KcaDBHelper(getApplicationContext(), null, KCANOTIFY_DB_VERSION);
         setContentView(R.layout.activity_vpn_main);
         PreferenceManager.setDefaultValues(this, R.xml.pref_settings, false);
         setDefaultPreferences();
+        setPreferences(getApplicationContext(), PREF_DATALOAD_ERROR_FLAG, false);
+        loadDefaultAsset();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         assetManager = getAssets();
-        dbHelper = new KcaDBHelper(getApplicationContext(), null, KCANOTIFY_DB_VERSION);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.app_name);
@@ -478,45 +490,52 @@ public class MainActivity extends AppCompatActivity {
         backPressCloseHandler.onBackPressed();
     }
 
-    private void checkRecentVersion() {
-        String currentVersion = BuildConfig.VERSION_NAME;
-        String currentDataVersion = getStringPreferences(getApplicationContext(), PREF_KCA_DATA_VERSION);
-        final Call<String> rv_data = downloader.getRecentVersion();
-        rv_data.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, retrofit2.Response<String> response) {
-                JsonObject response_data = new JsonObject();
-                try {
-                    if (response.body() != null) {
-                        response_data = new JsonParser().parse(response.body()).getAsJsonObject();
+    private void loadDefaultAsset() {
+        AssetManager am = getAssets();
+        byte[] bytes;
+        String kca_data_version = KcaUtils.getStringPreferences(getApplicationContext(), PREF_KCA_DATA_VERSION);
+        String internal_kca_version = getString(R.string.default_gamedata_version);
+        int currentKcaResVersion = dbHelper.getTotalResVer();
+        try {
+            if (kca_data_version == null || compareVersion(internal_kca_version, kca_data_version)) {
+                InputStream api_ais = am.open("api_start2");
+                bytes = gzipdecompress(ByteStreams.toByteArray(api_ais));
+                String asset_start2_data = new String(bytes);
+                dbHelper.putValue(DB_KEY_STARTDATA, asset_start2_data);
+                KcaUtils.setPreferences(getApplicationContext(), PREF_KCA_VERSION, internal_kca_version);
+                KcaUtils.setPreferences(getApplicationContext(), PREF_KCA_DATA_VERSION, internal_kca_version);
+            }
+
+            AssetManager.AssetInputStream ais = (AssetManager.AssetInputStream) am.open("list.json");
+            bytes = ByteStreams.toByteArray(ais);
+            JsonArray data = new JsonParser().parse(new String(bytes)).getAsJsonArray();
+
+            for (JsonElement item: data) {
+                JsonObject res_info = item.getAsJsonObject();
+                String name = res_info.get("name").getAsString();
+                int version = res_info.get("version").getAsInt();
+                if (currentKcaResVersion < version) {
+                    final File root_dir = getDir("data", Context.MODE_PRIVATE);
+                    final File new_data = new File(root_dir, name);
+                    if (new_data.exists()) new_data.delete();
+                    InputStream file_is = am.open(name);
+                    OutputStream file_out = new FileOutputStream(new_data);
+
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = file_is.read(buffer)) != -1) {
+                        file_out.write(buffer, 0, bytesRead);
                     }
-                } catch (Exception e) {
-                    dbHelper.recordErrorLog(ERROR_TYPE_MAIN, "version_check", "", "", getStringFromException(e));
+                    file_is.close();
+                    file_out.close();
+                    dbHelper.putResVer(name, version);
                 }
-
-                Log.e("KCA", response_data.toString());
-                int nid = getNotificationId(NOTI_UPDATE, 0);
-                Intent deleteIntent = new Intent(MainActivity.this, KcaAlarmService.class)
-                        .setAction(DELETE_ACTION.concat(String.valueOf(nid)));
-                startService(deleteIntent);
             }
+            ais.close();
+        } catch (IOException e) {
 
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
-                if (KcaUtils.checkOnline(getApplicationContext())) {
-                    Toast.makeText(getApplicationContext(),
-                            getStringWithLocale(R.string.sa_checkupdate_servererror),
-                            Toast.LENGTH_LONG).show();
-                    dbHelper.recordErrorLog(ERROR_TYPE_MAIN, "version_check", "", "", t.getMessage());
-                }
-                int nid = getNotificationId(NOTI_UPDATE, 0);
-                Intent deleteIntent = new Intent(MainActivity.this, KcaAlarmService.class)
-                        .setAction(DELETE_ACTION.concat(String.valueOf(nid)));
-                startService(deleteIntent);
-            }
-        });
+        }
     }
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

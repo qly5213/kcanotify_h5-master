@@ -3,6 +3,7 @@
     <string-array name="seekTypeOption">
         <item>@string/seek_type_0_detail</item>
         <item>@string/seek_type_1_detail</item>
+        <item>@string/seek_type_2_detail</item>
         <item>@string/seek_type_3_detail</item>
         <item>@string/seek_type_4_detail</item>
     </string-array>
@@ -10,6 +11,7 @@
     <string-array name="seekTypeOptionValue" translatable="false">
         <item >0</item>
         <item >1</item>
+        <item >2</item>
         <item >3</item>
         <item >4</item>
     </string-array>
@@ -21,6 +23,7 @@
         <item>@string/language_jp</item>
         <item>@string/language_scn</item>
         <item>@string/language_tcn</item>
+        <item>@string/language_es</item>
     </string-array>
 
     <string-array name="languageOptionValue" translatable="false">
@@ -30,6 +33,17 @@
         <item>ja-JP</item>
         <item>zh-CN</item>
         <item>zh-TW</item>
+        <item>es-UY</item>
+    </string-array>
+
+    <string-array name="gameAppOption">
+        <item>@string/app_name_kancolle</item>
+        <item>@string/app_name_gotobrowser</item>
+    </string-array>
+
+    <string-array name="gameAppOptionValue" translatable="false">
+        <item>com.dmm.dmmlabo.kancolle</item>
+        <item>com.antest1.gotobrowser</item>
     </string-array>
 
     <string-array name="soundOption">
@@ -49,32 +63,33 @@
     <string-array name="downloadSiteOption" translatable="false">
         <item>@string/app_download_link_playstore_label</item>
         <item>@string/app_download_link_googledrive_label</item>
-        <item>@string/app_download_link_box_label</item>
         <item>@string/app_download_link_mega_label</item>
         <item>@string/app_download_link_baidu_label</item>
+        <item>@string/app_download_link_kcwiki_label</item>
     </string-array>
 
     <string-array name="downloadSiteOptionValue" translatable="false">
         <item>@string/app_download_link_playstore</item>
         <item>@string/app_download_link_googledrive</item>
-        <item>@string/app_download_link_box</item>
         <item>@string/app_download_link_mega</item>
         <item>@string/app_download_link_baidu</item>
+        <item>@string/app_download_link_kcwiki</item>
     </string-array>
 
     <string-array name="downloadSiteOptionWithoutPlayStore" translatable="false">
         <item>@string/app_download_link_googledrive_label</item>
-        <item>@string/app_download_link_box_label</item>
         <item>@string/app_download_link_mega_label</item>
         <item>@string/app_download_link_baidu_label</item>
+        <item>@string/app_download_link_kcwiki_label</item>
     </string-array>
 
     <string-array name="downloadSiteOptionWithoutPlayStoreValue" translatable="false">
         <item>@string/app_download_link_googledrive</item>
-        <item>@string/app_download_link_box</item>
         <item>@string/app_download_link_mega</item>
         <item>@string/app_download_link_baidu</item>
+        <item>@string/app_download_link_kcwiki</item>
     </string-array>
+
 
 
     <string-array name="expeditionTypeOption">
@@ -82,7 +97,6 @@
         <item>@string/expedition_type_value_1</item>
         <item>@string/expedition_type_value_2</item>
     </string-array>
-
 
     <string-array name="expeditionTypeOptionValue" translatable="false">
         <item >0</item>
@@ -100,16 +114,15 @@
     </string-array>
 
     <string-array name="ServerLocation" translatable="false">
-        <item>NOVA Server</item>
         <item>WolfgangKurz Artworks</item>
-        <item>Backup Server</item>
+        <item>NOVA Server</item>
+        <item>LIZA Server</item>
     </string-array>
 
-
     <string-array name="ServerLocationValue" translatable="false">
-        <item>@string/server_nova</item>
         <item>@string/server_swaytwig</item>
-        <item>@string/server_antest1</item>
+        <item>@string/server_nova</item>
+        <item>@string/server_liza</item>
     </string-array>
 
     <string-array name="ship_stat_array">
@@ -130,6 +143,7 @@
         <item>@string/ship_stat_sort_key_18</item>
         <item>@string/ship_stat_sort_key_19</item>
         <item>@string/ship_stat_sort_key_20</item>
+        <item>@string/ship_stat_sort_key_21</item>
     </string-array>
 
     <string-array name="ship_filt_array">
@@ -154,7 +168,7 @@
         <item>@string/ship_stat_sort_key_18</item>
         <item>@string/ship_stat_sort_key_19</item>
         <item>@string/ship_stat_sort_key_20</item>
-        <item>@string/ship_stat_sort_key_21</item>
+        <item>@string/ship_stat_sort_key_22</item>
     </string-array>
 
     <string-array name="ship_operations" translatable="false">
