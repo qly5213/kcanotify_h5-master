@@ -16,17 +16,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -56,8 +53,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 import andhook.lib.AndHook;
@@ -81,7 +76,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
     private static final String[] SERVER_IP = new String[]{"203.104.209.71", "203.104.209.87", "125.6.184.215", "203.104.209.183", "203.104.209.150", "203.104.209.134", "203.104.209.167", "203.104.248.135", "125.6.189.7", "125.6.189.39", "125.6.189.71", "125.6.189.103", "125.6.189.135", "125.6.189.167", "125.6.189.215", "125.6.189.247", "203.104.209.23", "203.104.209.39", "203.104.209.55", "203.104.209.102"};
 
 
-    ExecutorService pool = Executors.newFixedThreadPool(5);
     private GameBaseActivity.WebviewBroadcastReceiver webviewBroadcastReceiver = new GameBaseActivity.WebviewBroadcastReceiver();
     private GameBaseActivity.RotationObserver mRotationObserver;
     protected SharedPreferences prefs = null;
@@ -90,7 +84,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
     private boolean battleResultVibrate;
     private boolean changeTouchEventPrefs = false;
 
-    protected View mWebview;
+    protected GameView mWebview;
     protected ProgressBar progressBar1;
     private TextView fpsCounter;
     private TextView subtitleTextview;
@@ -119,8 +113,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
     protected boolean clearCookie;
     protected boolean voicePlay;
     protected boolean changeCookie;
-    protected HashMap<String, String> voiceCookieMap;
-    protected HashMap<String, String> dmmCokieMap;
+    public HashMap<String, String> voiceCookieMap;
+    public HashMap<String, String> dmmCookieMap;
 
     boolean changeTouchEvent = false;
     private boolean subTitleEnable;
@@ -219,7 +213,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
             imageSize = "100";
         }
 
-        mWebview = findViewById(R.id.webView1);
+        mWebview = (GameView) findViewById(R.id.webView1);
+        mWebview.assignActivity(this);
+
+
         progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
         fpsCounter = (TextView) findViewById(R.id.fps_counter);
         subtitleTextview = findViewById(R.id.subtitle_textview);
@@ -282,21 +279,19 @@ public abstract class GameBaseActivity extends XWalkActivity {
     @Override
     protected void onStop() {
         if (!prefs.getBoolean("background_play", true)){
-            webviewPause();
+            mWebview.pauseGame();
         }
         super.onStop();
     }
-    abstract public void webviewPause();
 
 
     @Override
     protected void onStart() {
         if (!prefs.getBoolean("background_play", true)) {
-            webviewResume();
+            mWebview.resumeGame();
         }
         super.onStart();
     }
-    abstract public void webviewResume();
 
     //点击返回上一页面而不是退出浏览器
     @Override
@@ -313,7 +308,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
     @Override
     protected void onDestroy() {
         if (mWebview != null) {
-            webviewDestory();
+            mWebview.destroy();
+            mWebview = null;
         }
         unregisterReceiver(webviewBroadcastReceiver);
         showDanmaku = false;
@@ -323,7 +319,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
         super.onDestroy();
     }
-    abstract public void webviewDestory();
 
     /**
      * danmuku init
@@ -427,17 +422,17 @@ public abstract class GameBaseActivity extends XWalkActivity {
         voiceCookieMap.put("vol_voice=" + vol + "; domain=" + hostName + "; path=/kcs2", fullHostName);
 
 
-        dmmCokieMap = new HashMap<>();
-        dmmCokieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "www.dmm.com");
-        dmmCokieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/", "www.dmm.com");
-        dmmCokieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=osapi.dmm.com;path=/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=203.104.209.7;path=/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=www.dmm.com;path=/netgame/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=log-netgame.dmm.com;path=/", "www.dmm.com");
+        dmmCookieMap = new HashMap<>();
+        dmmCookieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "www.dmm.com");
+        dmmCookieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/", "www.dmm.com");
+        dmmCookieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/", "www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/", "www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/", "www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=osapi.dmm.com;path=/", "www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=203.104.209.7;path=/", "www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=www.dmm.com;path=/netgame/", "www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=log-netgame.dmm.com;path=/", "www.dmm.com");
     }
 
     public void initChat(){
@@ -529,9 +524,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             chatNewMsgImageView.setLayoutParams(lp1);
         }
         resetWebView(true);
-        webviewContentReSize();
     }
-    abstract public void webviewContentReSize();
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -571,10 +564,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("com.antest1.kcanotify.h5.webview_reload"))
-                webviewReload();
+                mWebview.reloadGame();
         }
     }
-    abstract void webviewReload();
 
     public Object[] interceptRequest(Uri uri, String requestMethod, Map<String, String> requestHeader){
         String path = uri.getPath();
@@ -774,34 +766,13 @@ public abstract class GameBaseActivity extends XWalkActivity {
     }
 
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (!changeWebview) {
-            Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
-            if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
-                if(event.getAction() == MotionEvent.ACTION_MOVE) {
-                    buildMoveEvent(event);
-                } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
-                    buildMoveEvent(event);
-                } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
-                    buildMoveEvent(event);
-                }
-            }
+        if (changeTouchEventPrefs) {
+            mWebview.handleTouch(event);
         }
         return super.dispatchTouchEvent(event);
     }
 
 
-    private void buildMoveEvent(MotionEvent event){
-        MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[]{new MotionEvent.PointerProperties()};
-        event.getPointerProperties(0, pointerProperties[0]);
-        MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[]{new MotionEvent.PointerCoords()};
-        event.getPointerCoords(0, pointerCoords[0]);
-        pointerProperties[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
-        pointerCoords[0].x -= mWebview.getX();
-        pointerCoords[0].y -= mWebview.getY();
-        long touchTime = SystemClock.uptimeMillis();
-        this.mWebview.onTouchEvent(MotionEvent.obtain(touchTime, touchTime, MotionEvent.ACTION_MOVE, 1, pointerProperties, pointerCoords, 0, 0, 0f, 0f, InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC, 0, InputDevice.SOURCE_TOUCHSCREEN, 0));
-
-    }
 
     private void setScreenOrientation() {
         try {
@@ -837,17 +808,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
         double weightScale = width / 1200.0;
         double heightScale = height / 720.0;
         if(weightScale < heightScale){
-            int reScaleHeight = (int)(720 * weightScale);
-            ViewGroup.LayoutParams params = mWebview.getLayoutParams();
-            params.width = width;
-            params.height = reScaleHeight;
-            mWebview.setLayoutParams(params);
+            mWebview.setLayoutParams(width, (int)(720 * weightScale));
         } else {
-            int reScaleWeight = (int)(1200 * heightScale);
-            ViewGroup.LayoutParams params = mWebview.getLayoutParams();
-            params.width = reScaleWeight;
-            params.height = height;
-            mWebview.setLayoutParams(params);
+            mWebview.setLayoutParams((int)(1200 * heightScale), height);
         }
     }
 
