@@ -2,11 +2,9 @@ package com.antest1.kcanotify.h5;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.InputDevice;
@@ -33,6 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class GameWebView extends WebView implements GameView{
+
+
     public GameWebView(Context context) {
         super(context);
     }
@@ -84,8 +84,8 @@ public class GameWebView extends WebView implements GameView{
             this.setActiveInBackground(true);
         }
 
+        CookieManager cookieManager = CookieManager.getInstance();
         if(prefs.getBoolean("clear_cookie_start", false)){
-            CookieManager cookieManager = CookieManager.getInstance();
             cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
                 @Override
                 public void onReceiveValue(Boolean value) {
@@ -97,8 +97,6 @@ public class GameWebView extends WebView implements GameView{
                 }
             });
         }
-
-        CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(this, true);
         Set<Map.Entry<String, String>> voiceCookieMapSet = gameActivity.voiceCookieMap.entrySet();
         for(Map.Entry<String, String> voiceCookieMapEntry : voiceCookieMapSet){
@@ -137,64 +135,17 @@ public class GameWebView extends WebView implements GameView{
 
         //设置WebViewClient类
         this.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl(url);
-                return true;
-            }
-            //设置加载前的函数
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
-            }
-
             //设置结束加载函数
             @Override
             public void onPageFinished(WebView view, String url) {
-                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-                    fitGameLayout();
-                }
-                if(view.getUrl() != null && view.getUrl().startsWith("https://www.dmm.com/my/-/login/=")){
-
-                    new Handler().postDelayed(new Runnable(){
-                        public void run() {
-                            Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
-                            for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                                GameWebView.this.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
-                                    @Override
-                                    public void onReceiveValue(String value) {
-                                        Log.i("KCVA", value);
-                                    }
-                                });
-                            }
-                        }
-                    }, 5000);
-                }
-                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/top/-/error/area/") && prefs.getBoolean("change_cookie_start", false) && changeCookieCnt++ < 5) {
-                    Log.i("KCVA", "Change Cookie");
-
-                    new Handler().postDelayed(new Runnable(){
-                        public void run() {
-                            Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
-                            for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                                GameWebView.this.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
-                                    @Override
-                                    public void onReceiveValue(String value) {
-                                        Log.i("KCVA", value);
-                                    }
-                                });
-                            }
-                            GameWebView.this.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
-                        }
-                    }, 5000);
-                }
+                detectGameStartAndFit(view);
+                detectLoginAndFill(view, prefs);
+                detectAndHandleLoginError(view, prefs);
             }
             @Override
             public void onLoadResource(WebView view, String url) {
                 super.onLoadResource(view, url);
-                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-                    fitGameLayout();
-                }
+                detectGameStartAndFit(view);
             }
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
@@ -211,6 +162,7 @@ public class GameWebView extends WebView implements GameView{
         this.addJavascriptInterface(new Object(){
             @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
+                detectLoginExpireAndReload(requestUrl, respData);
                 pool.execute(new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -227,20 +179,20 @@ public class GameWebView extends WebView implements GameView{
             }
         },"fpsUpdater");
 
-        this.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
+        this.loadUrl(DMM_START_UTL);
     }
 
     public void onReadyOoi(SharedPreferences prefs) {
+        hostNameOoi = prefs.getString("ooi_host_name", "ooi.moe");
+        if(hostNameOoi.equals("")) hostNameOoi = "ooi.moe";
 
         if (prefs.getBoolean("background_play", true)) {
             this.setActiveInBackground(true);
         }
 
-        hostNameOoi = prefs.getString("ooi_host_name", "ooi.moe");
-        if(hostNameOoi.equals("")) hostNameOoi = "ooi.moe";
-
+        CookieManager cookieManager = CookieManager.getInstance();
         if(prefs.getBoolean("clear_cookie_start", false)){
-            CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
+            cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
                 @Override
                 public void onReceiveValue(Boolean value) {
                     if(value){
@@ -251,8 +203,6 @@ public class GameWebView extends WebView implements GameView{
                 }
             });
         }
-
-        CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(this, true);
         Set<Map.Entry<String, String>> voiceCookieMapSet = gameActivity.voiceCookieMap.entrySet();
         for(Map.Entry<String, String> voiceCookieMapEntry : voiceCookieMapSet){
@@ -292,35 +242,20 @@ public class GameWebView extends WebView implements GameView{
 
         //设置WebViewClient类
         this.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl(url);
-                return true;
-            }
-            //设置加载前的函数
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
-            }
-
             //设置结束加载函数
             @Override
             public void onPageFinished(WebView view, String url) {
                 detectGameStartAndFit(view);
                 detectLoginAndFill(view, prefs);
+                detectAndHandleLoginError(view, prefs);
             }
 
             @Override
             public void onLoadResource(WebView view, String url) {
                 super.onLoadResource(view, url);
                 detectGameStartAndFit(view);
-                detectLoginAndFill(view, prefs);
             }
 
-            @Override
-            public void onReceivedLoginRequest(WebView view, String realm, @Nullable String account, String args) {
-                super.onReceivedLoginRequest(view, realm, account, args);
-            }
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
                 inspectTouchScenarioChanges(request.getUrl(), request.getMethod(), request.getRequestHeaders());
@@ -336,7 +271,7 @@ public class GameWebView extends WebView implements GameView{
         this.addJavascriptInterface(new Object(){
             @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
-                loginExpire(requestUrl, respData, hostNameOoi);
+                detectLoginExpireAndReload(requestUrl, respData);
                 pool.execute(new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -356,24 +291,6 @@ public class GameWebView extends WebView implements GameView{
         this.loadUrl("http://" + hostNameOoi + "/poi");
     }
 
-    private void detectLoginAndFill(WebView view, SharedPreferences prefs) {
-        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")) {
-            boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-            if (isAutoUser) {
-                String userName = prefs.getString("dmm_user", "");
-                String pwd = prefs.getString("dmm_pwd", "");
-                GameWebView.this.loadUrl("javascript:$(\"#login_id\").val(\"" + userName + "\");$(\"#password\").val(\"" + pwd + "\");");
-                GameWebView.this.loadUrl("document.getElementById(\"mode3\").checked = true;");
-            }
-        }
-    }
-
-    private void detectGameStartAndFit(WebView view) {
-        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
-            fitGameLayout();
-        }
-    }
-
     public void pauseGame() {
         this.onPause();
         this.pauseTimers();
@@ -391,6 +308,67 @@ public class GameWebView extends WebView implements GameView{
     public void fitGameLayout() {
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('externalswf'),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
+    }
+
+
+
+    private void detectLoginAndFill(WebView view, SharedPreferences prefs) {
+        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")) {
+            boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
+            if (isAutoUser) {
+                String userName = prefs.getString("dmm_user", "");
+                String pwd = prefs.getString("dmm_pwd", "");
+                view.loadUrl("javascript:$(\"#login_id\").val(\"" + userName + "\");$(\"#password\").val(\"" + pwd + "\");");
+                view.loadUrl("javascript:document.getElementById(\"mode3\").checked = true;");
+            }
+        }
+        // For DMM
+        if(view.getUrl() != null && view.getUrl().startsWith("https://www.dmm.com/my/-/login/=")){
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
+                    for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
+                        view.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String value) {
+                                Log.i("KCVA", value);
+                            }
+                        });
+                    }
+                }
+            }, 5000);
+        }
+    }
+
+    private void detectGameStartAndFit(WebView view) {
+        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+            fitGameLayout();
+        }
+        if (view.getUrl() != null && view.getUrl().equals(DMM_START_UTL)) {
+            fitGameLayout();
+        }
+    }
+
+    private void detectAndHandleLoginError(WebView view, SharedPreferences prefs) {
+        // Only for DMM
+        if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/top/-/error/area/") && prefs.getBoolean("change_cookie_start", false) && changeCookieCnt++ < 5) {
+            Log.i("KCVA", "Change Cookie");
+
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
+                    for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
+                        view.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String value) {
+                                Log.i("KCVA", value);
+                            }
+                        });
+                    }
+                    view.loadUrl(DMM_START_UTL);
+                }
+            }, 5000);
+        }
     }
 
     @Override
@@ -417,16 +395,16 @@ public class GameWebView extends WebView implements GameView{
                 InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC, 0, InputDevice.SOURCE_TOUCHSCREEN, 0));
     }
 
-    private void loginExpire(String requestUrl, String respData, String hostName){
-
-        if(requestUrl.contains("api_req_member/get_incentive")){
+    private void detectLoginExpireAndReload(String requestUrl, String respData){
+        // For OOI only
+        if(requestUrl.contains("api_req_member/get_incentive") && requestUrl.contains("http://" + hostNameOoi + "/")){
             try {
                 JSONObject respDataJson = new JSONObject(respData.substring(7));
                 if(respDataJson.has("api_result") && respDataJson.getInt("api_result") != 1){
                     gameActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            GameWebView.this.loadUrl("http://" + hostName + "/");
+                            GameWebView.this.loadUrl("http://" + hostNameOoi + "/");
                         }
                     });
                     Toast.makeText(gameActivity, "登录过期，正在跳转到登录页面！", Toast.LENGTH_LONG).show();
@@ -469,6 +447,8 @@ public class GameWebView extends WebView implements GameView{
     private GameBaseActivity gameActivity = null;
 
     private ExecutorService pool = Executors.newFixedThreadPool(5);
+
+    private static final String DMM_START_UTL = "http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/";
 
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 }

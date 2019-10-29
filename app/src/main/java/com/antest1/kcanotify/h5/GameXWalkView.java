@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class GameXWalkView extends XWalkView implements GameView {
+
+
     public GameXWalkView(Context context) {
         super(context);
     }
@@ -111,24 +113,11 @@ public class GameXWalkView extends XWalkView implements GameView {
                 gameActivity.setProgressBarProgress(newProgress);
             }
 
-            @Override
-            public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-                view.loadUrl(url);
-                return true;
-            }
             //设置加载前的函数
             @Override
             public void onLoadStarted(XWalkView view, String url) {
                 super.onLoadStarted(view, url);
                 detectGameStartAndFit(view);
-                if (view.getUrl() != null && (view.getUrl().startsWith("https://www.dmm.com/my/-/login/=") || view.getUrl().startsWith("https://accounts.dmm.com/service/login/password"))) {
-                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-                    if(isAutoUser){
-                        String userName = prefs.getString("dmm_user", "");
-                        String pwd = prefs.getString("dmm_pwd", "");
-                        GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
-                    }
-                }
             }
 
             //设置结束加载函数
@@ -141,7 +130,6 @@ public class GameXWalkView extends XWalkView implements GameView {
 
             @Override
             public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView webView, XWalkWebResourceRequest request) {
-
                 Object[] result = gameActivity.interceptRequest(request.getUrl(), request.getMethod(), request.getRequestHeaders());
                 if (result != null) {
                     return this.createXWalkWebResourceResponse((String) result[0], (String) result[1], (InputStream) result[5], (Integer) result[2], (String) result[3], (Map<String, String>) result[4]);
@@ -154,6 +142,7 @@ public class GameXWalkView extends XWalkView implements GameView {
         this.addJavascriptInterface(new Object(){
             @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
+                detectLoginExpireAndReload(requestUrl, respData);
                 pool.execute(new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -170,60 +159,9 @@ public class GameXWalkView extends XWalkView implements GameView {
             }
         },"fpsUpdater");
 
-        this.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
+        this.loadUrl(DMM_START_URL);
         this.onShow();
         this.resumeTimers();
-    }
-
-    private void detectGameStartAndFit(XWalkView view) {
-        if (view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-            fitGameLayout();
-        }
-    }
-
-    private void detectLoginAndFill(XWalkView view, SharedPreferences prefs) {
-        if (view.getUrl() != null && (view.getUrl().startsWith("https://www.dmm.com/my/-/login/=") || view.getUrl().startsWith("https://accounts.dmm.com/service/login/password"))) {
-            boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-            if(isAutoUser){
-                String userName = prefs.getString("dmm_user", "");
-                String pwd = prefs.getString("dmm_pwd", "");
-                GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
-            }
-            new Handler().postDelayed(new Runnable(){
-                public void run() {
-                    Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
-                    for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                        GameXWalkView.this.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String value) {
-                                Log.i("KCVA", value);
-                            }
-                        });
-                    }
-                }
-            }, 5000);
-        }
-    }
-
-    private void detectAndHandleLoginError(XWalkView view, SharedPreferences prefs) {
-        if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/top/-/error/area/") && prefs.getBoolean("change_cookie_start", false) && changeCookieCnt++ < 5) {
-            Log.i("KCVA", "Change Cookie");
-
-            new Handler().postDelayed(new Runnable(){
-                public void run() {
-                    Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
-                    for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                        GameXWalkView.this.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String value) {
-                                Log.i("KCVA", value);
-                            }
-                        });
-                    }
-                    GameXWalkView.this.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
-                }
-            }, 5000);
-        }
     }
 
     public void onReadyOoi(SharedPreferences prefs) {
@@ -279,42 +217,19 @@ public class GameXWalkView extends XWalkView implements GameView {
                 gameActivity.setProgressBarProgress(newProgress);
             }
 
-            @Override
-            public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-                view.loadUrl(url);
-                return true;
-            }
             //设置加载前的函数
             @Override
             public void onLoadStarted(XWalkView view, String url) {
                 super.onLoadStarted(view, url);
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
-                    fitGameLayout();
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")){
-                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-                    if(isAutoUser){
-                        String userName = prefs.getString("dmm_user", "");
-                        String pwd = prefs.getString("dmm_pwd", "");
-                        GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
-                        GameXWalkView.this.loadUrl("document.getElementById(\"mode3\").checked = true;");
-                    }
-                }
+                detectGameStartAndFit(view);
             }
 
             //设置结束加载函数
             @Override
             public void onLoadFinished(XWalkView view, String url) {
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
-                    fitGameLayout();
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")){
-                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-                    if(isAutoUser){
-                        String userName = prefs.getString("dmm_user", "");
-                        String pwd = prefs.getString("dmm_pwd", "");
-                        GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
-                        GameXWalkView.this.loadUrl("document.getElementById(\"mode3\").checked = true;");
-                    }
-                }
+                detectGameStartAndFit(view);
+                detectLoginAndFill(view, prefs);
+                detectAndHandleLoginError(view, prefs);
             }
 
             @Override
@@ -331,7 +246,7 @@ public class GameXWalkView extends XWalkView implements GameView {
         this.addJavascriptInterface(new Object(){
             @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
-                loginExpire(requestUrl, respData, GameXWalkView.this.hostNameOoi);
+                detectLoginExpireAndReload(requestUrl, respData);
                 pool.execute(new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -377,18 +292,86 @@ public class GameXWalkView extends XWalkView implements GameView {
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
     }
 
-    private void loginExpire(String requestUrl, String respData, String hostName){
 
-        if(requestUrl.contains("api_req_member/get_incentive")){
+
+
+    private void detectGameStartAndFit(XWalkView view) {
+        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+            fitGameLayout();
+        }
+        if (view.getUrl() != null && view.getUrl().equals(DMM_START_URL)) {
+            fitGameLayout();
+        }
+    }
+
+    private void detectLoginAndFill(XWalkView view, SharedPreferences prefs) {
+        if (view.getUrl() != null && (view.getUrl().startsWith("https://www.dmm.com/my/-/login/=") || view.getUrl().startsWith("https://accounts.dmm.com/service/login/password"))) {
+            boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
+            if(isAutoUser){
+                String userName = prefs.getString("dmm_user", "");
+                String pwd = prefs.getString("dmm_pwd", "");
+                view.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
+            }
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
+                    for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
+                        view.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String value) {
+                                Log.i("KCVA", value);
+                            }
+                        });
+                    }
+                }
+            }, 5000);
+        }
+
+        // For OOI
+        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")) {
+            boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
+            if (isAutoUser) {
+                String userName = prefs.getString("dmm_user", "");
+                String pwd = prefs.getString("dmm_pwd", "");
+                view.loadUrl("javascript:$(\"#login_id\").val(\"" + userName + "\");$(\"#password\").val(\"" + pwd + "\");");
+                view.loadUrl("javascript:document.getElementById(\"mode3\").checked = true;");
+            }
+        }
+    }
+
+    private void detectAndHandleLoginError(XWalkView view, SharedPreferences prefs) {
+        // For DMM only
+        if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/top/-/error/area/") && prefs.getBoolean("change_cookie_start", false) && changeCookieCnt++ < 5) {
+            Log.i("KCVA", "Change Cookie");
+
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
+                    for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
+                        view.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String value) {
+                                Log.i("KCVA", value);
+                            }
+                        });
+                    }
+                    view.loadUrl(DMM_START_URL);
+                }
+            }, 5000);
+        }
+    }
+
+
+    private void detectLoginExpireAndReload(String requestUrl, String respData){
+        // For OOI only
+        if(requestUrl.contains("api_req_member/get_incentive") && requestUrl.contains("http://" + hostNameOoi + "/")){
             try {
-
-
                 JSONObject respDataJson = new JSONObject(respData.substring(7));
                 if(respDataJson.has("api_result") && respDataJson.getInt("api_result") != 1){
                     gameActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            loadUrl("http://" + hostName + "/");
+                            loadUrl("http://" + hostNameOoi + "/");
                         }
                     });
                     Toast.makeText(gameActivity, "登录过期，正在跳转到登录页面！", Toast.LENGTH_LONG).show();
@@ -406,6 +389,8 @@ public class GameXWalkView extends XWalkView implements GameView {
     private GameBaseActivity gameActivity = null;
 
     private ExecutorService pool = Executors.newFixedThreadPool(5);
+
+    private static final String DMM_START_URL = "http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/";
 
     // HTML5 audio is bugged in Crosswalk
     // Add "edge" to UA so that Kancolle will fallback to traditional audio playing
