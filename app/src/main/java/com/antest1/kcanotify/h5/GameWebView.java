@@ -3,6 +3,7 @@ package com.antest1.kcanotify.h5;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -47,7 +48,7 @@ public class GameWebView extends WebView implements GameView{
     @Override
     public void destroy() {
         this.loadDataWithBaseURL(null, "", "text/html", "utf-8", null);
-        // TODO: explain why clear history
+        // TODO: explain why need to clear history
         this.clearHistory();
         ((ViewGroup) this.getParent()).removeView(this);
         super.destroy();
@@ -130,12 +131,7 @@ public class GameWebView extends WebView implements GameView{
             //获取加载进度
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
-                if (newProgress == 100) {
-                    gameActivity.progressBar1.setVisibility(View.GONE);
-                } else {
-                    gameActivity.progressBar1.setVisibility(View.VISIBLE);
-                    gameActivity.progressBar1.setProgress(newProgress);
-                }
+                gameActivity.setProgressBarProgress(newProgress);
             }
         });
 
@@ -202,6 +198,7 @@ public class GameWebView extends WebView implements GameView{
             }
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
+                inspectTouchScenarioChanges(request.getUrl(), request.getMethod(), request.getRequestHeaders());
                 Object[] result = gameActivity.interceptRequest(request.getUrl(), request.getMethod(), request.getRequestHeaders());
                 if (result != null) {
                     return new WebResourceResponse((String) result[0], (String) result[1], (Integer) result[2], (String) result[3], (Map<String, String>) result[4], (InputStream) result[5]);
@@ -292,12 +289,7 @@ public class GameWebView extends WebView implements GameView{
             //获取加载进度
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
-                if (newProgress == 100) {
-                    gameActivity.progressBar1.setVisibility(View.GONE);
-                } else {
-                    gameActivity.progressBar1.setVisibility(View.VISIBLE);
-                    gameActivity.progressBar1.setProgress(newProgress);
-                }
+                gameActivity.setProgressBarProgress(newProgress);
             }
         });
 
@@ -350,6 +342,7 @@ public class GameWebView extends WebView implements GameView{
             }
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
+                inspectTouchScenarioChanges(request.getUrl(), request.getMethod(), request.getRequestHeaders());
                 Object[] result = gameActivity.interceptRequest(request.getUrl(), request.getMethod(), request.getRequestHeaders());
                 if (result != null) {
                     return new WebResourceResponse((String) result[0], (String) result[1], (Integer) result[2], (String) result[3], (Map<String, String>) result[4], (InputStream) result[5]);
@@ -397,7 +390,6 @@ public class GameWebView extends WebView implements GameView{
     }
 
     public void fitGameLayout() {
-        // TODO: make it depend on connection, or one JS fits all cases
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('externalswf'),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
     }
@@ -446,7 +438,23 @@ public class GameWebView extends WebView implements GameView{
         }
     }
 
-    // TODO: put it into interface?
+    private void inspectTouchScenarioChanges(Uri uri, String requestMethod, Map<String, String> requestHeader) {
+        String path = uri.getPath();
+        if (path != null) {
+            // TODO: simplify the logic
+            if(path.contains("/kcsapi/api_port/port")){
+                changeTouchEvent = false;
+            } else if(path.contains("/kcsapi/api_get_member/mapinfo") || path.contains("/kcsapi/api_get_member/mission")){
+                changeTouchEvent = true;
+            }
+            if ("GET".equals(requestMethod) && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
+                if (path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")) {
+                    changeTouchEvent = true;
+                }
+            }
+        }
+    }
+
     private boolean changeTouchEvent = false;
 
     private String hostNameOoi = null;

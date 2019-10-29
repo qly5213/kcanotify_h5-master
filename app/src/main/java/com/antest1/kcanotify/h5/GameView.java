@@ -9,7 +9,7 @@ public interface GameView {
 
     void handleTouch(MotionEvent event);
 
-    // TODO: use the callback approach to decouple further
+    // TODO: use the callbacks approach to decouple further
     void assignActivity(GameBaseActivity activity);
 
     // TODO: use injection to config connection
@@ -24,6 +24,6 @@ public interface GameView {
 
     void destroy();
 
-    // TODO: use injection to apply different js
+    // TODO: make it depend on connection, or one JS fits all cases
     void fitGameLayout();
 }

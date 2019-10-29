@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
@@ -98,8 +97,6 @@ public class GameXWalkView extends XWalkView implements GameView {
 
         //设置WebChromeClient类
         this.setUIClient(new XWalkUIClient(this) {
-
-
             //获取网站标题
             @Override
             public void onReceivedTitle(XWalkView view, String title) {
@@ -111,12 +108,7 @@ public class GameXWalkView extends XWalkView implements GameView {
             //获取加载进度
             @Override
             public void onProgressChanged(XWalkView view, int newProgress) {
-                if (newProgress == 100) {
-                    gameActivity.progressBar1.setVisibility(View.GONE);
-                } else {
-                    gameActivity.progressBar1.setVisibility(View.VISIBLE);
-                    gameActivity.progressBar1.setProgress(newProgress);
-                }
+                gameActivity.setProgressBarProgress(newProgress);
             }
 
             @Override
@@ -274,12 +266,7 @@ public class GameXWalkView extends XWalkView implements GameView {
             //获取加载进度
             @Override
             public void onProgressChanged(XWalkView view, int newProgress) {
-                if (newProgress == 100) {
-                    gameActivity.progressBar1.setVisibility(View.GONE);
-                } else {
-                    gameActivity.progressBar1.setVisibility(View.VISIBLE);
-                    gameActivity.progressBar1.setProgress(newProgress);
-                }
+                gameActivity.setProgressBarProgress(newProgress);
             }
 
             @Override
@@ -374,7 +361,6 @@ public class GameXWalkView extends XWalkView implements GameView {
     }
 
     public void fitGameLayout() {
-        // TODO: make it depend on connection, or one JS fits all cases
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('externalswf'),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
     }

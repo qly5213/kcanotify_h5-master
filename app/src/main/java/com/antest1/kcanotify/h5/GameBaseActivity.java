@@ -132,6 +132,17 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
     }
 
+    public void setProgressBarProgress(int newProgress) {
+        ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar1);
+        if (newProgress == 100) {
+            progressBar.setVisibility(View.GONE);
+        } else {
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setProgress(newProgress);
+        }
+    }
+
+
     abstract int getLayoutResID();
 
     @Override
@@ -213,7 +224,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         gameView.assignActivity(this);
 
 
-        progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
         fpsCounter = (TextView) findViewById(R.id.fps_counter);
         subtitleTextView = findViewById(R.id.subtitle_textview);
         subtitleStrokeTextView = findViewById(R.id.subtitle_textview_stroke);
@@ -569,11 +579,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         String path = uri.getPath();
         final long startTime = System.nanoTime();
         Log.d("KCVA", "requesting  uri：" + uri);
-        if(path != null && path.contains("/kcsapi/api_port/port")){
-            changeTouchEvent = false; // TODO: need to pass back to the GameView
-        } else if(path != null && (path.contains("/kcsapi/api_get_member/mapinfo") || path.contains("/kcsapi/api_get_member/mission"))){
-            changeTouchEvent = true;
-        }
 
         if(battleResultVibrate && path != null && (path.contains("battle_result") || path.contains("battleresult"))){
             Vibrator vib = (Vibrator) GameBaseActivity.this.getSystemService(Service.VIBRATOR_SERVICE);
@@ -581,9 +586,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
 
         if ("GET".equals(requestMethod) && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
-            if(path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")){
-                changeTouchEvent = true;
-            }
             if(path.contains("version.json") || path.contains("index.php")){
                 return null;
             }
