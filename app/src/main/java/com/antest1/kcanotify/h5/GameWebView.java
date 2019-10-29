@@ -278,13 +278,10 @@ public class GameWebView extends WebView implements GameView{
 
         //设置WebChromeClient类
         this.setWebChromeClient(new WebChromeClient() {
-
-
             //获取网站标题
             @Override
             public void onReceivedTitle(WebView view, String title) {
             }
-
 
             //获取加载进度
             @Override

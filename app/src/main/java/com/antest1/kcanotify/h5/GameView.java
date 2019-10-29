@@ -12,7 +12,7 @@ public interface GameView {
     // TODO: use the callbacks approach to decouple further
     void assignActivity(GameBaseActivity activity);
 
-    // TODO: use injection to config connection
+    // TODO: use injection to config connection and rename to loadGame()
     void onReadyDmm(SharedPreferences prefs);
     void onReadyOoi(SharedPreferences prefs);
 
