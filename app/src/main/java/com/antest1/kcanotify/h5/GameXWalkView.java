@@ -29,8 +29,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class GameXWalkView extends XWalkView implements GameView {
-
-
     public GameXWalkView(Context context) {
         super(context);
     }
@@ -159,14 +157,12 @@ public class GameXWalkView extends XWalkView implements GameView {
             }
         },"fpsUpdater");
 
-        this.loadUrl(DMM_START_URL);
+        this.loadUrl(GameConnection.DMM_START_URL);
         this.onShow();
         this.resumeTimers();
     }
 
-    public void onReadyOoi(SharedPreferences prefs) {
-
-
+    public void loadGame(SharedPreferences prefs, GameConnection.Type connectionType) {
         hostNameOoi = prefs.getString("ooi_host_name", "ooi.moe");
         if(hostNameOoi.equals("")) hostNameOoi = "ooi.moe";
 
@@ -264,7 +260,14 @@ public class GameXWalkView extends XWalkView implements GameView {
         },"fpsUpdater");
 
 
-        this.loadUrl("http://" + hostNameOoi + "/poi");
+        switch (connectionType) {
+            case DMM:
+                this.loadUrl(GameConnection.DMM_START_URL);
+                return;
+            case OOI:
+                this.loadUrl("http://" + hostNameOoi + "/poi");
+        }
+
         this.onShow();
         this.resumeTimers();
     }
@@ -292,14 +295,11 @@ public class GameXWalkView extends XWalkView implements GameView {
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
     }
 
-
-
-
     private void detectGameStartAndFit(XWalkView view) {
         if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
             fitGameLayout();
         }
-        if (view.getUrl() != null && view.getUrl().equals(DMM_START_URL)) {
+        if (view.getUrl() != null && view.getUrl().equals(GameConnection.DMM_START_URL)) {
             fitGameLayout();
         }
     }
@@ -355,12 +355,11 @@ public class GameXWalkView extends XWalkView implements GameView {
                             }
                         });
                     }
-                    view.loadUrl(DMM_START_URL);
+                    view.loadUrl(GameConnection.DMM_START_URL);
                 }
             }, 5000);
         }
     }
-
 
     private void detectLoginExpireAndReload(String requestUrl, String respData){
         // For OOI only
@@ -389,8 +388,6 @@ public class GameXWalkView extends XWalkView implements GameView {
     private GameBaseActivity gameActivity = null;
 
     private ExecutorService pool = Executors.newFixedThreadPool(5);
-
-    private static final String DMM_START_URL = "http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/";
 
     // HTML5 audio is bugged in Crosswalk
     // Add "edge" to UA so that Kancolle will fallback to traditional audio playing

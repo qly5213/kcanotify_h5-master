@@ -5,7 +5,7 @@ import android.content.res.Configuration;
 public class GameOOIActivity extends GameBaseActivity {
     @Override
     protected void onXWalkReady() {
-        gameView.onReadyOoi(prefs);
+        gameView.loadGame(prefs, GameConnection.Type.OOI);
     }
 
     @Override

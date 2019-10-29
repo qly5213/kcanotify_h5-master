@@ -31,8 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class GameWebView extends WebView implements GameView{
-
-
     public GameWebView(Context context) {
         super(context);
     }
@@ -78,111 +76,7 @@ public class GameWebView extends WebView implements GameView{
         gameActivity = activity;
     }
 
-    public void onReadyDmm(SharedPreferences prefs) {
-
-        if (prefs.getBoolean("background_play", true)) {
-            this.setActiveInBackground(true);
-        }
-
-        CookieManager cookieManager = CookieManager.getInstance();
-        if(prefs.getBoolean("clear_cookie_start", false)){
-            cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
-                @Override
-                public void onReceiveValue(Boolean value) {
-                    if(value){
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putBoolean("clear_cookie_start", false);
-                        editor.apply();
-                    }
-                }
-            });
-        }
-        cookieManager.setAcceptThirdPartyCookies(this, true);
-        Set<Map.Entry<String, String>> voiceCookieMapSet = gameActivity.voiceCookieMap.entrySet();
-        for(Map.Entry<String, String> voiceCookieMapEntry : voiceCookieMapSet){
-            cookieManager.setCookie(voiceCookieMapEntry.getValue(), voiceCookieMapEntry.getKey());
-        }
-        if(prefs.getBoolean("change_cookie_start", false)) {
-            Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
-            for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                cookieManager.setCookie(dmmCookieMapEntry.getValue(), dmmCookieMapEntry.getKey());
-            }
-        }
-        cookieManager.flush();
-
-        WebSettings mWebSettings = this.getSettings();
-        mWebSettings.setUserAgentString(USER_AGENT);
-        mWebSettings.setBuiltInZoomControls(true);
-        mWebSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        // 设置与Js交互的权限
-        mWebSettings.setJavaScriptEnabled(true);
-        mWebSettings.setMediaPlaybackRequiresUserGesture(false);
-
-        WebView.setWebContentsDebuggingEnabled(true);
-
-        //设置WebChromeClient类
-        this.setWebChromeClient(new WebChromeClient() {
-            //获取网站标题
-            @Override
-            public void onReceivedTitle(WebView view, String title) {
-            }
-            //获取加载进度
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                gameActivity.setProgressBarProgress(newProgress);
-            }
-        });
-
-        //设置WebViewClient类
-        this.setWebViewClient(new WebViewClient() {
-            //设置结束加载函数
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                detectGameStartAndFit(view);
-                detectLoginAndFill(view, prefs);
-                detectAndHandleLoginError(view, prefs);
-            }
-            @Override
-            public void onLoadResource(WebView view, String url) {
-                super.onLoadResource(view, url);
-                detectGameStartAndFit(view);
-            }
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
-                inspectTouchScenarioChanges(request.getUrl(), request.getMethod(), request.getRequestHeaders());
-                Object[] result = gameActivity.interceptRequest(request.getUrl(), request.getMethod(), request.getRequestHeaders());
-                if (result != null) {
-                    return new WebResourceResponse((String) result[0], (String) result[1], (Integer) result[2], (String) result[3], (Map<String, String>) result[4], (InputStream) result[5]);
-                } else {
-                    return null;
-                }
-            }
-        });
-
-        this.addJavascriptInterface(new Object(){
-            @JavascriptInterface
-            public void JsToJavaInterface(String requestUrl, String param, String respData) {
-                detectLoginExpireAndReload(requestUrl, respData);
-                pool.execute(new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        gameActivity.jsToJava(requestUrl, param, respData);
-                    }
-                }));
-            }
-        },"androidJs");
-
-        this.addJavascriptInterface(new Object(){
-            @JavascriptInterface
-            public void update(String newFps) {
-                gameActivity.updateFpsCounter(newFps);
-            }
-        },"fpsUpdater");
-
-        this.loadUrl(DMM_START_UTL);
-    }
-
-    public void onReadyOoi(SharedPreferences prefs) {
+    public void loadGame(SharedPreferences prefs, GameConnection.Type connectionType) {
         hostNameOoi = prefs.getString("ooi_host_name", "ooi.moe");
         if(hostNameOoi.equals("")) hostNameOoi = "ooi.moe";
 
@@ -288,7 +182,13 @@ public class GameWebView extends WebView implements GameView{
             }
         },"fpsUpdater");
 
-        this.loadUrl("http://" + hostNameOoi + "/poi");
+        switch (connectionType) {
+            case DMM:
+                this.loadUrl(GameConnection.DMM_START_URL);
+                return;
+            case OOI:
+                this.loadUrl("http://" + hostNameOoi + "/poi");
+        }
     }
 
     public void pauseGame() {
@@ -310,7 +210,14 @@ public class GameWebView extends WebView implements GameView{
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
     }
 
-
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        if (visibility != View.GONE && activeInBackground) {
+            super.onWindowVisibilityChanged(View.VISIBLE);
+        } else {
+            super.onWindowVisibilityChanged(visibility);
+        }
+    }
 
     private void detectLoginAndFill(WebView view, SharedPreferences prefs) {
         if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")) {
@@ -344,7 +251,7 @@ public class GameWebView extends WebView implements GameView{
         if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
             fitGameLayout();
         }
-        if (view.getUrl() != null && view.getUrl().equals(DMM_START_UTL)) {
+        if (view.getUrl() != null && view.getUrl().equals(GameConnection.DMM_START_URL)) {
             fitGameLayout();
         }
     }
@@ -365,21 +272,11 @@ public class GameWebView extends WebView implements GameView{
                             }
                         });
                     }
-                    view.loadUrl(DMM_START_UTL);
+                    view.loadUrl(GameConnection.DMM_START_URL);
                 }
             }, 5000);
         }
     }
-
-    @Override
-    protected void onWindowVisibilityChanged(int visibility) {
-        if (visibility != View.GONE && activeInBackground) {
-            super.onWindowVisibilityChanged(View.VISIBLE);
-        } else {
-            super.onWindowVisibilityChanged(visibility);
-        }
-    }
-
 
     private void buildMoveEvent(MotionEvent event){
         MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[]{new MotionEvent.PointerProperties()};
@@ -447,8 +344,6 @@ public class GameWebView extends WebView implements GameView{
     private GameBaseActivity gameActivity = null;
 
     private ExecutorService pool = Executors.newFixedThreadPool(5);
-
-    private static final String DMM_START_UTL = "http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/";
 
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 }

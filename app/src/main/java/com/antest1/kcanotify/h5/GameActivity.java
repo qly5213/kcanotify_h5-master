@@ -5,7 +5,7 @@ import android.content.res.Configuration;
 public class GameActivity extends GameBaseActivity {
     @Override
     protected void onXWalkReady() {
-        gameView.onReadyDmm(prefs);
+        gameView.loadGame(prefs, GameConnection.Type.DMM);
     }
 
     @Override

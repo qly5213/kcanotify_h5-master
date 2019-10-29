@@ -8,7 +8,7 @@ public class GameOOIWebViewActivity extends GameBaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        gameView.onReadyOoi(prefs);
+        gameView.loadGame(prefs, GameConnection.Type.OOI);
     }
 
     @Override
