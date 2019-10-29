@@ -42,8 +42,12 @@ public class GameXWalkView extends XWalkView implements GameView {
         super(context, activity);
     }
 
+    public void destroy() {
+        this.loadDataWithBaseURL(null, "", "text/html", "utf-8", null);
+        ((ViewGroup) this.getParent()).removeView(this);
+        super.onDestroy();
+    }
 
-    @Override
     public void setLayoutParams(int width, int height) {
         ViewGroup.LayoutParams params = this.getLayoutParams();
         params.width = width;
@@ -51,31 +55,15 @@ public class GameXWalkView extends XWalkView implements GameView {
         this.setLayoutParams(params);
     }
 
-    @Override
     public void handleTouch(MotionEvent event) {
         // No need to handle touch specifically
         // All the mouse hover simulations are done in JavaScript
     }
 
-    private GameBaseActivity gameActivity = null;
-
-    @Override
     public void assignActivity(GameBaseActivity activity) {
         gameActivity = activity;
     }
 
-
-    // HTML5 audio is bugged in Crosswalk
-    // Add "edge" to UA so that Kancolle will fallback to traditional audio playing
-    private final static String USER_AGENT = "Mozilla/5.0 (Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36 Edge/14.14931";
-
-    ExecutorService pool = Executors.newFixedThreadPool(5);
-
-    private int changeCookieCnt = 0;
-
-
-
-    @Override
     public void onReadyDmm(SharedPreferences prefs) {
         if(prefs.getBoolean("clear_cookie_start", false)){
             (new XWalkCookieManager()).removeAllCookie();
@@ -141,7 +129,7 @@ public class GameXWalkView extends XWalkView implements GameView {
             public void onLoadStarted(XWalkView view, String url) {
                 super.onLoadStarted(view, url);
                 if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-                    webviewContentReSizeDmm();
+                    fitGameLayout();
                 }
                 if (view.getUrl() != null && (view.getUrl().startsWith("https://www.dmm.com/my/-/login/=") || view.getUrl().startsWith("https://accounts.dmm.com/service/login/password"))) {
                     boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
@@ -157,7 +145,7 @@ public class GameXWalkView extends XWalkView implements GameView {
             @Override
             public void onLoadFinished(XWalkView view, String url) {
                 if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-                    webviewContentReSizeDmm();
+                    fitGameLayout();
                 }
                 if (view.getUrl() != null && (view.getUrl().startsWith("https://www.dmm.com/my/-/login/=") || view.getUrl().startsWith("https://accounts.dmm.com/service/login/password"))) {
                     boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
@@ -236,19 +224,13 @@ public class GameXWalkView extends XWalkView implements GameView {
         this.resumeTimers();
     }
 
-    String hostName = null;
-
-    @Override
     public void onReadyOoi(SharedPreferences prefs) {
 
 
-        hostName = prefs.getString("ooi_host_name", "ooi.moe");
-        if(hostName.equals("")) hostName = "ooi.moe";
+        hostNameOoi = prefs.getString("ooi_host_name", "ooi.moe");
+        if(hostNameOoi.equals("")) hostNameOoi = "ooi.moe";
 
-
-
-        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
-        if(clearCookie){
+        if(prefs.getBoolean("clear_cookie_start", false)){
             (new XWalkCookieManager()).removeAllCookie();
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean("clear_cookie_start", false);
@@ -309,9 +291,9 @@ public class GameXWalkView extends XWalkView implements GameView {
             @Override
             public void onLoadStarted(XWalkView view, String url) {
                 super.onLoadStarted(view, url);
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/poi")) {
-                    webviewContentReSizeOoi();
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/")){
+                if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+                    fitGameLayout();
+                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")){
                     boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
                     if(isAutoUser){
                         String userName = prefs.getString("dmm_user", "");
@@ -324,9 +306,9 @@ public class GameXWalkView extends XWalkView implements GameView {
             //设置结束加载函数
             @Override
             public void onLoadFinished(XWalkView view, String url) {
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/poi")) {
-                    webviewContentReSizeOoi();
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/")){
+                if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+                    fitGameLayout();
+                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")){
                     boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
                     if(isAutoUser){
                         String userName = prefs.getString("dmm_user", "");
@@ -350,7 +332,7 @@ public class GameXWalkView extends XWalkView implements GameView {
         this.addJavascriptInterface(new Object(){
             @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
-                loginExpire(requestUrl, respData, GameXWalkView.this.hostName);
+                loginExpire(requestUrl, respData, GameXWalkView.this.hostNameOoi);
                 pool.execute(new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -368,38 +350,34 @@ public class GameXWalkView extends XWalkView implements GameView {
         },"fpsUpdater");
 
 
-        this.loadUrl("http://" + hostName + "/poi");
+        this.loadUrl("http://" + hostNameOoi + "/poi");
         this.onShow();
         this.resumeTimers();
     }
 
-    @Override
     public void pauseGame() {
         this.onHide();
         this.pauseTimers();
     }
 
-    @Override
     public void resumeGame() {
-        // It may also be called once at startup without xwalkview being ready
+        // It may also be called once at startup without XWalkView being ready
         if (this.gameActivity.isXWalkReady()) {
             this.onShow();
             this.resumeTimers();
         }
     }
 
-
     public void reloadGame() {
         // TODO: check if normal reload is enough
         this.reload(XWalkView.RELOAD_IGNORE_CACHE);
     }
 
-    public void destroy() {
-        this.loadDataWithBaseURL(null, "", "text/html", "utf-8", null);
-        ((ViewGroup) this.getParent()).removeView(this);
-        super.onDestroy();
+    public void fitGameLayout() {
+        // TODO: make it depend on connection, or one JS fits all cases
+        this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('externalswf'),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
+        this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
     }
-
 
     private void loginExpire(String requestUrl, String respData, String hostName){
 
@@ -423,12 +401,15 @@ public class GameXWalkView extends XWalkView implements GameView {
         }
     }
 
+    private int changeCookieCnt = 0;
 
-    public void webviewContentReSizeOoi() {
-        this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\"externalswf\"),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
-    }
+    private String hostNameOoi = null;
 
-    public void webviewContentReSizeDmm(){
-        this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
-    }
+    private GameBaseActivity gameActivity = null;
+
+    private ExecutorService pool = Executors.newFixedThreadPool(5);
+
+    // HTML5 audio is bugged in Crosswalk
+    // Add "edge" to UA so that Kancolle will fallback to traditional audio playing
+    private final static String USER_AGENT = "Mozilla/5.0 (Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36 Edge/14.14931";
 }

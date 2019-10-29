@@ -44,41 +44,21 @@ public class GameWebView extends WebView implements GameView{
         super(context, attrs, defStyleAttr);
     }
 
-    private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
-
-    ExecutorService pool = Executors.newFixedThreadPool(5);
-
-    private boolean activeInBackground = false;
-    public void setActiveInBackground(boolean active) {
-        activeInBackground = active;
+    @Override
+    public void destroy() {
+        this.loadDataWithBaseURL(null, "", "text/html", "utf-8", null);
+        // TODO: explain why clear history
+        this.clearHistory();
+        ((ViewGroup) this.getParent()).removeView(this);
+        super.destroy();
     }
 
-    private int changeCookieCnt = 0;
-    private GameBaseActivity gameActivity = null;
-
-    @Override
-    public void assignActivity(GameBaseActivity activity) {
-        gameActivity = activity;
-    }
-
-    @Override
-    protected void onWindowVisibilityChanged(int visibility) {
-        if (visibility != View.GONE && activeInBackground) {
-            super.onWindowVisibilityChanged(View.VISIBLE);
-        } else {
-            super.onWindowVisibilityChanged(visibility);
-        }
-    }
-
-    @Override
     public void setLayoutParams(int width, int height) {
         ViewGroup.LayoutParams params = this.getLayoutParams();
         params.width = width;
         params.height = height;
         this.setLayoutParams(params);
     }
-
-    boolean changeTouchEvent = false;
 
     public void handleTouch(MotionEvent event) {
         Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
@@ -93,18 +73,17 @@ public class GameWebView extends WebView implements GameView{
         }
     }
 
-    String hostName = null;
+    public void assignActivity(GameBaseActivity activity) {
+        gameActivity = activity;
+    }
 
-    @Override
     public void onReadyDmm(SharedPreferences prefs) {
 
         if (prefs.getBoolean("background_play", true)) {
             this.setActiveInBackground(true);
         }
 
-
-        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
-        if(clearCookie){
+        if(prefs.getBoolean("clear_cookie_start", false)){
             CookieManager cookieManager = CookieManager.getInstance();
             cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
                 @Override
@@ -177,7 +156,7 @@ public class GameWebView extends WebView implements GameView{
             @Override
             public void onPageFinished(WebView view, String url) {
                 if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-                    webviewContentReSizeDmm();
+                    fitGameLayout();
                 }
                 if(view.getUrl() != null && view.getUrl().startsWith("https://www.dmm.com/my/-/login/=")){
 
@@ -218,7 +197,7 @@ public class GameWebView extends WebView implements GameView{
             public void onLoadResource(WebView view, String url) {
                 super.onLoadResource(view, url);
                 if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-                    webviewContentReSizeDmm();
+                    fitGameLayout();
                 }
             }
             @Override
@@ -233,7 +212,7 @@ public class GameWebView extends WebView implements GameView{
         });
 
         this.addJavascriptInterface(new Object(){
-            @android.webkit.JavascriptInterface
+            @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
                 pool.execute(new Thread(new Runnable() {
                     @Override
@@ -254,18 +233,16 @@ public class GameWebView extends WebView implements GameView{
         this.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
     }
 
-    @Override
     public void onReadyOoi(SharedPreferences prefs) {
 
         if (prefs.getBoolean("background_play", true)) {
             this.setActiveInBackground(true);
         }
 
-        hostName = prefs.getString("ooi_host_name", "ooi.moe");
-        if(hostName.equals("")) hostName = "ooi.moe";
+        hostNameOoi = prefs.getString("ooi_host_name", "ooi.moe");
+        if(hostNameOoi.equals("")) hostNameOoi = "ooi.moe";
 
-        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
-        if(clearCookie){
+        if(prefs.getBoolean("clear_cookie_start", false)){
             CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
                 @Override
                 public void onReceiveValue(Boolean value) {
@@ -340,9 +317,9 @@ public class GameWebView extends WebView implements GameView{
             //设置结束加载函数
             @Override
             public void onPageFinished(WebView view, String url) {
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/poi")) {
-                    webviewContentReSizeOoi();
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/")){
+                if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+                    fitGameLayout();
+                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")){
                     boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
                     if(isAutoUser){
                         String userName = prefs.getString("dmm_user", "");
@@ -355,9 +332,9 @@ public class GameWebView extends WebView implements GameView{
             @Override
             public void onLoadResource(WebView view, String url) {
                 super.onLoadResource(view, url);
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/poi")) {
-                    webviewContentReSizeOoi();
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostName + "/")){
+                if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+                    fitGameLayout();
+                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")){
                     boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
                     if(isAutoUser){
                         String userName = prefs.getString("dmm_user", "");
@@ -385,7 +362,7 @@ public class GameWebView extends WebView implements GameView{
         this.addJavascriptInterface(new Object(){
             @JavascriptInterface
             public void JsToJavaInterface(String requestUrl, String param, String respData) {
-                loginExpire(requestUrl, respData, hostName);
+                loginExpire(requestUrl, respData, hostNameOoi);
                 pool.execute(new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -402,7 +379,7 @@ public class GameWebView extends WebView implements GameView{
             }
         },"fpsUpdater");
 
-        this.loadUrl("http://" + hostName + "/poi");
+        this.loadUrl("http://" + hostNameOoi + "/poi");
     }
 
     public void pauseGame() {
@@ -415,28 +392,25 @@ public class GameWebView extends WebView implements GameView{
         this.resumeTimers();
     }
 
-
-    public void webviewContentReSizeOoi() {
-        this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById(\"externalswf\"),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
+    public void reloadGame() {
+        this.reload();
     }
 
-    public void webviewContentReSizeDmm() {
+    public void fitGameLayout() {
+        // TODO: make it depend on connection, or one JS fits all cases
+        this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('externalswf'),gs=gf.style,gw=1200,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.right='0';gs.zIndex='100';gs.transformOrigin='46.9% 0px 0px';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k} kancolleFit()})(document,window)");
         this.loadUrl("javascript:(($,_)=>{const html=$.documentElement,gf=$.getElementById('game_frame'),gs=gf.style,gw=gf.offsetWidth,gh=gw*.6;let vp=$.querySelector('meta[name=viewport]'),t=0;vp||(vp=$.createElement('meta'),vp.name='viewport',$.querySelector('head').appendChild(vp));vp.content='width='+gw;'orientation'in _&&html.webkitRequestFullscreen&&html.webkitRequestFullscreen();html.style.overflow='hidden';$.body.style.cssText='min-width:0;padding:0;margin:0;overflow:hidden;margin:0';$.querySelector('.dmm-ntgnavi').style.display='none';$.querySelector('.area-naviapp').style.display='none';gs.position='fixed';gs.marginRight='auto';gs.marginLeft='auto';gs.top='0px';gs.right='0';gs.zIndex='100';gs.transformOrigin='center top';if(!_.kancolleFit){const k=()=>{const w=html.clientWidth,h=_.innerHeight;w/h<1/.6?gs.transform='scale('+w/gw+')':gs.transform='scale('+h/gh+')';w<gw?gs.left='-'+(gw-w)/2+'px':gs.left='0'};_.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(k,10)});_.kancolleFit=k}kancolleFit()})(document,window)");
     }
 
     @Override
-    public void destroy() {
-        this.loadDataWithBaseURL(null, "", "text/html", "utf-8", null);
-        // TODO: explain why clear history
-        this.clearHistory();
-        ((ViewGroup) this.getParent()).removeView(this);
-        super.destroy();
+    protected void onWindowVisibilityChanged(int visibility) {
+        if (visibility != View.GONE && activeInBackground) {
+            super.onWindowVisibilityChanged(View.VISIBLE);
+        } else {
+            super.onWindowVisibilityChanged(visibility);
+        }
     }
 
-
-    public void reloadGame() {
-        this.reload();
-    }
 
     private void buildMoveEvent(MotionEvent event){
         MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[]{new MotionEvent.PointerProperties()};
@@ -452,8 +426,7 @@ public class GameWebView extends WebView implements GameView{
                 InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC, 0, InputDevice.SOURCE_TOUCHSCREEN, 0));
     }
 
-
-    public void loginExpire(String requestUrl, String respData, String hostName){
+    private void loginExpire(String requestUrl, String respData, String hostName){
 
         if(requestUrl.contains("api_req_member/get_incentive")){
             try {
@@ -472,4 +445,23 @@ public class GameWebView extends WebView implements GameView{
             }
         }
     }
+
+    // TODO: put it into interface?
+    private boolean changeTouchEvent = false;
+
+    private String hostNameOoi = null;
+
+    private boolean activeInBackground = false;
+
+    private void setActiveInBackground(boolean active) {
+        activeInBackground = active;
+    }
+
+    private int changeCookieCnt = 0;
+
+    private GameBaseActivity gameActivity = null;
+
+    private ExecutorService pool = Executors.newFixedThreadPool(5);
+
+    private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 }

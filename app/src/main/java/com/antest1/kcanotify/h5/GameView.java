@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.view.MotionEvent;
 
 public interface GameView {
+
     void setLayoutParams(int width, int height);
 
     void handleTouch(MotionEvent event);
@@ -23,7 +24,6 @@ public interface GameView {
 
     void destroy();
 
-    // TODO: use injection to config connection
-    void webviewContentReSizeDmm();
-    void webviewContentReSizeOoi();
+    // TODO: use injection to apply different js
+    void fitGameLayout();
 }

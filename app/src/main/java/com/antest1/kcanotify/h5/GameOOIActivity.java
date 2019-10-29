@@ -5,13 +5,17 @@ import android.content.res.Configuration;
 public class GameOOIActivity extends GameBaseActivity {
     @Override
     protected void onXWalkReady() {
-        mWebview.onReadyOoi(prefs);
+        gameView.onReadyOoi(prefs);
     }
 
     @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
 
-        mWebview.webviewContentReSizeOoi();
+        gameView.fitGameLayout();
+    }
+
+    int getLayoutResID() {
+        return R.layout.activity_game_webview;
     }
 }

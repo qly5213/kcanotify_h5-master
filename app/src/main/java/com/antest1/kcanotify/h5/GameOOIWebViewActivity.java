@@ -8,13 +8,17 @@ public class GameOOIWebViewActivity extends GameBaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mWebview.onReadyOoi(prefs);
+        gameView.onReadyOoi(prefs);
     }
 
     @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
 
-        mWebview.webviewContentReSizeOoi();
+        gameView.fitGameLayout();
+    }
+
+    int getLayoutResID() {
+        return R.layout.activity_game_webview_ori;
     }
 }
