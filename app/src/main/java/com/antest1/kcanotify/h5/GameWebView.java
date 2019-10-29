@@ -306,31 +306,15 @@ public class GameWebView extends WebView implements GameView{
             //设置结束加载函数
             @Override
             public void onPageFinished(WebView view, String url) {
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
-                    fitGameLayout();
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")){
-                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-                    if(isAutoUser){
-                        String userName = prefs.getString("dmm_user", "");
-                        String pwd = prefs.getString("dmm_pwd", "");
-                        GameWebView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");document.getElementById(\"mode3\").checked = true;");
-                    }
-                }
+                detectGameStartAndFit(view);
+                detectLoginAndFill(view, prefs);
             }
 
             @Override
             public void onLoadResource(WebView view, String url) {
                 super.onLoadResource(view, url);
-                if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
-                    fitGameLayout();
-                } else if(view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")){
-                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-                    if(isAutoUser){
-                        String userName = prefs.getString("dmm_user", "");
-                        String pwd = prefs.getString("dmm_pwd", "");
-                        GameWebView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");document.getElementById(\"mode3\").checked = true;");
-                    }
-                }
+                detectGameStartAndFit(view);
+                detectLoginAndFill(view, prefs);
             }
 
             @Override
@@ -370,6 +354,24 @@ public class GameWebView extends WebView implements GameView{
         },"fpsUpdater");
 
         this.loadUrl("http://" + hostNameOoi + "/poi");
+    }
+
+    private void detectLoginAndFill(WebView view, SharedPreferences prefs) {
+        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")) {
+            boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
+            if (isAutoUser) {
+                String userName = prefs.getString("dmm_user", "");
+                String pwd = prefs.getString("dmm_pwd", "");
+                GameWebView.this.loadUrl("javascript:$(\"#login_id\").val(\"" + userName + "\");$(\"#password\").val(\"" + pwd + "\");");
+                GameWebView.this.loadUrl("document.getElementById(\"mode3\").checked = true;");
+            }
+        }
+    }
+
+    private void detectGameStartAndFit(WebView view) {
+        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+            fitGameLayout();
+        }
     }
 
     public void pauseGame() {

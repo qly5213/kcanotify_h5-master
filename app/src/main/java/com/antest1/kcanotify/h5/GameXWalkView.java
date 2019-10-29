@@ -120,9 +120,7 @@ public class GameXWalkView extends XWalkView implements GameView {
             @Override
             public void onLoadStarted(XWalkView view, String url) {
                 super.onLoadStarted(view, url);
-                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-                    fitGameLayout();
-                }
+                detectGameStartAndFit(view);
                 if (view.getUrl() != null && (view.getUrl().startsWith("https://www.dmm.com/my/-/login/=") || view.getUrl().startsWith("https://accounts.dmm.com/service/login/password"))) {
                     boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
                     if(isAutoUser){
@@ -136,48 +134,9 @@ public class GameXWalkView extends XWalkView implements GameView {
             //设置结束加载函数
             @Override
             public void onLoadFinished(XWalkView view, String url) {
-                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
-                    fitGameLayout();
-                }
-                if (view.getUrl() != null && (view.getUrl().startsWith("https://www.dmm.com/my/-/login/=") || view.getUrl().startsWith("https://accounts.dmm.com/service/login/password"))) {
-                    boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
-                    if(isAutoUser){
-                        String userName = prefs.getString("dmm_user", "");
-                        String pwd = prefs.getString("dmm_pwd", "");
-                        GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
-                    }
-                    new Handler().postDelayed(new Runnable(){
-                        public void run() {
-                            Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
-                            for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                                GameXWalkView.this.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
-                                    @Override
-                                    public void onReceiveValue(String value) {
-                                        Log.i("KCVA", value);
-                                    }
-                                });
-                            }
-                        }
-                    }, 5000);
-                }
-                if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/top/-/error/area/") && prefs.getBoolean("change_cookie_start", false) && changeCookieCnt++ < 5) {
-                    Log.i("KCVA", "Change Cookie");
-
-                    new Handler().postDelayed(new Runnable(){
-                        public void run() {
-                            Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
-                            for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                                GameXWalkView.this.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
-                                    @Override
-                                    public void onReceiveValue(String value) {
-                                        Log.i("KCVA", value);
-                                    }
-                                });
-                            }
-                            GameXWalkView.this.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
-                        }
-                    }, 5000);
-                }
+                detectGameStartAndFit(view);
+                detectLoginAndFill(view, prefs);
+                detectAndHandleLoginError(view, prefs);
             }
 
             @Override
@@ -214,6 +173,57 @@ public class GameXWalkView extends XWalkView implements GameView {
         this.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
         this.onShow();
         this.resumeTimers();
+    }
+
+    private void detectGameStartAndFit(XWalkView view) {
+        if (view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/")) {
+            fitGameLayout();
+        }
+    }
+
+    private void detectLoginAndFill(XWalkView view, SharedPreferences prefs) {
+        if (view.getUrl() != null && (view.getUrl().startsWith("https://www.dmm.com/my/-/login/=") || view.getUrl().startsWith("https://accounts.dmm.com/service/login/password"))) {
+            boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
+            if(isAutoUser){
+                String userName = prefs.getString("dmm_user", "");
+                String pwd = prefs.getString("dmm_pwd", "");
+                GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
+            }
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
+                    for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
+                        GameXWalkView.this.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String value) {
+                                Log.i("KCVA", value);
+                            }
+                        });
+                    }
+                }
+            }, 5000);
+        }
+    }
+
+    private void detectAndHandleLoginError(XWalkView view, SharedPreferences prefs) {
+        if(view.getUrl() != null && view.getUrl().equals("http://www.dmm.com/top/-/error/area/") && prefs.getBoolean("change_cookie_start", false) && changeCookieCnt++ < 5) {
+            Log.i("KCVA", "Change Cookie");
+
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    Set<Map.Entry<String, String>> dmmCookieMapSet = gameActivity.dmmCookieMap.entrySet();
+                    for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
+                        GameXWalkView.this.evaluateJavascript("javascript:document.cookie = '" + dmmCookieMapEntry.getKey() + "';", new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String value) {
+                                Log.i("KCVA", value);
+                            }
+                        });
+                    }
+                    GameXWalkView.this.loadUrl("http://www.dmm.com/netgame/social/-/gadgets/=/app_id=854854/");
+                }
+            }, 5000);
+        }
     }
 
     public void onReadyOoi(SharedPreferences prefs) {
@@ -285,7 +295,8 @@ public class GameXWalkView extends XWalkView implements GameView {
                     if(isAutoUser){
                         String userName = prefs.getString("dmm_user", "");
                         String pwd = prefs.getString("dmm_pwd", "");
-                        GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");document.getElementById(\"mode3\").checked = true;");
+                        GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
+                        GameXWalkView.this.loadUrl("document.getElementById(\"mode3\").checked = true;");
                     }
                 }
             }
@@ -300,7 +311,8 @@ public class GameXWalkView extends XWalkView implements GameView {
                     if(isAutoUser){
                         String userName = prefs.getString("dmm_user", "");
                         String pwd = prefs.getString("dmm_pwd", "");
-                        GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");document.getElementById(\"mode3\").checked = true;");
+                        GameXWalkView.this.loadUrl("javascript:$(\"#login_id\").val(\""+userName+"\");$(\"#password\").val(\""+pwd+"\");");
+                        GameXWalkView.this.loadUrl("document.getElementById(\"mode3\").checked = true;");
                     }
                 }
             }
