@@ -9,6 +9,7 @@ import android.widget.Toast;
 import org.json.JSONObject;
 import org.xwalk.core.JavascriptInterface;
 import org.xwalk.core.XWalkCookieManager;
+import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
 import org.xwalk.core.XWalkUIClient;
@@ -33,14 +34,67 @@ public class GameOOIActivity extends GameBaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         mWebview = (XWalkView) super.mWebview;
         hostName = prefs.getString("ooi_host_name", "ooi.moe");
         if(hostName.equals("")) hostName = "ooi.moe";
+    }
+
+    public void loginExpire(String requestUrl, String respData){
+
+        if(requestUrl.contains("api_req_member/get_incentive")){
+            try {
+                JSONObject respDataJson = new JSONObject(respData.substring(7));
+                if(respDataJson.has("api_result") && respDataJson.getInt("api_result") != 1){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mWebview.loadUrl("http://" + hostName + "/");
+                        }
+                    });
+                    Toast.makeText(GameOOIActivity.this, "登录过期，正在跳转到登录页面！", Toast.LENGTH_LONG).show();
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    protected void onXWalkReady() {
+        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
+        if(clearCookie){
+            (new XWalkCookieManager()).removeAllCookie();
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("clear_cookie_start", false);
+            editor.apply();
+        }
+
+        XWalkCookieManager cookieManager = new XWalkCookieManager();
+        cookieManager.setAcceptCookie(true);
+        Set<Map.Entry<String, String>> voiceCookieMapSet = voiceCookieMap.entrySet();
+        for(Map.Entry<String, String> voiceCookieMapEntry : voiceCookieMapSet){
+            cookieManager.setCookie(voiceCookieMapEntry.getValue(), voiceCookieMapEntry.getKey());
+        }
+        if(changeCookie) {
+            Set<Map.Entry<String, String>> dmmCookieMapSet = dmmCokieMap.entrySet();
+            for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
+                cookieManager.setCookie(dmmCookieMapEntry.getValue(), dmmCookieMapEntry.getKey());
+            }
+        }
+        cookieManager.flushCookieStore();
+
+        mWebSettings = mWebview.getSettings();
+        mWebSettings.setUserAgentString(USER_AGENT);
+        mWebSettings.setBuiltInZoomControls(true);
+        mWebSettings.setCacheMode(XWalkSettings.LOAD_NO_CACHE);
+        // 设置与Js交互的权限
+        mWebSettings.setJavaScriptEnabled(true);
+        mWebSettings.setMediaPlaybackRequiresUserGesture(false);
+
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 
         //设置WebChromeClient类
         mWebview.setUIClient(new XWalkUIClient(mWebview) {
-
             //获取网站标题
             @Override
             public void onReceivedTitle(XWalkView view, String title) {
@@ -126,65 +180,7 @@ public class GameOOIActivity extends GameBaseActivity {
                 updateFpsCounter(newFps);
             }
         },"fpsUpdater");
-    }
 
-    public void loginExpire(String requestUrl, String respData){
-
-        if(requestUrl.contains("api_req_member/get_incentive")){
-            try {
-                JSONObject respDataJson = new JSONObject(respData.substring(7));
-                if(respDataJson.has("api_result") && respDataJson.getInt("api_result") != 1){
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mWebview.loadUrl("http://" + hostName + "/");
-                        }
-                    });
-                    Toast.makeText(GameOOIActivity.this, "登录过期，正在跳转到登录页面！", Toast.LENGTH_LONG).show();
-                }
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    protected void onXWalkReady() {
-        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
-        if(clearCookie){
-            (new XWalkCookieManager()).removeAllCookie();
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("clear_cookie_start", false);
-            editor.apply();
-        }
-
-        XWalkCookieManager cookieManager = new XWalkCookieManager();
-        cookieManager.setAcceptCookie(true);
-        Set<Map.Entry<String, String>> voiceCookieMapSet = voiceCookieMap.entrySet();
-        for(Map.Entry<String, String> voiceCookieMapEntry : voiceCookieMapSet){
-            cookieManager.setCookie(voiceCookieMapEntry.getValue(), voiceCookieMapEntry.getKey());
-        }
-        if(changeCookie) {
-            Set<Map.Entry<String, String>> dmmCookieMapSet = dmmCokieMap.entrySet();
-            for (Map.Entry<String, String> dmmCookieMapEntry : dmmCookieMapSet) {
-                cookieManager.setCookie(dmmCookieMapEntry.getValue(), dmmCookieMapEntry.getKey());
-            }
-        }
-        cookieManager.flushCookieStore();
-
-        mWebSettings = mWebview.getSettings();
-        mWebSettings.setUserAgentString(USER_AGENT);
-        mWebSettings.setBuiltInZoomControls(true);
-        mWebSettings.setCacheMode(XWalkSettings.LOAD_NO_CACHE);
-/*        Properties prop = System.getProperties();
-        prop.setProperty("proxySet", "true");
-        prop.setProperty("proxyHost", "218.241.131.227");
-        prop.setProperty("proxyPort", "6100");*/
-        // 设置与Js交互的权限
-        mWebSettings.setJavaScriptEnabled(true);
-        mWebSettings.setMediaPlaybackRequiresUserGesture(false);
-
-//        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
 
         mWebview.loadUrl("http://" + hostName + "/poi");
         mWebview.onShow();

@@ -41,6 +41,11 @@ public class GameOOIWebViewActivity extends GameBaseActivity {
         hostName = prefs.getString("ooi_host_name", "ooi.moe");
         if(hostName.equals("")) hostName = "ooi.moe";
 
+        onViewReady();
+    }
+
+    private void onViewReady(){
+        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
         if(clearCookie){
             CookieManager.getInstance().removeAllCookies(new ValueCallback<Boolean>() {
                 @Override
@@ -56,7 +61,6 @@ public class GameOOIWebViewActivity extends GameBaseActivity {
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-
         Set<Map.Entry<String, String>> voiceCookieMapSet = voiceCookieMap.entrySet();
         for(Map.Entry<String, String> voiceCookieMapEntry : voiceCookieMapSet){
             cookieManager.setCookie(voiceCookieMapEntry.getValue(), voiceCookieMapEntry.getKey());
@@ -77,7 +81,8 @@ public class GameOOIWebViewActivity extends GameBaseActivity {
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
-//        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(true);
+
         //设置WebChromeClient类
         mWebview.setWebChromeClient(new WebChromeClient() {
 

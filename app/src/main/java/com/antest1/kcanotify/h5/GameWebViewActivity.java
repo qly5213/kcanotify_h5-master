@@ -39,8 +39,14 @@ public class GameWebViewActivity extends GameBaseActivity {
             mWebview.setActiveInBackground(true);
         }
 
-        CookieManager cookieManager = CookieManager.getInstance();
+        onViewReady();
+    }
+
+
+    private void onViewReady(){
+        boolean clearCookie = prefs.getBoolean("clear_cookie_start", false);
         if(clearCookie){
+            CookieManager cookieManager = CookieManager.getInstance();
             cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
                 @Override
                 public void onReceiveValue(Boolean value) {
@@ -53,8 +59,8 @@ public class GameWebViewActivity extends GameBaseActivity {
             });
         }
 
+        CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(mWebview, true);
-
         Set<Map.Entry<String, String>> voiceCookieMapSet = voiceCookieMap.entrySet();
         for(Map.Entry<String, String> voiceCookieMapEntry : voiceCookieMapSet){
             cookieManager.setCookie(voiceCookieMapEntry.getValue(), voiceCookieMapEntry.getKey());
@@ -76,6 +82,7 @@ public class GameWebViewActivity extends GameBaseActivity {
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
         WebView.setWebContentsDebuggingEnabled(true);
+
         //设置WebChromeClient类
         mWebview.setWebChromeClient(new WebChromeClient() {
             //获取网站标题
