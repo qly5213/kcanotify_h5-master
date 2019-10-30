@@ -16,17 +16,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -56,8 +53,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 import andhook.lib.AndHook;
@@ -81,20 +76,19 @@ public abstract class GameBaseActivity extends XWalkActivity {
     private static final String[] SERVER_IP = new String[]{"203.104.209.71", "203.104.209.87", "125.6.184.215", "203.104.209.183", "203.104.209.150", "203.104.209.134", "203.104.209.167", "203.104.248.135", "125.6.189.7", "125.6.189.39", "125.6.189.71", "125.6.189.103", "125.6.189.135", "125.6.189.167", "125.6.189.215", "125.6.189.247", "203.104.209.23", "203.104.209.39", "203.104.209.55", "203.104.209.102"};
 
 
-    ExecutorService pool = Executors.newFixedThreadPool(5);
-    private GameBaseActivity.WebviewBroadcastReceiver webviewBroadcastReceiver = new GameBaseActivity.WebviewBroadcastReceiver();
-    private GameBaseActivity.RotationObserver mRotationObserver;
+    private GameViewBroadcastReceiver gameViewBroadcastReceiver = new GameViewBroadcastReceiver();
+    private GameBaseActivity.RotationObserver rotationObserver;
     protected SharedPreferences prefs = null;
     private boolean chatDanmuku;
     private HashMap<String, String> serverMap;
     private boolean battleResultVibrate;
     private boolean changeTouchEventPrefs = false;
 
-    protected View mWebview;
+    protected GameView gameView;
     protected ProgressBar progressBar1;
     private TextView fpsCounter;
-    private TextView subtitleTextview;
-    private StrokeTextView subtitleStrokeTextview;
+    private TextView subtitleTextView;
+    private StrokeTextView subtitleStrokeTextView;
     private ImageView chatImageView;
     private ImageView chatNewMsgImageView;
 
@@ -119,8 +113,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
     protected boolean clearCookie;
     protected boolean voicePlay;
     protected boolean changeCookie;
-    protected HashMap<String, String> voiceCookieMap;
-    protected HashMap<String, String> dmmCokieMap;
+    public HashMap<String, String> voiceCookieMap;
+    public HashMap<String, String> dmmCookieMap;
 
     boolean changeTouchEvent = false;
     private boolean subTitleEnable;
@@ -128,7 +122,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
     private Runnable dismissSubTitle;
     private boolean chatService;
     private String nickName;
-    private boolean changeWebview;
 
     public native String stringFromJNI();
 
@@ -139,14 +132,32 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
     }
 
+    public void setProgressBarProgress(int newProgress) {
+        ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar1);
+        if (newProgress == 100) {
+            progressBar.setVisibility(View.GONE);
+        } else {
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setProgress(newProgress);
+        }
+    }
+
+
+    abstract int getLayoutResID();
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(KcaApplication.gameActivity != null){
+
+        // For some system changes not captured by android:configChanges,
+        // an instant is re-created but the system is still keeping/using resources of the old instant for a while
+        // In this case, we do not finish the old view to avoid a crash
+        if(KcaApplication.gameActivity != null && KcaApplication.gameActivity.getClass() != this.getClass()){
+            // Remove last game activity only after changing important settings (DMM/OOI, Crosswalk/WebView)
             KcaApplication.gameActivity.finish();
         }
         KcaApplication.gameActivity = this;
-        mRotationObserver = new GameBaseActivity.RotationObserver(new Handler());
+        rotationObserver = new GameBaseActivity.RotationObserver(new Handler());
         prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
 
         subTitleEnable = prefs.getBoolean("voice_sub_title", false);
@@ -179,12 +190,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             Log.e("KCAV", "onCreate: " + "native hook result-->" + (nativeInit(Build.VERSION.SDK_INT, proxyEnable, proxyIP) == 0));
         }
 
-        changeWebview = prefs.getBoolean("change_webview", false);
-        if(changeWebview) {
-            setContentView(R.layout.activity_game_webview);
-        } else {
-            setContentView(R.layout.activity_game_webview_ori);
-        }
+        setContentView(getLayoutResID());
 
         boolean hardSpeed = prefs.getBoolean("hardware_accelerated", true);
         if(hardSpeed) {
@@ -214,11 +220,13 @@ public abstract class GameBaseActivity extends XWalkActivity {
             imageSize = "100";
         }
 
-        mWebview = findViewById(R.id.webView1);
-        progressBar1 = (ProgressBar) findViewById(R.id.progressBar1);
+        gameView = (GameView) findViewById(R.id.webView1);
+        gameView.assignActivity(this);
+
+
         fpsCounter = (TextView) findViewById(R.id.fps_counter);
-        subtitleTextview = findViewById(R.id.subtitle_textview);
-        subtitleStrokeTextview = findViewById(R.id.subtitle_textview_stroke);
+        subtitleTextView = findViewById(R.id.subtitle_textview);
+        subtitleStrokeTextView = findViewById(R.id.subtitle_textview_stroke);
         chatImageView = findViewById(R.id.chat_image_view);
         chatNewMsgImageView = findViewById(R.id.chat_new_msg_image_view);
         chatImageView.setImageAlpha(50);
@@ -243,8 +251,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        subtitleTextview.setText("");
-                        subtitleStrokeTextview.setText("");
+                        subtitleTextView.setText("");
+                        subtitleStrokeTextView.setText("");
                     }
                 });
             }
@@ -252,12 +260,12 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
         initChat();
 
-        registerReceiver(webviewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_reload"));
+        registerReceiver(gameViewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_reload"));
     }
 
     @Override
     protected void onResume() {
-        mRotationObserver.startObserver();
+        rotationObserver.startObserver();
         setScreenOrientation();
         if (danmakuView != null && danmakuView.isPrepared() && danmakuView.isPaused()) {
             danmakuView.resume();
@@ -267,7 +275,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
     @Override
     protected void onPause() {
-        mRotationObserver.stopObserver();
+        rotationObserver.stopObserver();
         if (danmakuView != null && danmakuView.isPrepared()) {
             danmakuView.pause();
         }
@@ -277,21 +285,19 @@ public abstract class GameBaseActivity extends XWalkActivity {
     @Override
     protected void onStop() {
         if (!prefs.getBoolean("background_play", true)){
-            webviewPause();
+            gameView.pauseGame();
         }
         super.onStop();
     }
-    abstract public void webviewPause();
 
 
     @Override
     protected void onStart() {
         if (!prefs.getBoolean("background_play", true)) {
-            webviewResume();
+            gameView.resumeGame();
         }
         super.onStart();
     }
-    abstract public void webviewResume();
 
     //点击返回上一页面而不是退出浏览器
     @Override
@@ -307,10 +313,11 @@ public abstract class GameBaseActivity extends XWalkActivity {
     //销毁Webview
     @Override
     protected void onDestroy() {
-        if (mWebview != null) {
-            webviewDestory();
+        if (gameView != null) {
+            gameView.destroy();
+            gameView = null;
         }
-        unregisterReceiver(webviewBroadcastReceiver);
+        unregisterReceiver(gameViewBroadcastReceiver);
         showDanmaku = false;
         if (danmakuView != null) {
             danmakuView.release();
@@ -318,7 +325,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
         super.onDestroy();
     }
-    abstract public void webviewDestory();
 
     /**
      * danmuku init
@@ -399,6 +405,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
      * cookie init
      */
     private void initCookieData(){
+        // TODO: depend to the connection type
         voiceCookieMap = new HashMap<>();
         int vol = voicePlay ? 50 : 0;
 
@@ -422,17 +429,17 @@ public abstract class GameBaseActivity extends XWalkActivity {
         voiceCookieMap.put("vol_voice=" + vol + "; domain=" + hostName + "; path=/kcs2", fullHostName);
 
 
-        dmmCokieMap = new HashMap<>();
-        dmmCokieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "www.dmm.com");
-        dmmCokieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/", "www.dmm.com");
-        dmmCokieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=osapi.dmm.com;path=/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=203.104.209.7;path=/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=www.dmm.com;path=/netgame/", "www.dmm.com");
-        dmmCokieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=log-netgame.dmm.com;path=/", "www.dmm.com");
+        dmmCookieMap = new HashMap<>();
+        dmmCookieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "http://www.dmm.com");
+        dmmCookieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/", "http://www.dmm.com");
+        dmmCookieMap.put("cklg=welcome;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/", "http://www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/", "http://www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame/", "http://www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=.dmm.com;path=/netgame_s/", "http://www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=osapi.dmm.com;path=/", "http://www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=203.104.209.7;path=/", "http://www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=www.dmm.com;path=/netgame/", "http://www.dmm.com");
+        dmmCookieMap.put("ckcy=1;expires=Sun, 09 Feb 2029 09:00:09 GMT;domain=log-netgame.dmm.com;path=/", "http://www.dmm.com");
     }
 
     public void initChat(){
@@ -524,9 +531,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             chatNewMsgImageView.setLayoutParams(lp1);
         }
         resetWebView(true);
-        webviewContentReSize();
     }
-    abstract public void webviewContentReSize();
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -562,24 +567,18 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
     }
 
-    private class WebviewBroadcastReceiver extends BroadcastReceiver {
+    private class GameViewBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("com.antest1.kcanotify.h5.webview_reload"))
-                webviewReload();
+                gameView.reloadGame();
         }
     }
-    abstract void webviewReload();
 
     public Object[] interceptRequest(Uri uri, String requestMethod, Map<String, String> requestHeader){
         String path = uri.getPath();
         final long startTime = System.nanoTime();
         Log.d("KCVA", "requesting  uri：" + uri);
-        if(path != null && path.contains("/kcsapi/api_port/port")){
-            changeTouchEvent = false;
-        } else if(path != null && (path.contains("/kcsapi/api_get_member/mapinfo") || path.contains("/kcsapi/api_get_member/mission"))){
-            changeTouchEvent = true;
-        }
 
         if(battleResultVibrate && path != null && (path.contains("battle_result") || path.contains("battleresult"))){
             Vibrator vib = (Vibrator) GameBaseActivity.this.getSystemService(Service.VIBRATOR_SERVICE);
@@ -587,9 +586,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
 
         if ("GET".equals(requestMethod) && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
-            if(path.contains("organize_main.png") || path.contains("supply_main.png") || path.contains("remodel_main.png") || path.contains("repair_main.png") || path.contains("arsenal_main.png")){
-                changeTouchEvent = true;
-            }
             if(path.contains("version.json") || path.contains("index.php")){
                 return null;
             }
@@ -603,8 +599,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            subtitleTextview.setText(subTitle);
-                            subtitleStrokeTextview.setText(subTitle);
+                            subtitleTextView.setText(subTitle);
+                            subtitleStrokeTextView.setText(subTitle);
                         }
                     });
                     subtitleHandler.postDelayed(dismissSubTitle, 15000);
@@ -651,7 +647,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                             fileContent = injectFpsUpdater(fileContent);
                         }
                         fileContent = injectTickerTimingMode(fileContent);
-                        if (changeTouchEventPrefs && changeWebview) {
+                        if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) { // TODO: it should be handled by gameView
                             fileContent = injectTouchLogic(fileContent);
                         }
 
@@ -690,7 +686,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                 respByte = injectFpsUpdater(respByte);
                             }
                             respByte = injectTickerTimingMode(respByte);
-                            if (changeTouchEventPrefs && changeWebview) {
+                            if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) {
                                 respByte = injectTouchLogic(respByte);
                             }
                         }
@@ -769,34 +765,13 @@ public abstract class GameBaseActivity extends XWalkActivity {
     }
 
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (!changeWebview) {
-            Log.d("touchEvent", event.getToolType(0) + ":" + event.getActionMasked());
-            if(event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER && changeTouchEventPrefs) {
-                if(event.getAction() == MotionEvent.ACTION_MOVE) {
-                    buildMoveEvent(event);
-                } else if(event.getAction() == MotionEvent.ACTION_DOWN && changeTouchEvent){
-                    buildMoveEvent(event);
-                } else if(event.getAction() == MotionEvent.ACTION_UP && changeTouchEvent){
-                    buildMoveEvent(event);
-                }
-            }
+        if (changeTouchEventPrefs) {
+            gameView.handleTouch(event);
         }
         return super.dispatchTouchEvent(event);
     }
 
 
-    private void buildMoveEvent(MotionEvent event){
-        MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[]{new MotionEvent.PointerProperties()};
-        event.getPointerProperties(0, pointerProperties[0]);
-        MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[]{new MotionEvent.PointerCoords()};
-        event.getPointerCoords(0, pointerCoords[0]);
-        pointerProperties[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
-        pointerCoords[0].x -= mWebview.getX();
-        pointerCoords[0].y -= mWebview.getY();
-        long touchTime = SystemClock.uptimeMillis();
-        this.mWebview.onTouchEvent(MotionEvent.obtain(touchTime, touchTime, MotionEvent.ACTION_MOVE, 1, pointerProperties, pointerCoords, 0, 0, 0f, 0f, InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC, 0, InputDevice.SOURCE_TOUCHSCREEN, 0));
-
-    }
 
     private void setScreenOrientation() {
         try {
@@ -832,17 +807,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
         double weightScale = width / 1200.0;
         double heightScale = height / 720.0;
         if(weightScale < heightScale){
-            int reScaleHeight = (int)(720 * weightScale);
-            ViewGroup.LayoutParams params = mWebview.getLayoutParams();
-            params.width = width;
-            params.height = reScaleHeight;
-            mWebview.setLayoutParams(params);
+            gameView.setLayoutParams(width, (int)(720 * weightScale));
         } else {
-            int reScaleWeight = (int)(1200 * heightScale);
-            ViewGroup.LayoutParams params = mWebview.getLayoutParams();
-            params.width = reScaleWeight;
-            params.height = height;
-            mWebview.setLayoutParams(params);
+            gameView.setLayoutParams((int)(1200 * heightScale), height);
         }
     }
 
@@ -1044,6 +1011,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
 
     public void updateFpsCounter(String newFps) {
-       fpsCounter.setText(newFps);
-   }
+        runOnUiThread(new Runnable(){
+            public void run(){
+                fpsCounter.setText(newFps);
+            }
+        });
+    }
 }

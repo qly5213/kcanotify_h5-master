@@ -202,27 +202,23 @@ public class MainActivity extends AppCompatActivity {
                 SharedPreferences prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
                 String gamePageType = prefs.getString("game_page_type", "0");
                 boolean changeWebview = prefs.getBoolean("change_webview", false);
+                Intent intent;
                 if(gamePageType.equals("0")) {
-                    Intent intent;
                     if(changeWebview){
                         intent = new Intent(MainActivity.this, GameActivity.class);
                     } else {
                         intent = new Intent(MainActivity.this, GameWebViewActivity.class);
                     }
-                    intent.putExtra("imageSize", imageSize);
-                    startActivity(intent);
-                    MainActivity.this.finish();
                 } else {
-                    Intent intent;
                     if(changeWebview){
                         intent = new Intent(MainActivity.this, GameOOIActivity.class);
                     } else {
                         intent = new Intent(MainActivity.this, GameOOIWebViewActivity.class);
                     }
-                    intent.putExtra("imageSize", imageSize);
-                    startActivity(intent);
-                    MainActivity.this.finish();
                 }
+                intent.putExtra("imageSize", imageSize);
+                startActivity(intent);
+                MainActivity.this.finish();
             }
         });
 
