@@ -585,6 +585,21 @@ public abstract class GameBaseActivity extends XWalkActivity {
             vib.vibrate(200);
         }
 
+        // Handle pixi.min.js. Need to patch but not
+        if(path != null && path.contains("pixi.")) {
+            ResponseBody serverResponse = requestServer(uri, requestHeader);
+            if (serverResponse != null) {
+                try{
+                    String patchedPixi = injectPixi(serverResponse.string());
+                    byte[] bytes = patchedPixi.getBytes();
+                    return backToWebView(path, String.valueOf(bytes.length), new ByteArrayInputStream(bytes));
+                } catch (Exception ex) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
         if ("GET".equals(requestMethod) && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
             if(path.contains("version.json") || path.contains("index.php")){
                 return null;
@@ -899,6 +914,46 @@ public abstract class GameBaseActivity extends XWalkActivity {
     public int dip2px(float dpValue) {
         final float scale = getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
+    }
+
+    // Inject code to change the spritesheet loading method of Pixi.js
+    private String injectPixi(String pixi) {
+        // Patch Pixi.js to solve the random black sprite issue
+        //
+        // Cause of issue:
+        // 1. First of all, KC loads and unload image resources very often (for every scene change)
+        // 2. Unlike java, openGL does not do GC or compact GPU memory. So there is more and more fragmentation
+        // 3. When loading a new sprite sheet, Pixi creates a BaseTexture to hold the full image into GPU memory as one
+        // 4. The full image of a sprite sheet can be as big as 3129*3047 in KC, eating up 36MB vram (after decode)
+        // 5. The GPU failed to allocate a continuous gpu memory space. The sprites can't be loaded
+        //
+        // The idea of the solution is to split and crop the full images into sprite size before loading into GPU
+        // Instead of sharing a huge BaseTexture, each sprite has its own smaller BaseTexture
+        // Those smaller textures can fill into smaller free memory blocks so now we don't care fragmentation
+        //
+        // P.S. this patch uses more resource because canvas objects are used to split and cache the textures
+        //      canvas object has more overhead than img object (original method) in chromium
+
+        // Since each split frame has their own texture, the x and y values are 0 now
+        pixi = pixi.replace("h=a.rotated?new o.Rectangle(Math.floor(u.x*i)/this.resolution,Math.floor(u.y*i)/this.resolution,Math.floor(u.h*i)/this.resolution,Math.floor(u.w*i)/this.resolution):new o.Rectangle(Math.floor(u.x*i)/this.resolution,Math.floor(u.y*i)/this.resolution,Math.floor(u.w*i)/this.resolution,Math.floor(u.h*i)/this.resolution),",
+                "h=a.rotated?new o.Rectangle(0,0,Math.floor(u.h*i)/this.resolution,Math.floor(u.w*i)/this.resolution):new o.Rectangle(0,0,Math.floor(u.w*i)/this.resolution,Math.floor(u.h*i)/this.resolution),");
+
+        // When creating a sprite frame, create a canvas object to crop the part from the huge sshared BaseTexture
+        // And then use the canvas as the BaseTexture
+        pixi = pixi.replace(",this.textures[s]=new o.Texture(this.baseTexture,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++}},",
+                ";var tmpCanvas = document.createElement('canvas');" +
+                        "tmpCanvas.width = u.w; tmpCanvas.height = u.h;" +
+                        "tmpCanvas.getContext('2d').drawImage(this.baseTexture.source, u.x, u.y, u.w, u.h, 0, 0, u.w, u.h);" +
+                        "var bt = new PIXI.BaseTexture(tmpCanvas);" +
+                        "this.textures[s]=new o.Texture(bt,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++};this.baseTexture.destroy(),this.baseTexture=null},"); // Also destroy the baseTexture after the loop
+
+        // As the shared baseTexture is already destroyed in the parser,
+        // Don't need to destroy it again in destroy()
+        // Instead, destroy the baseTexture of each split texture
+        pixi = pixi.replace("t.prototype.destroy=function(){var t=arguments.length>0&&void 0!==arguments[0]&&arguments[0];for(var e in this.textures)this.textures[e].destroy();this._frames=null,this._frameKeys=null,this.data=null,this.textures=null,t&&this.baseTexture.destroy(),this.baseTexture=null}",
+                "t.prototype.destroy=function(){var t=arguments.length>0&&void 0!==arguments[0]&&arguments[0];for(var e in this.textures)this.textures[e].destroy(true);this._frames=null,this._frameKeys=null,this.data=null,this.textures=null}");
+
+        return pixi;
     }
 
     private byte[] injectTouchLogic(byte[] mainJs){
