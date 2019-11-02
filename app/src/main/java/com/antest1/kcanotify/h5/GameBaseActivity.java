@@ -585,7 +585,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             vib.vibrate(200);
         }
 
-        // Handle pixi.min.js. Need to patch but not
+        // Handle pixi.min.js. Need to patch but not cache
         if(path != null && path.contains("pixi.")) {
             ResponseBody serverResponse = requestServer(uri, requestHeader);
             if (serverResponse != null) {
