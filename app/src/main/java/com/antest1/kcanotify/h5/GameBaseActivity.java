@@ -53,6 +53,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import andhook.lib.AndHook;
@@ -637,10 +640,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 if (!version.equals(currentVersion)) {
                     tmp.delete();
                     synchronized (jsonObj) {
-                        jsonObj.put(path, version);
-                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
-                        writer.write(jsonObj.toString());
-                        writer.close();
+//                        jsonObj.put(path, version);
+//                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
+//                        writer.write(jsonObj.toString());
+//                        writer.close();
                     }
                 }
                 if (tmp.exists()) {
@@ -680,35 +683,46 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     Log.d("KCVA", "Local cache uri："  + uri + " after " + duration/1000 + "us");
                     return response;
                 } else {
-                    ResponseBody serverResponse = requestServer(uri, requestHeader);
-                    if(serverResponse != null){
-                        byte[] respByte = null;
-                        if(path.contains("/kcs2/js/main.js")){
-                            String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
-                            respByte = newRespStr.getBytes();
-                        } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
-                            String newRespStr = serverResponse.string() + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
-                            respByte = newRespStr.getBytes();
+                    boolean needModify = path.contains("/kcs2/js/main.js") || path.contains("/gadget_html5/js/kcs_inspection.js");
 
-                        }  else {
-                            respByte = serverResponse.bytes();
-                        }
-                        saveFile(path, respByte);
+                    if (needModify) {
+                        // Download the modify the result immediately
+                        ResponseBody serverResponse = requestServer(uri, requestHeader);
+                        if(serverResponse != null){
+                            byte[] respByte = null;
+                            if(path.contains("/kcs2/js/main.js")){
+                                String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
+                                respByte = newRespStr.getBytes();
+                            } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                                String newRespStr = serverResponse.string() + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                                respByte = newRespStr.getBytes();
+                            }
 
-                        // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
-                        if(path.contains("/kcs2/js/main.js")) {
-                            if (prefs.getBoolean("show_fps_counter", false)) {
-                                respByte = injectFpsUpdater(respByte);
+                            saveFile(path, respByte);
+
+                            // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
+                            if(path.contains("/kcs2/js/main.js")) {
+                                if (prefs.getBoolean("show_fps_counter", false)) {
+                                    respByte = injectFpsUpdater(respByte);
+                                }
+                                respByte = injectTickerTimingMode(respByte);
+                                if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) {
+                                    respByte = injectTouchLogic(respByte);
+                                }
                             }
-                            respByte = injectTickerTimingMode(respByte);
-                            if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) {
-                                respByte = injectTouchLogic(respByte);
-                            }
+                            return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
+                        } else {
+                            return null;
                         }
-                        return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                     } else {
-                        return null;
+                        // No need to modify the resource
+                        // Do it in an async way
+
+                        Object[] ob = asyncDownload(path, uri, requestHeader);
+                        Log.d("KCVA", "started asyncDL："  + uri);
+                        return ob;
                     }
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -717,6 +731,60 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
         return null;
     }
+
+    public Object[] asyncDownload(String path, Uri uri, Map<String, String> headerHeader) {
+        final CountDownLatch haveData = new CountDownLatch(1);
+        final AtomicReference<InputStream> inputStreamRef = new AtomicReference<>();
+
+        new Thread() {
+            @Override
+            public void run()  {
+//                try {
+//                    java.net.HttpURLConnection urlConnection = (java.net.HttpURLConnection) new URL(uri.toString()).openConnection();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//
+//
+
+                Request.Builder builder = new Request.Builder().url(uri.toString());
+                for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
+                    builder.addHeader(keySet.getKey(), keySet.getValue());
+                }
+                Request serverRequest = builder.build();
+
+                Response response = null;
+                try {
+                    response = client.newCall(serverRequest).execute();
+                    if(response != null && response.isSuccessful()){
+                        inputStreamRef.set(response.body().byteStream());
+                        haveData.countDown();
+                    } else {
+                        return;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }.start();
+
+
+
+        return backToWebView(path, null,
+                new InputStream() {
+                    @Override
+                    public int read() throws IOException {
+                        try {
+                            haveData.await(10, TimeUnit.SECONDS);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        return inputStreamRef.get().read();
+                    }
+                });
+    }
+
 
     public Object[] backToWebView(String path, String size, InputStream is){
         String mimeType = null;
@@ -736,7 +804,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
         Map<String, String> map = new HashMap<>();
         map.put("Connection", "keep-alive");
         map.put("Server", "KanCollCache");
-        map.put("Content-Length", size);
+        if (size != null && !size.isEmpty()) {
+            map.put("Content-Length", size);
+        }
         map.put("Content-Type", mimeType);
         map.put("Cache-Control", "public");
         return new Object[]{mimeType, null, 200, "OK", map, is};
