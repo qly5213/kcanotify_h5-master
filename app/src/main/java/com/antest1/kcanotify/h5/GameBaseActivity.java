@@ -934,6 +934,21 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // P.S. this patch uses more resource because canvas objects are used to split and cache the textures
         //      canvas object has more overhead than img object (original method) in chromium
 
+        // Load the full image in an img object instead of a BaseTexture resource, so it does not loaded into GPU
+        pixi = pixi.replace("this.add(r,s,o,function(r){if(r.error)return void e(r.error);var n=new a.Spritesheet(r.texture.baseTexture,t.data,t.url);n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()})})",
+                "var image=new Image();" +
+                        "image.onerror=function(){next(new Error('Fail to download image: '+image.src))};" +
+                        "image.onload=function(){" +
+                          "var n=new a.Spritesheet(null,t.data,t.url);" +
+                          "n.image=image;" +
+                          "n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()});" +
+                        "};" +
+                        "image.src=s;");
+
+        // Assume scale is 1
+        pixi = pixi.replace("i=this.baseTexture.sourceScale;",
+                "i=1;");
+
         // Since each split frame has their own texture, the x and y values are 0 now
         pixi = pixi.replace("h=a.rotated?new o.Rectangle(Math.floor(u.x*i)/this.resolution,Math.floor(u.y*i)/this.resolution,Math.floor(u.h*i)/this.resolution,Math.floor(u.w*i)/this.resolution):new o.Rectangle(Math.floor(u.x*i)/this.resolution,Math.floor(u.y*i)/this.resolution,Math.floor(u.w*i)/this.resolution,Math.floor(u.h*i)/this.resolution),",
                 "h=a.rotated?new o.Rectangle(0,0,Math.floor(u.h*i)/this.resolution,Math.floor(u.w*i)/this.resolution):new o.Rectangle(0,0,Math.floor(u.w*i)/this.resolution,Math.floor(u.h*i)/this.resolution),");
@@ -943,9 +958,11 @@ public abstract class GameBaseActivity extends XWalkActivity {
         pixi = pixi.replace(",this.textures[s]=new o.Texture(this.baseTexture,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++}},",
                 ";var tmpCanvas = document.createElement('canvas');" +
                         "tmpCanvas.width = u.w; tmpCanvas.height = u.h;" +
-                        "tmpCanvas.getContext('2d').drawImage(this.baseTexture.source, u.x, u.y, u.w, u.h, 0, 0, u.w, u.h);" +
+                        "tmpCanvas.getContext('2d').drawImage(this.image, u.x, u.y, u.w, u.h, 0, 0, u.w, u.h);" +
                         "var bt = new PIXI.BaseTexture(tmpCanvas);" +
-                        "this.textures[s]=new o.Texture(bt,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++};this.baseTexture.destroy(),this.baseTexture=null},"); // Also destroy the baseTexture after the loop
+                        "this.textures[s]=new o.Texture(bt,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++};" +
+                        "this.image.onload=null,this.image.onerror=null,this.image.url=null,this.image=null" + // Also destroy the baseTexture after the loop
+                        "},");
 
         // As the shared baseTexture is already destroyed in the parser,
         // Don't need to destroy it again in destroy()
