@@ -595,7 +595,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 try{
                     String patchedPixi = injectPixi(serverResponse.string());
                     byte[] bytes = patchedPixi.getBytes();
-                    return backToWebView(path, String.valueOf(bytes.length), new ByteArrayInputStream(bytes));
+                    return createResponseObject(path, String.valueOf(bytes.length), new ByteArrayInputStream(bytes));
                 } catch (Exception ex) {
                     return null;
                 }
@@ -672,7 +672,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         inputStream = new FileInputStream(tmp);
                     }
 
-                    Object[] response = backToWebView(path, String.valueOf(length), inputStream);
+                    Object[] response = createResponseObject(path, String.valueOf(length), inputStream);
                     final long duration = System.nanoTime() - startTime;
                     Log.d("KCVA", "Local cache uri："  + uri + " after " + duration/1000 + "us");
                     return response;
@@ -704,7 +704,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                     respByte = injectTouchLogic(respByte);
                                 }
                             }
-                            return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
+                            return createResponseObject(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                         } else {
                             return null;
                         }
@@ -712,11 +712,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         // No need to modify the resource
                         // Do it in an async way
 
-                        Object[] ob = asyncDownload(path, uri, requestHeader, version);
+                        Object[] ob = downloadAndCacheAsync(path, uri, requestHeader, version);
                         Log.d("KCVA", "started asyncDL："  + uri);
                         return ob;
                     }
-
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -726,8 +725,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
         return null;
     }
 
-    public Object[] asyncDownload(String path, Uri uri, Map<String, String> headerHeader, String version) {
-
+    private Object[] downloadAndCacheAsync(String path, Uri uri, Map<String, String> headerHeader, String version) {
         // In old chromium, shouldInterceptRequest() is called synchronously in the JS main thread
         // But after that the downloading of the content is async (not blocking UI)
         // Therefore we cannot create the okhttp request before returning a response header
@@ -747,29 +745,25 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 }
                 Request serverRequest = builder.build();
 
-                Response response = null;
                 try {
-                    response = client.newCall(serverRequest).execute();
-                    if(response != null && response.isSuccessful()){
+                    Response response = client.newCall(serverRequest).execute();
+                    if(response != null && response.isSuccessful() && response.body() != null){
                         inputStreamRef.set(response.body().byteStream());
                         haveData.countDown();
                     } else {
+                        // Let the input stream timeout and error
                         return;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }
         }.start();
 
-
-
-        return backToWebView(path, null,
+        return createResponseObject(path, null,
             new InputStream() {
                 FileOutputStream outputStream = null;
                 BufferedOutputStream bufferedOutputStream = null;
-                boolean failedToWrite = false;
                 boolean ableToWrite = true;
                 File tmpFile = null;
 
@@ -808,11 +802,15 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     }
 
                     try {
-                        haveData.await(10, TimeUnit.SECONDS);
+                        if (!haveData.await(10, TimeUnit.SECONDS)){
+                            // Waited so long and don't have any data
+                            throw new IOException("Unable to wait for the data");
+                        }
                     } catch (InterruptedException e) {
                         // Unable to wait the data
                         // TODO: handle error and close streams ASAP
                         e.printStackTrace();
+                        throw new IOException("Interrupted before the data");
                     }
 
                     int nextData = inputStreamRef.get().read();
@@ -893,8 +891,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             });
     }
 
-
-    public Object[] backToWebView(String path, String size, InputStream is){
+    public Object[] createResponseObject(String path, String size, InputStream is){
         String mimeType = null;
         if (path.endsWith("mp3")) {
             mimeType = "audio/mpeg";
