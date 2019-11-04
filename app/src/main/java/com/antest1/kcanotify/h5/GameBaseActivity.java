@@ -733,9 +733,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // Instead, we send request afterward and block the read() operation only
         // Blocking read() does not affect the main JS thread, so there is no more lag
 
-        Log.d("KCVA", "ASYNCCache10000："  + uri);
-
-
         final CountDownLatch haveData = new CountDownLatch(1);
         final AtomicReference<InputStream> inputStreamRef = new AtomicReference<>();
 
@@ -755,15 +752,15 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         haveData.countDown();
                     } else {
                         // Let the input stream timeout and error
-                        return;
+                        Log.d("KCVA", "Download failed："  + uri);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    // Let the input stream timeout and error
+                    Log.d("KCVA", "Download error!："  + uri);
                 }
             }
         }.start();
 
-        Log.d("KCVA", "ASYNCCache99999："  + uri);
         return createResponseObject(path, null,
             new InputStream() {
                 FileOutputStream outputStream = null;
@@ -788,36 +785,39 @@ public abstract class GameBaseActivity extends XWalkActivity {
                             bufferedOutputStream = new BufferedOutputStream(outputStream, 4096);
                         } catch(Exception e){
                             ableToWrite = false;
-                            if (outputStream != null) {
-                                try {
-                                    outputStream.close();
-                                } catch (IOException e2) {
-                                    e2.printStackTrace();
-                                }
-                            }
-                            if (bufferedOutputStream != null) {
-                                try {
-                                    bufferedOutputStream.close();
-                                } catch (Exception e2) {
-                                    e2.printStackTrace();
-                                }
-                            }
+                            closeFileStream();
                         }
                     }
 
                     try {
                         if (!haveData.await(10, TimeUnit.SECONDS)){
                             // Waited so long and don't have any data
-                            throw new IOException("Unable to wait for the data");
+                            // Instead of throwing exception, end the stream and let browser handle it
+                            Log.d("KCVA", "Unable to wait for the data："  + uri);
+                            closeFileStream();
+                            ableToWrite = false;
+                            return -1;
                         }
                     } catch (InterruptedException e) {
                         // Unable to wait the data
-                        // TODO: handle error and close streams ASAP
+                        // handle error and close streams ASAP
+                        // Instead of throwing exception, end the stream and let browser handle it
                         e.printStackTrace();
-                        throw new IOException("Interrupted before the data");
+                        Log.d("KCVA", "Interrupted before the data："  + uri);
+                        closeFileStream();
+                        ableToWrite = false;
+                        return -1;
                     }
 
-                    int nextData = inputStreamRef.get().read();
+                    int nextData;
+                    try {
+                        nextData = inputStreamRef.get().read();
+                    } catch (Exception ex) {
+                        // Instead of throwing exception, end the stream and let browser handle it
+                        closeFileStream();
+                        ableToWrite = false;
+                        return -1;
+                    }
 
                     if (nextData != -1) {
                         // Have new data, try to write into file
@@ -827,16 +827,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                 bufferedOutputStream.write(nextData);
                             } catch (Exception e) {
                                 ableToWrite = false;
-                                try {
-                                    outputStream.close();
-                                } catch (IOException e2) {
-                                    e2.printStackTrace();
-                                }
-                                try {
-                                    bufferedOutputStream.close();
-                                } catch (Exception e2) {
-                                    e2.printStackTrace();
-                                }
+                                closeFileStream();
                             }
                         }
                     } else {
@@ -848,11 +839,17 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                 outputStream.close();
                                 bufferedOutputStream.close();
 
-                                // Rename the file
+                                // Rename the file, (e.g. from xxx.png.tmp to xxx.png)
+                                // Since renaming is an atomic operation,
+                                // We can guarantee the final cache is never corrupted
+                                // If anything goes wrong, xxx.png will not be updated
+                                // Next usage of xxx.png will re-download it from internet again
                                 File to = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path);
                                 if (tmpFile.renameTo(to)) {
-                                    // If rename can be done, update the cache json (not important)
-                                    // Update the cache after returning the last byte (important)
+                                    // If renaming is done, update the cache json in a new thread
+                                    // Returning the last byte will not be blocked
+                                    // Worst case is just one more un-cached request
+                                    // But we saved a lot of smoothness
                                     new Thread() {
                                         @Override
                                         public void run() {
@@ -870,27 +867,33 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                     }.start();
                                 }
                             } catch (Exception e) {
-                                ableToWrite = false;
                                 Log.e("KCA", e.getMessage());
-                                try {
-                                    outputStream.close();
-                                } catch (IOException e2) {
-                                    e2.printStackTrace();
-                                }
-                                try {
-                                    bufferedOutputStream.close();
-                                } catch (Exception e2) {
-                                    e2.printStackTrace();
-                                }
                             } finally {
                                 // Whatever happened, the stream is closed and the last bit is sent
-                                // Sometime the End of Stream is sent twice, we can prevent updating the cache json twice
+                                // Sometimes the EOS is sent twice, prevent updating the cache twice
                                 ableToWrite = false;
+                                closeFileStream();
                             }
                         }
                     }
-
                     return nextData;
+                }
+
+                private void closeFileStream() {
+                    if (outputStream != null) {
+                        try {
+                            outputStream.close();
+                        } catch (IOException e2) {
+                            e2.printStackTrace();
+                        }
+                    }
+                    if (bufferedOutputStream != null) {
+                        try {
+                            bufferedOutputStream.close();
+                        } catch (Exception e2) {
+                            e2.printStackTrace();
+                        }
+                    }
                 }
             });
     }
