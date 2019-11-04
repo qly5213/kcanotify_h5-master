@@ -636,15 +636,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 String filePath = Environment.getExternalStorageDirectory() + "/KanCollCache" + path;
                 File tmp = new File(filePath);
 
-                //版本不一致则删除老的cache并更新版本信息
+                //版本不一致则删除老的cache
                 if (!version.equals(currentVersion)) {
                     tmp.delete();
-                    synchronized (jsonObj) {
-//                        jsonObj.put(path, version);
-//                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
-//                        writer.write(jsonObj.toString());
-//                        writer.close();
-                    }
                 }
                 if (tmp.exists()) {
                     //从缓存直接返回客户端，不请求服务器
@@ -718,7 +712,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         // No need to modify the resource
                         // Do it in an async way
 
-                        Object[] ob = asyncDownload(path, uri, requestHeader);
+                        Object[] ob = asyncDownload(path, uri, requestHeader, version);
                         Log.d("KCVA", "started asyncDL："  + uri);
                         return ob;
                     }
@@ -732,21 +726,21 @@ public abstract class GameBaseActivity extends XWalkActivity {
         return null;
     }
 
-    public Object[] asyncDownload(String path, Uri uri, Map<String, String> headerHeader) {
+    public Object[] asyncDownload(String path, Uri uri, Map<String, String> headerHeader, String version) {
+
+        // In old chromium, shouldInterceptRequest() is called synchronously in the JS main thread
+        // But after that the downloading of the content is async (not blocking UI)
+        // Therefore we cannot create the okhttp request before returning a response header
+        // which blocks the main JS thread and causes all animation freezing.
+        // Instead, we send request afterward and block the read() operation only
+        // Blocking read() does not affect the main JS thread, so there is no more lag
+
         final CountDownLatch haveData = new CountDownLatch(1);
         final AtomicReference<InputStream> inputStreamRef = new AtomicReference<>();
 
         new Thread() {
             @Override
             public void run()  {
-//                try {
-//                    java.net.HttpURLConnection urlConnection = (java.net.HttpURLConnection) new URL(uri.toString()).openConnection();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//
-//
-
                 Request.Builder builder = new Request.Builder().url(uri.toString());
                 for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
                     builder.addHeader(keySet.getKey(), keySet.getValue());
@@ -772,17 +766,131 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
 
         return backToWebView(path, null,
-                new InputStream() {
-                    @Override
-                    public int read() throws IOException {
+            new InputStream() {
+                FileOutputStream outputStream = null;
+                BufferedOutputStream bufferedOutputStream = null;
+                boolean failedToWrite = false;
+                boolean ableToWrite = true;
+                File tmpFile = null;
+
+                @Override
+                public int read() throws IOException {
+                    if (outputStream == null && ableToWrite) {
+                        // Open a tmp buffered file stream to start writing
+                        Log.e("KCA", "Save LocalRes:" + path);
+                        tmpFile = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path + ".tmp");
                         try {
-                            haveData.await(10, TimeUnit.SECONDS);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            if (!tmpFile.getParentFile().exists()) {
+                                tmpFile.getParentFile().mkdirs();
+                            }
+                            if(!tmpFile.exists()) {
+                                tmpFile.createNewFile();
+                            }
+                            outputStream = new FileOutputStream(tmpFile);
+                            bufferedOutputStream = new BufferedOutputStream(outputStream, 4096);
+                        } catch(Exception e){
+                            ableToWrite = false;
+                            if (outputStream != null) {
+                                try {
+                                    outputStream.close();
+                                } catch (IOException e2) {
+                                    e2.printStackTrace();
+                                }
+                            }
+                            if (bufferedOutputStream != null) {
+                                try {
+                                    bufferedOutputStream.close();
+                                } catch (Exception e2) {
+                                    e2.printStackTrace();
+                                }
+                            }
                         }
-                        return inputStreamRef.get().read();
                     }
-                });
+
+                    try {
+                        haveData.await(10, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        // Unable to wait the data
+                        // TODO: handle error and close streams ASAP
+                        e.printStackTrace();
+                    }
+
+                    int nextData = inputStreamRef.get().read();
+
+                    if (nextData != -1) {
+                        // Have new data, try to write into file
+                        if (ableToWrite) {
+                            try {
+                                // Keep writing to the file if not yet failed
+                                bufferedOutputStream.write(nextData);
+                            } catch (Exception e) {
+                                ableToWrite = false;
+                                try {
+                                    outputStream.close();
+                                } catch (IOException e2) {
+                                    e2.printStackTrace();
+                                }
+                                try {
+                                    bufferedOutputStream.close();
+                                } catch (Exception e2) {
+                                    e2.printStackTrace();
+                                }
+                            }
+                        }
+                    } else {
+                        // Close the file stream
+                        if (ableToWrite) {
+                            Log.d("KCVA", "END OF DOWNLOAD："  + uri);
+                            try {
+                                bufferedOutputStream.flush();
+                                outputStream.close();
+                                bufferedOutputStream.close();
+
+                                // Rename the file
+                                File to = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path);
+                                if (tmpFile.renameTo(to)) {
+                                    // If rename can be done, update the cache json (not important)
+                                    // Update the cache after returning the last byte (important)
+                                    new Thread() {
+                                        @Override
+                                        public void run() {
+                                            synchronized (jsonObj) {
+                                                try{
+                                                    jsonObj.put(path, version);
+                                                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
+                                                    writer.write(jsonObj.toString());
+                                                    writer.close();
+                                                } catch (Exception e3) {
+                                                    e3.printStackTrace();
+                                                }
+                                            }
+                                        }
+                                    }.start();
+                                }
+                            } catch (Exception e) {
+                                ableToWrite = false;
+                                Log.e("KCA", e.getMessage());
+                                try {
+                                    outputStream.close();
+                                } catch (IOException e2) {
+                                    e2.printStackTrace();
+                                }
+                                try {
+                                    bufferedOutputStream.close();
+                                } catch (Exception e2) {
+                                    e2.printStackTrace();
+                                }
+                            } finally {
+                                // Whatever happened, the stream is closed and the last bit is sent
+                                // Sometime the End of Stream is sent twice, we can prevent updating the cache json twice
+                                ableToWrite = false;
+                            }
+                        }
+                    }
+
+                    return nextData;
+                }
+            });
     }
 
 
