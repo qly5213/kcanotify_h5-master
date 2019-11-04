@@ -733,6 +733,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // Instead, we send request afterward and block the read() operation only
         // Blocking read() does not affect the main JS thread, so there is no more lag
 
+        Log.d("KCVA", "ASYNCCache10000："  + uri);
+
+
         final CountDownLatch haveData = new CountDownLatch(1);
         final AtomicReference<InputStream> inputStreamRef = new AtomicReference<>();
 
@@ -760,6 +763,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             }
         }.start();
 
+        Log.d("KCVA", "ASYNCCache99999："  + uri);
         return createResponseObject(path, null,
             new InputStream() {
                 FileOutputStream outputStream = null;
