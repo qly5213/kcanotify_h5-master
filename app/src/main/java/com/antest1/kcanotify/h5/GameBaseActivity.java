@@ -751,12 +751,28 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         inputStreamRef.set(response.body().byteStream());
                         haveData.countDown();
                     } else {
-                        // Let the input stream timeout and error
                         Log.d("KCVA", "Download failed："  + uri);
+                        // Return a failing stream immediately
+                        // So that the thread reading the stream doesn't need to wait 30sec time out
+                        inputStreamRef.set(new InputStream() {
+                            @Override
+                            public int read() throws IOException {
+                                throw new IOException("Error ：");
+                            }
+                        });
+                        haveData.countDown();
                     }
                 } catch (Exception e) {
-                    // Let the input stream timeout and error
                     Log.d("KCVA", "Download error!："  + uri);
+                    // Return a failing stream immediately
+                    // So that the thread reading the stream doesn't need to wait 30sec time out
+                    inputStreamRef.set(new InputStream() {
+                        @Override
+                        public int read() throws IOException {
+                            throw new IOException("Error ：");
+                        }
+                    });
+                    haveData.countDown();
                 }
             }
         }.start();
@@ -790,10 +806,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     }
 
                     try {
-                        if (!haveData.await(10, TimeUnit.SECONDS)){
+                        if (!haveData.await(30, TimeUnit.SECONDS)){
                             // Waited so long and don't have any data
-                            // Instead of throwing exception, end the stream and let browser handle it
-                            Log.d("KCVA", "Unable to wait for the data："  + uri);
+                            // Instead of throwing exception, end the DL and  pretend it is finished
+                            Log.d("KCVA", "Timeout to wait for OKHTTP："  + uri);
                             closeFileStream();
                             ableToWrite = false;
                             return -1;
@@ -801,7 +817,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     } catch (InterruptedException e) {
                         // Unable to wait the data
                         // handle error and close streams ASAP
-                        // Instead of throwing exception, end the stream and let browser handle it
+                        // Instead of throwing exception, end the DL and pretend it is finished
                         e.printStackTrace();
                         Log.d("KCVA", "Interrupted before the data："  + uri);
                         closeFileStream();
@@ -813,7 +829,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     try {
                         nextData = inputStreamRef.get().read();
                     } catch (Exception ex) {
-                        // Instead of throwing exception, end the stream and let browser handle it
+                        // Instead of throwing exception, end the DL and pretend it is finished
+                        Log.d("KCVA", "OKHTTP Request failed, return EOF to webview："  + uri);
                         closeFileStream();
                         ableToWrite = false;
                         return -1;
