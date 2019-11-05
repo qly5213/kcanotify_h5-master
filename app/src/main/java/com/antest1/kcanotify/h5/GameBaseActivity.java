@@ -1136,7 +1136,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // Load the full image in an img object instead of a BaseTexture resource, so it does not loaded into GPU
         pixi = pixi.replace("this.add(r,s,o,function(r){if(r.error)return void e(r.error);var n=new a.Spritesheet(r.texture.baseTexture,t.data,t.url);n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()})})",
                 "var image=new Image();" +
-                        "image.onerror=function(){next(new Error('Fail to download image: '+image.src))};" +
+                        "image.onerror=function(){next(new Error('Fail to download image: '+image.src))};" + // TODO: retry downloading the image for a few times
                         "image.onload=function(){" +
                           "var n=new a.Spritesheet(null,t.data,t.url);" +
                           "n.image=image;" +
@@ -1160,7 +1160,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         "tmpCanvas.getContext('2d').drawImage(this.image, u.x, u.y, u.w, u.h, 0, 0, u.w, u.h);" +
                         "var bt = new PIXI.BaseTexture(tmpCanvas);" +
                         "this.textures[s]=new o.Texture(bt,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++};" +
-                        "this.image.onload=null,this.image.onerror=null,this.image.url=null,this.image=null" + // Also destroy the baseTexture after the loop
+                        "this.image.onload=null,this.image.onerror=null,this.image=null" + // Also destroy the baseTexture after the loop
                         "},");
 
         // As the shared baseTexture is already destroyed in the parser,
@@ -1275,6 +1275,11 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
         // Replace the ticker timing mode to keep animation smooth even with a lot of events (i.e. touch taps)
         s = s.replace("createjs.Ticker.TIMEOUT", "createjs.Ticker.RAF");
+
+        s = s.replace("GC_MAX_CHECK_COUNT=180", "GC_MAX_CHECK_COUNT=180");
+        s = s.replace("PIXI.settings.GC_MAX_IDLE=360", "" +
+            "PIXI.settings.GC_MAX_IDLE=360," +
+            "PIXI.settings.MIPMAP_TEXTURES=false"); // Save mem if an image is power of 2
 
         // Convert back to bytes
         return s.getBytes();

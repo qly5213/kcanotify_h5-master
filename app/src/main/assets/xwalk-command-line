@@ -1,0 +1,1 @@
+xwalk  --force-gpu-rasterization --webgl-antialiasing-mode=none --js-flags="--optimize_for_size=true --always_compact=true"
