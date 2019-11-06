@@ -10,7 +10,7 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="locale_code">zh-TW</string>
 
     <!-- Application Information -->
-    <string name="app_name">Kcanotify</string>
+    <string name="app_name">Kcanotify改二乙</string>
     <string name="action_settings">設定</string>
     <string name="action_download">下載</string>
     <string name="action_check">檢查</string>
