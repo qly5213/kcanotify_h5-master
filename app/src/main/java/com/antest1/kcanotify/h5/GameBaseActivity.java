@@ -647,7 +647,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
                     if(path.contains("/gadget_html5/js/kcs_inspection.js")){
                         byte[] fileContent = readFileToBytes(tmp);
-                        String newRespStr = new String(fileContent, "utf-8") + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                        String newRespStr = injectInspection(new String(fileContent, "utf-8"));
                         fileContent = newRespStr.getBytes("utf-8");
 
                         length = fileContent.length;
@@ -688,7 +688,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                 String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
                                 respByte = newRespStr.getBytes();
                             } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
-                                String newRespStr = serverResponse.string() + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                                String newRespStr = injectInspection(serverResponse.string());
                                 respByte = newRespStr.getBytes();
                             }
 
@@ -784,6 +784,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 boolean ableToWrite = true;
                 File tmpFile = null;
 
+                int pos = 0;
+
                 @Override
                 public int read() throws IOException {
                     if (outputStream == null && ableToWrite) {
@@ -828,9 +830,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     int nextData;
                     try {
                         nextData = inputStreamRef.get().read();
+                        pos++;
                     } catch (Exception ex) {
                         // Instead of throwing exception, end the DL and pretend it is finished
-                        Log.d("KCVA", "OKHTTP Request failed, return EOF to webview："  + uri);
+                        Log.d("KCVA", "OKHTTP Request failed, return EOF to webview："  + uri + " @" + pos + "B");
                         closeFileStream();
                         ableToWrite = false;
                         return -1;
@@ -1170,6 +1173,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "t.prototype.destroy=function(){var t=arguments.length>0&&void 0!==arguments[0]&&arguments[0];for(var e in this.textures)this.textures[e].destroy(true);this._frames=null,this._frameKeys=null,this.data=null,this.textures=null}");
 
         return pixi;
+    }
+
+    private String injectInspection(String inspection) {
+        return inspection + "window.onload=function(){document.body.style.background='#000',null==document.getElementById('spacing_top')||(document.getElementById('spacing_top').style.height='0px')};";
     }
 
     private byte[] injectTouchLogic(byte[] mainJs){
