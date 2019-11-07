@@ -1139,7 +1139,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // Load the full image in an img object instead of a BaseTexture resource, so it does not loaded into GPU
         pixi = pixi.replace("this.add(r,s,o,function(r){if(r.error)return void e(r.error);var n=new a.Spritesheet(r.texture.baseTexture,t.data,t.url);n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()})})",
                 "var image=new Image();" +
-                        "image.onerror=function(){next(new Error('Fail to download image: '+image.src))};" + // TODO: retry downloading the image for a few times
+                        "image.onerror=function(){var ee='Fail to download image: '+image.src;console.error(ee);next();};" + // TODO: retry downloading the image for a few times
                         "image.onload=function(){" +
                           "var n=new a.Spritesheet(null,t.data,t.url);" +
                           "n.image=image;" +
