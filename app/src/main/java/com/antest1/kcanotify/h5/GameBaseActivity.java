@@ -1,9 +1,11 @@
 package com.antest1.kcanotify.h5;
 
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -35,6 +37,7 @@ import com.bilibili.boxing.BoxingMediaLoader;
 import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.xwalk.core.XWalkActivity;
 
@@ -747,9 +750,12 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
                 try {
                     Response response = client.newCall(serverRequest).execute();
-                    if(response != null && response.isSuccessful() && response.body() != null){
-                        inputStreamRef.set(response.body().byteStream());
-                        haveData.countDown();
+                    if(response != null && response.isSuccessful()){
+                        ResponseBody body = response.body();
+                        if (body != null) {
+                            inputStreamRef.set(body.byteStream());
+                            haveData.countDown();
+                        }
                     } else {
                         Log.d("KCVA", "Download failed："  + uri);
                         // Return a failing stream immediately
@@ -778,144 +784,244 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }.start();
 
         return createResponseObject(path, null,
-            new InputStream() {
-                FileOutputStream outputStream = null;
-                BufferedOutputStream bufferedOutputStream = null;
-                boolean ableToWrite = true;
-                File tmpFile = null;
+                createResourceInputSteam(path, uri, version, haveData, inputStreamRef, headerHeader));
+    }
 
-                int pos = 0;
+    @NotNull
+    private InputStream createResourceInputSteam(String path, Uri uri, String version, CountDownLatch haveData, AtomicReference<InputStream> inputStreamRef, Map<String, String> headerHeader) {
+        return new InputStream() {
+            FileOutputStream outputStream = null;
+            BufferedOutputStream bufferedOutputStream = null;
+            boolean ableToWrite = true;
+            File tmpFile = null;
 
-                @Override
-                public int read() throws IOException {
-                    if (outputStream == null && ableToWrite) {
-                        // Open a tmp buffered file stream to start writing
-                        Log.e("KCA", "Save LocalRes:" + path);
-                        tmpFile = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path + ".tmp");
+            int pos = 0;
+
+            @Override
+            public int read() throws IOException {
+                // Open a tmp buffered file stream to start writing
+                if (outputStream == null && ableToWrite) {
+                    Log.e("KCA", "Save LocalRes:" + path);
+                    openCache();
+                }
+
+                // Wait the okhttp request
+                try {
+                    if (!haveData.await(30, TimeUnit.SECONDS)){
+                        // Waited so long and don't have any data
+                        // Instead of throwing exception, end the DL and  pretend it is finished
+                        Log.d("KCVA", "Timeout to wait for OKHTTP："  + uri);
+                        closeFileStream();
+                        ableToWrite = false;
+                        return -1;
+                    }
+                } catch (InterruptedException e) {
+                    // Unable to wait the data
+                    // handle error and close streams ASAP
+                    // Instead of throwing exception, end the DL and pretend it is finished
+                    e.printStackTrace();
+                    Log.d("KCVA", "Interrupted before the data："  + uri);
+                    closeFileStream();
+                    ableToWrite = false;
+                    return -1;
+                }
+
+                // Read next data
+                int nextData = forcedRead(inputStreamRef);
+                pos++;
+
+                if (nextData > -1) {
+                    // Have new data, try to write into file
+                    if (ableToWrite) {
                         try {
-                            if (!tmpFile.getParentFile().exists()) {
-                                tmpFile.getParentFile().mkdirs();
-                            }
-                            if(!tmpFile.exists()) {
-                                tmpFile.createNewFile();
-                            }
-                            outputStream = new FileOutputStream(tmpFile);
-                            bufferedOutputStream = new BufferedOutputStream(outputStream, 4096);
-                        } catch(Exception e){
+                            // Keep writing to the file if not yet failed
+                            bufferedOutputStream.write(nextData);
+                        } catch (Exception e) {
                             ableToWrite = false;
                             closeFileStream();
                         }
                     }
+                } else {
+                    // Close the file stream
+                    if (ableToWrite) {
+                        Log.d("KCVA", "END OF DOWNLOAD："  + uri);
+                        try {
+                            bufferedOutputStream.flush();
+                            outputStream.close();
+                            bufferedOutputStream.close();
 
-                    try {
-                        if (!haveData.await(30, TimeUnit.SECONDS)){
-                            // Waited so long and don't have any data
-                            // Instead of throwing exception, end the DL and  pretend it is finished
-                            Log.d("KCVA", "Timeout to wait for OKHTTP："  + uri);
-                            closeFileStream();
-                            ableToWrite = false;
-                            return -1;
-                        }
-                    } catch (InterruptedException e) {
-                        // Unable to wait the data
-                        // handle error and close streams ASAP
-                        // Instead of throwing exception, end the DL and pretend it is finished
-                        e.printStackTrace();
-                        Log.d("KCVA", "Interrupted before the data："  + uri);
-                        closeFileStream();
-                        ableToWrite = false;
-                        return -1;
-                    }
+                            // If the returned data is -2 or -3
+                            // Do not rename the cache
 
-                    int nextData;
-                    try {
-                        nextData = inputStreamRef.get().read();
-                        pos++;
-                    } catch (Exception ex) {
-                        // Instead of throwing exception, end the DL and pretend it is finished
-                        Log.d("KCVA", "OKHTTP Request failed, return EOF to webview："  + uri + " @" + pos + "B");
-                        closeFileStream();
-                        ableToWrite = false;
-                        return -1;
-                    }
-
-                    if (nextData != -1) {
-                        // Have new data, try to write into file
-                        if (ableToWrite) {
-                            try {
-                                // Keep writing to the file if not yet failed
-                                bufferedOutputStream.write(nextData);
-                            } catch (Exception e) {
-                                ableToWrite = false;
-                                closeFileStream();
-                            }
-                        }
-                    } else {
-                        // Close the file stream
-                        if (ableToWrite) {
-                            Log.d("KCVA", "END OF DOWNLOAD："  + uri);
-                            try {
-                                bufferedOutputStream.flush();
-                                outputStream.close();
-                                bufferedOutputStream.close();
-
-                                // Rename the file, (e.g. from xxx.png.tmp to xxx.png)
-                                // Since renaming is an atomic operation,
-                                // We can guarantee the final cache is never corrupted
-                                // If anything goes wrong, xxx.png will not be updated
-                                // Next usage of xxx.png will re-download it from internet again
-                                File to = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path);
-                                if (tmpFile.renameTo(to)) {
-                                    // If renaming is done, update the cache json in a new thread
-                                    // Returning the last byte will not be blocked
-                                    // Worst case is just one more un-cached request
-                                    // But we saved a lot of smoothness
-                                    new Thread() {
-                                        @Override
-                                        public void run() {
-                                            synchronized (jsonObj) {
-                                                try{
-                                                    jsonObj.put(path, version);
-                                                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
-                                                    writer.write(jsonObj.toString());
-                                                    writer.close();
-                                                } catch (Exception e3) {
-                                                    e3.printStackTrace();
-                                                }
+                            // Rename the file, (e.g. from xxx.png.tmp to xxx.png)
+                            // Since renaming is an atomic operation,
+                            // We can guarantee the final cache is never corrupted
+                            // If anything goes wrong, xxx.png will not be updated
+                            // Next usage of xxx.png will re-download it from internet again
+                            File to = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path);
+                            if (nextData == -1 ||tmpFile.renameTo(to)) {
+                                // If renaming is done, update the cache json in a new thread
+                                // Returning the last byte will not be blocked
+                                // Worst case is just one more un-cached request
+                                // But we saved a lot of smoothness
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+                                        synchronized (jsonObj) {
+                                            try{
+                                                jsonObj.put(path, version);
+                                                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
+                                                writer.write(jsonObj.toString());
+                                                writer.close();
+                                            } catch (Exception e3) {
+                                                e3.printStackTrace();
                                             }
                                         }
-                                    }.start();
-                                }
-                            } catch (Exception e) {
-                                Log.e("KCA", e.getMessage());
-                            } finally {
-                                // Whatever happened, the stream is closed and the last bit is sent
-                                // Sometimes the EOS is sent twice, prevent updating the cache twice
-                                ableToWrite = false;
-                                closeFileStream();
+                                    }
+                                }.start();
                             }
+                        } catch (Exception e) {
+                            Log.e("KCA", e.getMessage());
+                        } finally {
+                            // Whatever happened, the stream is closed and the last bit is sent
+                            // Sometimes the EOS is sent twice, prevent updating the cache twice
+                            ableToWrite = false;
+                            closeFileStream();
                         }
                     }
-                    return nextData;
                 }
+                return nextData;
+            }
 
-                private void closeFileStream() {
-                    if (outputStream != null) {
-                        try {
-                            outputStream.close();
-                        } catch (IOException e2) {
-                            e2.printStackTrace();
-                        }
+            // It is forced to read the next byte of input stream
+            // If the stream fails to read, it will block and retry until:
+            //   1. successful recovered with a new request; or
+            //   2. user don't want to retry anymore; or
+            //   3. interrupted by system
+            // If it is recovered, the inputStream ref is changed to point to a recovered download
+            // It returns the final output byte, or -2 if user don't want to retry anymore, or
+            // -3 if there is an interrupt
+            private int forcedRead(AtomicReference<InputStream> inputStreamRef) {
+                final CountDownLatch retryDataReady = new CountDownLatch(1);
+                final AtomicReference<Boolean> cancelled = new AtomicReference<>(false);
+                final AtomicReference<Integer> result = new AtomicReference<>(-2);
+                int numberOfRetry = 0;
+
+
+                while (true) {
+                    try {
+                        // First possible exit: successful read
+                        return inputStreamRef.get().read();
+                    } catch (Exception ex) {
+                        // Failed to read from the stream
                     }
-                    if (bufferedOutputStream != null) {
-                        try {
-                            bufferedOutputStream.close();
-                        } catch (Exception e2) {
-                            e2.printStackTrace();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which){
+                                        case DialogInterface.BUTTON_POSITIVE:
+                                            // User want to retry
+                                            // Create new request and send it out
+                                            try {
+                                                Request.Builder builder = new Request.Builder().url(uri.toString());
+                                                for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
+                                                    builder.addHeader(keySet.getKey(), keySet.getValue());
+                                                }
+                                                Request serverRequest = builder.build();
+                                                Response response = client.newCall(serverRequest).execute();
+                                                if(response != null && response.isSuccessful()){
+                                                    ResponseBody body = response.body();
+                                                    if (body != null) {
+                                                        InputStream is = body.byteStream();
+                                                        if (pos == is.skip(pos)) {
+                                                            // Successfully recover the connection
+                                                            // Will continue at where error occurs
+                                                            // But it doesn't mean it can read next byte
+                                                            // Need to try it in next iteration
+                                                            inputStreamRef.set(is);
+                                                        }
+                                                    }
+                                                }
+                                            } catch (Exception e) {
+                                                // Okhttp failed
+                                            }
+
+                                            // User allow retry recovery
+                                            // InputStream may be changed
+                                            // We can proceed to next iteration
+                                            retryDataReady.countDown();
+                                            break;
+                                        case DialogInterface.BUTTON_NEGATIVE:
+                                            // User give up and it is ok to stop loading
+                                            retryDataReady.countDown();
+                                            cancelled.set(true);
+                                            break;
+                                    }
+                                    dialog.dismiss();
+                                }
+                            };
+                            AlertDialog.Builder builder = new AlertDialog.Builder(GameBaseActivity.this);
+                            // TODO: Change the alert text for JSON and PNG accordingly
+                            builder.setMessage(path + " failed to load.\nDo you want to retry? Tried " + numberOfRetry)
+                                    .setPositiveButton("Yes", dialogClickListener)
+                                    .setNegativeButton("No", dialogClickListener)
+                                    .setCancelable(false).show();
                         }
+                    });
+
+                    try {
+                        // Wait for the user choice
+                        retryDataReady.await();
+                    } catch (InterruptedException e) {
+                        // Possible exit: system interrupt while okhttp is trying
+                        return -3;
+                    }
+
+                    if (cancelled.get()) {
+                        // Possible exit: successful read
+                        return -2;
                     }
                 }
-            });
+            }
+
+            private void openCache() {
+                tmpFile = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path + ".tmp");
+                try {
+                    if (!tmpFile.getParentFile().exists()) {
+                        tmpFile.getParentFile().mkdirs();
+                    }
+                    if(!tmpFile.exists()) {
+                        tmpFile.createNewFile();
+                    }
+                    outputStream = new FileOutputStream(tmpFile);
+                    bufferedOutputStream = new BufferedOutputStream(outputStream, 4096);
+                } catch(Exception e){
+                    ableToWrite = false;
+                    closeFileStream();
+                }
+            }
+
+            private void closeFileStream() {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                if (bufferedOutputStream != null) {
+                    try {
+                        bufferedOutputStream.close();
+                    } catch (Exception e2) {
+                        e2.printStackTrace();
+                    }
+                }
+            }
+        };
     }
 
     public Object[] createResponseObject(String path, String size, InputStream is){
