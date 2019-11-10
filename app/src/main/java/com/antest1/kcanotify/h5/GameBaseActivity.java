@@ -905,9 +905,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
             // -3 if there is an interrupt
             private int forcedRead(AtomicReference<InputStream> inputStreamRef) {
                 final AtomicReference<Boolean> cancelled = new AtomicReference<>(false);
-                final AtomicReference<Integer> result = new AtomicReference<>(-2);
-                int numberOfRetry = 0;
-
+                final AtomicReference<Integer> numberOfRetry = new AtomicReference<>(0);
 
                 while (true) {
                     try {
@@ -918,66 +916,35 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     }
 
                     final CountDownLatch retryReady = new CountDownLatch(1);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which){
-                                        case DialogInterface.BUTTON_POSITIVE:
-                                            // User want to retry
-                                            // Create new request and send it out
-                                            try {
-                                                Request.Builder builder = new Request.Builder().url(uri.toString());
-                                                for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
-                                                    builder.addHeader(keySet.getKey(), keySet.getValue());
-                                                }
-                                                Request serverRequest = builder.build();
-                                                Response response = client.newCall(serverRequest).execute();
-                                                if(response != null && response.isSuccessful()){
-                                                    ResponseBody body = response.body();
-                                                    if (body != null) {
-                                                        InputStream is = body.byteStream();
-                                                        if (pos == is.skip(pos)) {
-                                                            // Successfully recover the connection
-                                                            // Will continue at where error occurs
-                                                            // But it doesn't mean it can read next byte
-                                                            // Need to try it in next iteration
-                                                            inputStreamRef.set(is);
-                                                        }
-                                                    }
-                                                }
-                                            } catch (Exception e) {
-                                                // Okhttp failed
-                                            }
-
-                                            // User allow retry recovery
-                                            // InputStream may be changed
-                                            // We can proceed to next iteration
-                                            retryReady.countDown();
-                                            break;
-                                        case DialogInterface.BUTTON_NEGATIVE:
-                                            // User give up and it is ok to stop loading
-                                            retryReady.countDown();
-                                            cancelled.set(true);
-                                            break;
-                                    }
-                                    dialog.dismiss();
-                                }
-                            };
-                            AlertDialog.Builder builder = new AlertDialog.Builder(GameBaseActivity.this);
-                            // TODO: Change the alert text for JSON and PNG accordingly
-                            builder.setMessage(path + " failed to load.\nDo you want to retry? Tried " + numberOfRetry)
-                                    .setPositiveButton("Yes", dialogClickListener)
-                                    .setNegativeButton("No", dialogClickListener)
-                                    .setCancelable(false).show();
-                        }
+                    runOnUiThread(() -> {
+                        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                            switch (which){
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    // User allow retry recovery
+                                    // InputStream may be changed
+                                    // We can proceed to next iteration
+                                    retryReady.countDown();
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    // User give up and it is ok to stop loading
+                                    retryReady.countDown();
+                                    cancelled.set(true);
+                                    break;
+                            }
+                            dialog.dismiss();
+                        };
+                        AlertDialog.Builder builder = new AlertDialog.Builder(GameBaseActivity.this);
+                        // TODO: Change the alert text for JSON and PNG accordingly
+                        builder.setMessage(path + " failed to load.\nDo you want to retry? Tried " + numberOfRetry)
+                                .setPositiveButton("Yes", dialogClickListener)
+                                .setNegativeButton("No", dialogClickListener)
+                                .setCancelable(false).show();
                     });
 
                     try {
                         // Wait for the user choice
                         retryReady.await();
+                        numberOfRetry.set(numberOfRetry.get() + 1);
                     } catch (InterruptedException e) {
                         // Possible exit: system interrupt while okhttp is trying
                         return -3;
@@ -986,6 +953,33 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     if (cancelled.get()) {
                         // Possible exit: successful read
                         return -2;
+                    } else {
+                        // User want to retry
+                        // Create new request and send it out
+                        try {
+                            Request.Builder builder = new Request.Builder().url(uri.toString());
+                            for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
+                                builder.addHeader(keySet.getKey(), keySet.getValue());
+                            }
+                            Request serverRequest = builder.build();
+                            Response response = client.newCall(serverRequest).execute();
+                            if(response != null && response.isSuccessful()){
+                                ResponseBody body = response.body();
+                                if (body != null) {
+                                    InputStream is = body.byteStream();
+                                    if (pos == is.skip(pos)) {
+                                        // Successfully recover the connection
+                                        // Will continue at where error occurs
+                                        // But it doesn't mean it can read next byte
+                                        // Need to try it in next iteration
+                                        inputStreamRef.set(is);
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            // Okhttp failed
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
