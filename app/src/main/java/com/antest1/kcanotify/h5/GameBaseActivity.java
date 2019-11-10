@@ -941,9 +941,16 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         };
                         AlertDialog.Builder builder = new AlertDialog.Builder(GameBaseActivity.this);
                         // TODO: Change the alert text for JSON and PNG accordingly
-                        builder.setMessage(path + " failed to load.\nDo you want to retry? Tried " + numberOfRetry)
-                                .setPositiveButton("Yes", dialogClickListener)
-                                .setNegativeButton("No", dialogClickListener)
+                        // TODO: i18n
+                        builder.setTitle("游戏资源下载失败")
+                                .setMessage(path + "下载失败\n" +
+                                        "是否重试？已重试次数： " + numberOfRetry + "\n" +
+                                        (path.contains(".js") ?  "跳过此文档可能引致游戏卡死！！" :
+                                        (path.contains(".png") ? "跳过此图片可能引致画面异常" :
+                                                                 "跳过此资源的后果未明！"))
+                                )
+                                .setPositiveButton("重试", dialogClickListener)
+                                .setNegativeButton("跳过", dialogClickListener)
                                 .setCancelable(false).show();
                     });
 
