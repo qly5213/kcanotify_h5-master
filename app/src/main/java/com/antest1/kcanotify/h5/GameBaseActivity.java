@@ -904,7 +904,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
             // It returns the final output byte, or -2 if user don't want to retry anymore, or
             // -3 if there is an interrupt
             private int forcedRead(AtomicReference<InputStream> inputStreamRef) {
-                final CountDownLatch retryDataReady = new CountDownLatch(1);
                 final AtomicReference<Boolean> cancelled = new AtomicReference<>(false);
                 final AtomicReference<Integer> result = new AtomicReference<>(-2);
                 int numberOfRetry = 0;
@@ -918,6 +917,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         // Failed to read from the stream
                     }
 
+                    final CountDownLatch retryReady = new CountDownLatch(1);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -955,11 +955,11 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                             // User allow retry recovery
                                             // InputStream may be changed
                                             // We can proceed to next iteration
-                                            retryDataReady.countDown();
+                                            retryReady.countDown();
                                             break;
                                         case DialogInterface.BUTTON_NEGATIVE:
                                             // User give up and it is ok to stop loading
-                                            retryDataReady.countDown();
+                                            retryReady.countDown();
                                             cancelled.set(true);
                                             break;
                                     }
@@ -977,7 +977,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
                     try {
                         // Wait for the user choice
-                        retryDataReady.await();
+                        retryReady.await();
                     } catch (InterruptedException e) {
                         // Possible exit: system interrupt while okhttp is trying
                         return -3;
