@@ -851,34 +851,36 @@ public abstract class GameBaseActivity extends XWalkActivity {
                             bufferedOutputStream.close();
 
                             // If the returned data is -2 or -3
+                            // The resource is not complete
                             // Do not rename the cache
-
-                            // Rename the file, (e.g. from xxx.png.tmp to xxx.png)
-                            // Since renaming is an atomic operation,
-                            // We can guarantee the final cache is never corrupted
-                            // If anything goes wrong, xxx.png will not be updated
-                            // Next usage of xxx.png will re-download it from internet again
-                            File to = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path);
-                            if (nextData == -1 ||tmpFile.renameTo(to)) {
-                                // If renaming is done, update the cache json in a new thread
-                                // Returning the last byte will not be blocked
-                                // Worst case is just one more un-cached request
-                                // But we saved a lot of smoothness
-                                new Thread() {
-                                    @Override
-                                    public void run() {
-                                        synchronized (jsonObj) {
-                                            try{
-                                                jsonObj.put(path, version);
-                                                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
-                                                writer.write(jsonObj.toString());
-                                                writer.close();
-                                            } catch (Exception e3) {
-                                                e3.printStackTrace();
+                            if (nextData == -1) {
+                                // Rename the file, (e.g. from xxx.png.tmp to xxx.png)
+                                // Since renaming is an atomic operation,
+                                // We can guarantee the final cache is never corrupted
+                                // If anything goes wrong, xxx.png will not be updated
+                                // Next usage of xxx.png will re-download it from internet again
+                                File to = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path);
+                                if (tmpFile.renameTo(to)) {
+                                    // If renaming is done, update the cache json in a new thread
+                                    // Returning the last byte will not be blocked
+                                    // Worst case is just one more un-cached request
+                                    // But we saved a lot of smoothness
+                                    new Thread() {
+                                        @Override
+                                        public void run() {
+                                            synchronized (jsonObj) {
+                                                try{
+                                                    jsonObj.put(path, version);
+                                                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
+                                                    writer.write(jsonObj.toString());
+                                                    writer.close();
+                                                } catch (Exception e3) {
+                                                    e3.printStackTrace();
+                                                }
                                             }
                                         }
-                                    }
-                                }.start();
+                                    }.start();
+                                }
                             }
                         } catch (Exception e) {
                             Log.e("KCA", e.getMessage());
