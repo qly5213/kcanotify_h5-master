@@ -892,6 +892,12 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         }
                     }
                 }
+
+                // Do not return out custom code to the chromium
+                // Which does not know
+                if (nextData < -1) {
+                    nextData = -1;
+                }
                 return nextData;
             }
 
@@ -927,8 +933,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                     break;
                                 case DialogInterface.BUTTON_NEGATIVE:
                                     // User give up and it is ok to stop loading
-                                    retryReady.countDown();
                                     cancelled.set(true);
+                                    retryReady.countDown();
                                     break;
                             }
                             dialog.dismiss();
