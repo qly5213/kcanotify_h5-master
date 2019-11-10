@@ -10,11 +10,10 @@ android {
         }
     }
     defaultConfig {
-        applicationId "com.antest1.kcanotify.h5"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 2642
-        versionName "2.8_191110"
+        versionCode 2641
+        versionName "2.8_2.1"
 
         multiDexEnabled true
         externalNativeBuild {
@@ -29,9 +28,6 @@ android {
             // https://developer.android.com/ndk/guides/abis.html#sa
             abiFilters 'armeabi-v7a', 'x86'
         }
-
-
-        setProperty("archivesBaseName", "Kcanotify_Kai_Ni_B_V" + versionName)
     }
 
     externalNativeBuild {
