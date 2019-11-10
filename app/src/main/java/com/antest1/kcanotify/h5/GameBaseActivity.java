@@ -940,7 +940,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
                             dialog.dismiss();
                         };
                         AlertDialog.Builder builder = new AlertDialog.Builder(GameBaseActivity.this);
-                        // TODO: Change the alert text for JSON and PNG accordingly
                         // TODO: i18n
                         builder.setTitle("游戏资源下载失败")
                                 .setMessage(path + "下载失败\n" +
