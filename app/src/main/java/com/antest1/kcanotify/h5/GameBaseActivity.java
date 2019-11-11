@@ -1,9 +1,11 @@
 package com.antest1.kcanotify.h5;
 
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -35,6 +37,7 @@ import com.bilibili.boxing.BoxingMediaLoader;
 import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.xwalk.core.XWalkActivity;
 
@@ -53,6 +56,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import andhook.lib.AndHook;
@@ -592,7 +598,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 try{
                     String patchedPixi = injectPixi(serverResponse.string());
                     byte[] bytes = patchedPixi.getBytes();
-                    return backToWebView(path, String.valueOf(bytes.length), new ByteArrayInputStream(bytes));
+                    return createResponseObject(path, String.valueOf(bytes.length), new ByteArrayInputStream(bytes));
                 } catch (Exception ex) {
                     return null;
                 }
@@ -633,15 +639,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 String filePath = Environment.getExternalStorageDirectory() + "/KanCollCache" + path;
                 File tmp = new File(filePath);
 
-                //版本不一致则删除老的cache并更新版本信息
+                //版本不一致则删除老的cache
                 if (!version.equals(currentVersion)) {
                     tmp.delete();
-                    synchronized (jsonObj) {
-                        jsonObj.put(path, version);
-                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
-                        writer.write(jsonObj.toString());
-                        writer.close();
-                    }
                 }
                 if (tmp.exists()) {
                     //从缓存直接返回客户端，不请求服务器
@@ -650,7 +650,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
                     if(path.contains("/gadget_html5/js/kcs_inspection.js")){
                         byte[] fileContent = readFileToBytes(tmp);
-                        String newRespStr = new String(fileContent, "utf-8") + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
+                        String newRespStr = injectInspection(new String(fileContent, "utf-8"));
                         fileContent = newRespStr.getBytes("utf-8");
 
                         length = fileContent.length;
@@ -675,39 +675,49 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         inputStream = new FileInputStream(tmp);
                     }
 
-                    Object[] response = backToWebView(path, String.valueOf(length), inputStream);
+                    Object[] response = createResponseObject(path, String.valueOf(length), inputStream);
                     final long duration = System.nanoTime() - startTime;
                     Log.d("KCVA", "Local cache uri："  + uri + " after " + duration/1000 + "us");
                     return response;
                 } else {
-                    ResponseBody serverResponse = requestServer(uri, requestHeader);
-                    if(serverResponse != null){
-                        byte[] respByte = null;
-                        if(path.contains("/kcs2/js/main.js")){
-                            String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
-                            respByte = newRespStr.getBytes();
-                        } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
-                            String newRespStr = serverResponse.string() + "window.onload=function(){document.body.style.background=\"#000\";document.getElementById(\"spacing_top\").style.height=\"0px\";};";
-                            respByte = newRespStr.getBytes();
+                    boolean needModify = path.contains("/kcs2/js/main.js") || path.contains("/gadget_html5/js/kcs_inspection.js");
 
-                        }  else {
-                            respByte = serverResponse.bytes();
-                        }
-                        saveFile(path, respByte);
+                    if (needModify) {
+                        // Download the modify the result immediately
+                        ResponseBody serverResponse = requestServer(uri, requestHeader);
+                        if(serverResponse != null){
+                            byte[] respByte = null;
+                            if(path.contains("/kcs2/js/main.js")){
+                                String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
+                                respByte = newRespStr.getBytes();
+                            } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
+                                String newRespStr = injectInspection(serverResponse.string());
+                                respByte = newRespStr.getBytes();
+                            }
 
-                        // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
-                        if(path.contains("/kcs2/js/main.js")) {
-                            if (prefs.getBoolean("show_fps_counter", false)) {
-                                respByte = injectFpsUpdater(respByte);
+                            saveFile(path, respByte);
+
+                            // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
+                            if(path.contains("/kcs2/js/main.js")) {
+                                if (prefs.getBoolean("show_fps_counter", false)) {
+                                    respByte = injectFpsUpdater(respByte);
+                                }
+                                respByte = injectTickerTimingMode(respByte);
+                                if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) {
+                                    respByte = injectTouchLogic(respByte);
+                                }
                             }
-                            respByte = injectTickerTimingMode(respByte);
-                            if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) {
-                                respByte = injectTouchLogic(respByte);
-                            }
+                            return createResponseObject(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
+                        } else {
+                            return null;
                         }
-                        return backToWebView(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                     } else {
-                        return null;
+                        // No need to modify the resource
+                        // Do it in an async way
+
+                        Object[] ob = downloadAndCacheAsync(path, uri, requestHeader, version);
+                        Log.d("KCVA", "started asyncDL："  + uri);
+                        return ob;
                     }
                 }
             } catch (Exception e) {
@@ -718,7 +728,311 @@ public abstract class GameBaseActivity extends XWalkActivity {
         return null;
     }
 
-    public Object[] backToWebView(String path, String size, InputStream is){
+    private Object[] downloadAndCacheAsync(String path, Uri uri, Map<String, String> headerHeader, String version) {
+        // In old chromium, shouldInterceptRequest() is called synchronously in the JS main thread
+        // But after that the downloading of the content is async (not blocking UI)
+        // Therefore we cannot create the okhttp request before returning a response header
+        // which blocks the main JS thread and causes all animation freezing.
+        // Instead, we send request afterward and block the read() operation only
+        // Blocking read() does not affect the main JS thread, so there is no more lag
+
+        final CountDownLatch haveData = new CountDownLatch(1);
+        final AtomicReference<InputStream> inputStreamRef = new AtomicReference<>();
+
+        new Thread() {
+            @Override
+            public void run()  {
+                Request.Builder builder = new Request.Builder().url(uri.toString());
+                for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
+                    builder.addHeader(keySet.getKey(), keySet.getValue());
+                }
+                Request serverRequest = builder.build();
+
+                try {
+                    Response response = client.newCall(serverRequest).execute();
+                    if(response != null && response.isSuccessful()){
+                        ResponseBody body = response.body();
+                        if (body != null) {
+                            inputStreamRef.set(body.byteStream());
+                            haveData.countDown();
+                        }
+                    } else {
+                        Log.d("KCVA", "Download failed："  + uri);
+                        // Return a failing stream immediately
+                        // So that the thread reading the stream doesn't need to wait 30sec time out
+                        inputStreamRef.set(new InputStream() {
+                            @Override
+                            public int read() throws IOException {
+                                throw new IOException("Error ：");
+                            }
+                        });
+                        haveData.countDown();
+                    }
+                } catch (Exception e) {
+                    Log.d("KCVA", "Download error!："  + uri);
+                    // Return a failing stream immediately
+                    // So that the thread reading the stream doesn't need to wait 30sec time out
+                    inputStreamRef.set(new InputStream() {
+                        @Override
+                        public int read() throws IOException {
+                            throw new IOException("Error ：");
+                        }
+                    });
+                    haveData.countDown();
+                }
+            }
+        }.start();
+
+        return createResponseObject(path, null,
+                createResourceInputSteam(path, uri, version, haveData, inputStreamRef, headerHeader));
+    }
+
+    @NotNull
+    private InputStream createResourceInputSteam(String path, Uri uri, String version, CountDownLatch haveData, AtomicReference<InputStream> inputStreamRef, Map<String, String> headerHeader) {
+        return new InputStream() {
+            FileOutputStream outputStream = null;
+            BufferedOutputStream bufferedOutputStream = null;
+            boolean ableToWrite = true;
+            File tmpFile = null;
+
+            int pos = 0;
+
+            @Override
+            public int read() throws IOException {
+                // Open a tmp buffered file stream to start writing
+                if (outputStream == null && ableToWrite) {
+                    Log.e("KCA", "Save LocalRes:" + path);
+                    openCache();
+                }
+
+                // Wait the okhttp request
+                try {
+                    if (!haveData.await(30, TimeUnit.SECONDS)){
+                        // Waited so long and don't have any data
+                        // Instead of throwing exception, end the DL and  pretend it is finished
+                        Log.d("KCVA", "Timeout to wait for OKHTTP："  + uri);
+                        closeFileStream();
+                        ableToWrite = false;
+                        return -1;
+                    }
+                } catch (InterruptedException e) {
+                    // Unable to wait the data
+                    // handle error and close streams ASAP
+                    // Instead of throwing exception, end the DL and pretend it is finished
+                    e.printStackTrace();
+                    Log.d("KCVA", "Interrupted before the data："  + uri);
+                    closeFileStream();
+                    ableToWrite = false;
+                    return -1;
+                }
+
+                // Read next data
+                int nextData = forcedRead(inputStreamRef);
+                pos++;
+
+                if (nextData > -1) {
+                    // Have new data, try to write into file
+                    if (ableToWrite) {
+                        try {
+                            // Keep writing to the file if not yet failed
+                            bufferedOutputStream.write(nextData);
+                        } catch (Exception e) {
+                            ableToWrite = false;
+                            closeFileStream();
+                        }
+                    }
+                } else {
+                    // Close the file stream
+                    if (ableToWrite) {
+                        Log.d("KCVA", "END OF DOWNLOAD："  + uri);
+                        try {
+                            bufferedOutputStream.flush();
+                            outputStream.close();
+                            bufferedOutputStream.close();
+
+                            // If the returned data is -2 or -3
+                            // The resource is not complete
+                            // Do not rename the cache
+                            if (nextData == -1) {
+                                // Rename the file, (e.g. from xxx.png.tmp to xxx.png)
+                                // Since renaming is an atomic operation,
+                                // We can guarantee the final cache is never corrupted
+                                // If anything goes wrong, xxx.png will not be updated
+                                // Next usage of xxx.png will re-download it from internet again
+                                File to = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path);
+                                if (tmpFile.renameTo(to)) {
+                                    // If renaming is done, update the cache json in a new thread
+                                    // Returning the last byte will not be blocked
+                                    // Worst case is just one more un-cached request
+                                    // But we saved a lot of smoothness
+                                    new Thread() {
+                                        @Override
+                                        public void run() {
+                                            synchronized (jsonObj) {
+                                                try{
+                                                    jsonObj.put(path, version);
+                                                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
+                                                    writer.write(jsonObj.toString());
+                                                    writer.close();
+                                                } catch (Exception e3) {
+                                                    e3.printStackTrace();
+                                                }
+                                            }
+                                        }
+                                    }.start();
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.e("KCA", e.getMessage());
+                        } finally {
+                            // Whatever happened, the stream is closed and the last bit is sent
+                            // Sometimes the EOS is sent twice, prevent updating the cache twice
+                            ableToWrite = false;
+                            closeFileStream();
+                        }
+                    }
+                }
+
+                // Do not return out custom code to the chromium
+                // Which does not know
+                if (nextData < -1) {
+                    nextData = -1;
+                }
+                return nextData;
+            }
+
+            // It is forced to read the next byte of input stream
+            // If the stream fails to read, it will block and retry until:
+            //   1. successful recovered with a new request; or
+            //   2. user don't want to retry anymore; or
+            //   3. interrupted by system
+            // If it is recovered, the inputStream ref is changed to point to a recovered download
+            // It returns the final output byte, or -2 if user don't want to retry anymore, or
+            // -3 if there is an interrupt
+            private int forcedRead(AtomicReference<InputStream> inputStreamRef) {
+                final AtomicReference<Boolean> cancelled = new AtomicReference<>(false);
+                final AtomicReference<Integer> numberOfRetry = new AtomicReference<>(0);
+
+                while (true) {
+                    try {
+                        // First possible exit: successful read
+                        return inputStreamRef.get().read();
+                    } catch (Exception ex) {
+                        // Failed to read from the stream
+                    }
+
+                    final CountDownLatch retryReady = new CountDownLatch(1);
+                    runOnUiThread(() -> {
+                        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                            switch (which){
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    // User allow retry recovery
+                                    // InputStream may be changed
+                                    // We can proceed to next iteration
+                                    retryReady.countDown();
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    // User give up and it is ok to stop loading
+                                    cancelled.set(true);
+                                    retryReady.countDown();
+                                    break;
+                            }
+                            dialog.dismiss();
+                        };
+                        AlertDialog.Builder builder = new AlertDialog.Builder(GameBaseActivity.this);
+                        // TODO: i18n
+                        builder.setTitle("游戏资源下载失败")
+                                .setMessage(path + "下载失败\n" +
+                                        "是否重试？已重试次数： " + numberOfRetry + "\n" +
+                                        (path.contains(".js") ?  "跳过此文档可能引致游戏卡死！！" :
+                                        (path.contains(".png") ? "跳过此图片可能引致画面异常" :
+                                                                 "跳过此资源的后果未明！"))
+                                )
+                                .setPositiveButton("重试", dialogClickListener)
+                                .setNegativeButton("跳过", dialogClickListener)
+                                .setCancelable(false).show();
+                    });
+
+                    try {
+                        // Wait for the user choice
+                        retryReady.await();
+                        numberOfRetry.set(numberOfRetry.get() + 1);
+                    } catch (InterruptedException e) {
+                        // Possible exit: system interrupt while okhttp is trying
+                        return -3;
+                    }
+
+                    if (cancelled.get()) {
+                        // Possible exit: successful read
+                        return -2;
+                    } else {
+                        // User want to retry
+                        // Create new request and send it out
+                        try {
+                            Request.Builder builder = new Request.Builder().url(uri.toString());
+                            for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
+                                builder.addHeader(keySet.getKey(), keySet.getValue());
+                            }
+                            Request serverRequest = builder.build();
+                            Response response = client.newCall(serverRequest).execute();
+                            if(response != null && response.isSuccessful()){
+                                ResponseBody body = response.body();
+                                if (body != null) {
+                                    InputStream is = body.byteStream();
+                                    if (pos == is.skip(pos)) {
+                                        // Successfully recover the connection
+                                        // Will continue at where error occurs
+                                        // But it doesn't mean it can read next byte
+                                        // Need to try it in next iteration
+                                        inputStreamRef.set(is);
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            // Okhttp failed
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            private void openCache() {
+                tmpFile = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path + ".tmp");
+                try {
+                    if (!tmpFile.getParentFile().exists()) {
+                        tmpFile.getParentFile().mkdirs();
+                    }
+                    if(!tmpFile.exists()) {
+                        tmpFile.createNewFile();
+                    }
+                    outputStream = new FileOutputStream(tmpFile);
+                    bufferedOutputStream = new BufferedOutputStream(outputStream, 4096);
+                } catch(Exception e){
+                    ableToWrite = false;
+                    closeFileStream();
+                }
+            }
+
+            private void closeFileStream() {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                if (bufferedOutputStream != null) {
+                    try {
+                        bufferedOutputStream.close();
+                    } catch (Exception e2) {
+                        e2.printStackTrace();
+                    }
+                }
+            }
+        };
+    }
+
+    public Object[] createResponseObject(String path, String size, InputStream is){
         String mimeType = null;
         if (path.endsWith("mp3")) {
             mimeType = "audio/mpeg";
@@ -736,7 +1050,9 @@ public abstract class GameBaseActivity extends XWalkActivity {
         Map<String, String> map = new HashMap<>();
         map.put("Connection", "keep-alive");
         map.put("Server", "KanCollCache");
-        map.put("Content-Length", size);
+        if (size != null && !size.isEmpty()) {
+            map.put("Content-Length", size);
+        }
         map.put("Content-Type", mimeType);
         map.put("Cache-Control", "public");
         return new Object[]{mimeType, null, 200, "OK", map, is};
@@ -934,6 +1250,21 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // P.S. this patch uses more resource because canvas objects are used to split and cache the textures
         //      canvas object has more overhead than img object (original method) in chromium
 
+        // Load the full image in an img object instead of a BaseTexture resource, so it does not loaded into GPU
+        pixi = pixi.replace("this.add(r,s,o,function(r){if(r.error)return void e(r.error);var n=new a.Spritesheet(r.texture.baseTexture,t.data,t.url);n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()})})",
+                "var image=new Image();" +
+                        "image.onerror=function(){var ee='Fail to download image: '+image.src;console.error(ee);e(ee);};" + // TODO: retry downloading the image for a few times
+                        "image.onload=function(){" +
+                          "var n=new a.Spritesheet(null,t.data,t.url);" +
+                          "n.image=image;" +
+                          "n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()});" +
+                        "};" +
+                        "image.src=s;");
+
+        // Assume scale is 1
+        pixi = pixi.replace("i=this.baseTexture.sourceScale;",
+                "i=1;");
+
         // Since each split frame has their own texture, the x and y values are 0 now
         pixi = pixi.replace("h=a.rotated?new o.Rectangle(Math.floor(u.x*i)/this.resolution,Math.floor(u.y*i)/this.resolution,Math.floor(u.h*i)/this.resolution,Math.floor(u.w*i)/this.resolution):new o.Rectangle(Math.floor(u.x*i)/this.resolution,Math.floor(u.y*i)/this.resolution,Math.floor(u.w*i)/this.resolution,Math.floor(u.h*i)/this.resolution),",
                 "h=a.rotated?new o.Rectangle(0,0,Math.floor(u.h*i)/this.resolution,Math.floor(u.w*i)/this.resolution):new o.Rectangle(0,0,Math.floor(u.w*i)/this.resolution,Math.floor(u.h*i)/this.resolution),");
@@ -943,9 +1274,11 @@ public abstract class GameBaseActivity extends XWalkActivity {
         pixi = pixi.replace(",this.textures[s]=new o.Texture(this.baseTexture,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++}},",
                 ";var tmpCanvas = document.createElement('canvas');" +
                         "tmpCanvas.width = u.w; tmpCanvas.height = u.h;" +
-                        "tmpCanvas.getContext('2d').drawImage(this.baseTexture.source, u.x, u.y, u.w, u.h, 0, 0, u.w, u.h);" +
+                        "tmpCanvas.getContext('2d').drawImage(this.image, u.x, u.y, u.w, u.h, 0, 0, u.w, u.h);" +
                         "var bt = new PIXI.BaseTexture(tmpCanvas);" +
-                        "this.textures[s]=new o.Texture(bt,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++};this.baseTexture.destroy(),this.baseTexture=null},"); // Also destroy the baseTexture after the loop
+                        "this.textures[s]=new o.Texture(bt,h,d,l,a.rotated?2:0,a.anchor),o.Texture.addToCache(this.textures[s],s)}r++};" +
+                        "this.image.onload=null,this.image.onerror=null,this.image=null" + // Also destroy the baseTexture after the loop
+                        "},");
 
         // As the shared baseTexture is already destroyed in the parser,
         // Don't need to destroy it again in destroy()
@@ -954,6 +1287,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 "t.prototype.destroy=function(){var t=arguments.length>0&&void 0!==arguments[0]&&arguments[0];for(var e in this.textures)this.textures[e].destroy(true);this._frames=null,this._frameKeys=null,this.data=null,this.textures=null}");
 
         return pixi;
+    }
+
+    private String injectInspection(String inspection) {
+        return inspection + "window.onload=function(){document.body.style.background='#000',null==document.getElementById('spacing_top')||(document.getElementById('spacing_top').style.height='0px')};";
     }
 
     private byte[] injectTouchLogic(byte[] mainJs){
@@ -1059,6 +1396,11 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
         // Replace the ticker timing mode to keep animation smooth even with a lot of events (i.e. touch taps)
         s = s.replace("createjs.Ticker.TIMEOUT", "createjs.Ticker.RAF");
+
+        s = s.replace("GC_MAX_CHECK_COUNT=180", "GC_MAX_CHECK_COUNT=180");
+        s = s.replace("PIXI.settings.GC_MAX_IDLE=360", "" +
+            "PIXI.settings.GC_MAX_IDLE=360," +
+            "PIXI.settings.MIPMAP_TEXTURES=false"); // Save mem if an image is power of 2
 
         // Convert back to bytes
         return s.getBytes();
