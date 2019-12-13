@@ -1253,12 +1253,22 @@ public abstract class GameBaseActivity extends XWalkActivity {
         // Load the full image in an img object instead of a BaseTexture resource, so it does not loaded into GPU
         pixi = pixi.replace("this.add(r,s,o,function(r){if(r.error)return void e(r.error);var n=new a.Spritesheet(r.texture.baseTexture,t.data,t.url);n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()})})",
                 "var image=new Image();" +
-                        "image.onerror=function(){var ee='Fail to download image: '+image.src;console.error(ee);e(ee);};" + // TODO: retry downloading the image for a few times
+                        "image.onerror=function(){var ee='Fail to download image: '+image.src;console.error(ee);e(ee);};" +
                         "image.onload=function(){" +
-                          "var n=new a.Spritesheet(null,t.data,t.url);" +
-                          "n.image=image;" +
-                          "n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()});" +
+                        "var n=new a.Spritesheet(null,t.data,t.url);" +
+                        "n.image=image;" +
+                        "n.parse(function(){t.spritesheet=n,t.textures=n.textures,e()});" +
                         "};" +
+                        "if(this.defaultQueryString){" + // Add back the version number
+                        "var hash=(/(#[\\w-]+)?$/).exec(s)[0];" +
+                        "s=s.substr(0,s.length-hash.length);" +
+                        "if(s.indexOf('?')!==-1){" +
+                        "s+='&'+this.defaultQueryString;" +
+                        "}else{" +
+                        "s+='?'+this.defaultQueryString;" +
+                        "}" +
+                        "s+=hash;" +
+                        "}"+
                         "image.src=s;");
 
         // Assume scale is 1
