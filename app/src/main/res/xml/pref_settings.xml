@@ -189,6 +189,11 @@
             android:key="show_fps_counter"
             android:summary="右上角显示FPS"
             android:title="显示帧数" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="mod_enable"
+            android:summary="开启魔改，可在魔改列表查找魔改并下载使用"
+            android:title="开启魔改" />
         <!--
         <Preference
         android:defaultValue=""

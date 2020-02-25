@@ -21,7 +21,7 @@ import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 public class ToolsActivity extends AppCompatActivity {
     Toolbar toolbar;
     static Gson gson = new Gson();
-    LinearLayout view_fleetlist, view_shiplist, view_equipment, view_droplog, view_reslog, view_akashi, view_expcalc, view_expdtable, view_datasync;
+    LinearLayout view_fleetlist, view_shiplist, view_equipment, view_droplog, view_reslog, view_akashi, view_expcalc, view_expdtable, view_datasync, view_mod;
     public ToolsActivity() {
         LocaleUtils.updateConfig(this);
     }
@@ -46,6 +46,7 @@ public class ToolsActivity extends AppCompatActivity {
         view_akashi = findViewById(R.id.action_akashi);
         view_expcalc = findViewById(R.id.action_expcalc);
         view_expdtable = findViewById(R.id.action_expdtable);
+        view_mod = findViewById(R.id.action_mod);
 
         view_fleetlist.setOnClickListener(view -> {
             Intent intent = new Intent(ToolsActivity.this, FleetInfoActivity.class);
@@ -84,6 +85,10 @@ public class ToolsActivity extends AppCompatActivity {
 
         view_expdtable.setOnClickListener(view -> {
             Intent intent = new Intent(ToolsActivity.this, ExpeditionTableActivity.class);
+            startActivity(intent);
+        });
+        view_mod.setOnClickListener(view -> {
+            Intent intent = new Intent(ToolsActivity.this, GameModActivity.class);
             startActivity(intent);
         });
     }

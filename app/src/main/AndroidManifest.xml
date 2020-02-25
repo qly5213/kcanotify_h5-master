@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="com.antest1.kcasniffer.contentprovider.READ_DATA"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission
         xmlns:tools="http://schemas.android.com/tools"
         android:name="android.permission.PACKAGE_USAGE_STATS"
@@ -24,6 +25,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:largeHeap="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
         <activity
             android:name="com.antest1.kcanotify.h5.MainActivity"
@@ -234,6 +236,15 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
+            android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation|fontScale|uiMode|density">
+        </activity>
+        <activity
+            android:name="com.antest1.kcanotify.h5.GameModActivity"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
+            android:process=":modWeb"
             android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation|fontScale|uiMode|density">
         </activity>
         <activity

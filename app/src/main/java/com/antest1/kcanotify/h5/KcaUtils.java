@@ -25,7 +25,6 @@ import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -34,7 +33,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
@@ -781,16 +779,16 @@ public class KcaUtils {
     }
 
     public static void showDataLoadErrorToast(Context ac, Context bc, String text) {
-        if (getBooleanPreferences(ac, PREF_DATALOAD_ERROR_FLAG)) {
+        /*if (getBooleanPreferences(ac, PREF_DATALOAD_ERROR_FLAG)) {
             KcaCustomToast customToast = new KcaCustomToast(ac);
             showCustomToast(ac, bc, customToast, text, Toast.LENGTH_LONG, ContextCompat.getColor(ac, R.color.colorHeavyDmgStatePanel));
-        }
+        }*/
     }
 
     public static void showDataLoadErrorToast(Context context, String text) {
-        if (getBooleanPreferences(context, PREF_DATALOAD_ERROR_FLAG)) {
+        /*if (getBooleanPreferences(context, PREF_DATALOAD_ERROR_FLAG)) {
             Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-        }
+        }*/
     }
 
     public static boolean checkOnline(Context context) {

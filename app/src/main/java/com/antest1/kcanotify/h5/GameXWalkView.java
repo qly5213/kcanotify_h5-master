@@ -69,6 +69,12 @@ public class GameXWalkView extends XWalkView implements GameView {
         hostNameOoi = prefs.getString("ooi_host_name", "ooi.moe");
         if(hostNameOoi.equals("")) hostNameOoi = "ooi.moe";
 
+        if(hostNameOoi.startsWith("http")) {
+            hostNameOoi = hostNameOoi + "/poi";
+        } else {
+            hostNameOoi = "http://" + hostNameOoi + "/poi";
+        }
+
         if(prefs.getBoolean("clear_cookie_start", false)){
             (new XWalkCookieManager()).removeAllCookie();
             SharedPreferences.Editor editor = prefs.edit();
@@ -177,7 +183,7 @@ public class GameXWalkView extends XWalkView implements GameView {
                 this.loadUrl(GameConnection.DMM_START_URL);
                 return;
             case OOI:
-                this.loadUrl("http://" + hostNameOoi + "/poi");
+                this.loadUrl(hostNameOoi);
         }
 
         this.onShow();
@@ -208,7 +214,7 @@ public class GameXWalkView extends XWalkView implements GameView {
     }
 
     private void detectGameStartAndFit(XWalkView view) {
-        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+        if (view.getUrl() != null && view.getUrl().contains(hostNameOoi)) {
             fitGameLayout();
         }
         if (view.getUrl() != null && view.getUrl().equals(GameConnection.DMM_START_URL)) {
@@ -240,7 +246,7 @@ public class GameXWalkView extends XWalkView implements GameView {
         }
 
         // For OOI
-        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")) {
+        if (view.getUrl() != null && view.getUrl().contains(hostNameOoi.substring(0, hostNameOoi.length() - 3))) {
             boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
             if (isAutoUser) {
                 String userName = prefs.getString("dmm_user", "");
@@ -275,14 +281,14 @@ public class GameXWalkView extends XWalkView implements GameView {
 
     private void detectLoginExpireAndReload(String requestUrl, String respData){
         // For OOI only
-        if(requestUrl.contains("api_req_member/get_incentive") && requestUrl.contains("http://" + hostNameOoi + "/")){
+        if(requestUrl.contains("api_req_member/get_incentive") && requestUrl.contains(hostNameOoi.substring(0, hostNameOoi.length() - 3))){
             try {
                 JSONObject respDataJson = new JSONObject(respData.substring(7));
                 if(respDataJson.has("api_result") && respDataJson.getInt("api_result") != 1){
                     gameActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            loadUrl("http://" + hostNameOoi + "/");
+                            loadUrl(hostNameOoi.substring(0, hostNameOoi.length() - 3));
                         }
                     });
                     Toast.makeText(gameActivity, "登录过期，正在跳转到登录页面！", Toast.LENGTH_LONG).show();

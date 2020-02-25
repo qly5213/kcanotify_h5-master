@@ -3,8 +3,10 @@ package com.antest1.kcanotify.h5;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
+import android.webkit.WebView;
 
 import org.acra.ACRA;
 import org.acra.annotation.AcraCore;
@@ -24,6 +26,7 @@ public class KcaApplication extends MultiDexApplication {
     public static Activity gameActivity;
     public static boolean isCheckVersion = false;
     public static long checkVersionDate = 0;
+    private static final String PROCESSNAME = "com.antest1.kcanotify.h5";
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -56,6 +59,13 @@ public class KcaApplication extends MultiDexApplication {
 
         LocaleUtils.updateConfig(this, getBaseContext().getResources().getConfiguration());
         ACRA.init(this);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            String processName = getProcessName();
+            if (!PROCESSNAME.equals(processName)) {
+                WebView.setDataDirectorySuffix("modWeb");
+            }
+        }
     }
 
     private static KcaApplication application;

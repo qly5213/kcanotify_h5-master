@@ -31,9 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_QUESTVIEW;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_DB_VERSION;
-import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
 
 public class GameWebView extends WebView implements GameView{
     public GameWebView(Context context) {
@@ -84,6 +82,12 @@ public class GameWebView extends WebView implements GameView{
     public void loadGame(SharedPreferences prefs, GameConnection.Type connectionType) {
         hostNameOoi = prefs.getString("ooi_host_name", "ooi.moe");
         if(hostNameOoi.equals("")) hostNameOoi = "ooi.moe";
+
+        if(hostNameOoi.startsWith("http")) {
+            hostNameOoi = hostNameOoi + "/poi";
+        } else {
+            hostNameOoi = "http://" + hostNameOoi + "/poi";
+        }
 
         if (prefs.getBoolean("background_play", true)) {
             this.setActiveInBackground(true);
@@ -200,7 +204,7 @@ public class GameWebView extends WebView implements GameView{
                 this.loadUrl(GameConnection.DMM_START_URL);
                 return;
             case OOI:
-                this.loadUrl("http://" + hostNameOoi + "/poi");
+                this.loadUrl(hostNameOoi);
         }
     }
 
@@ -233,7 +237,7 @@ public class GameWebView extends WebView implements GameView{
     }
 
     private void detectLoginAndFill(WebView view, SharedPreferences prefs) {
-        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/")) {
+        if (view.getUrl() != null && view.getUrl().contains(hostNameOoi.substring(0, hostNameOoi.length() - 3))) {
             boolean isAutoUser = prefs.getBoolean("ooi_auto_user", false);
             if (isAutoUser) {
                 String userName = prefs.getString("dmm_user", "");
@@ -261,7 +265,7 @@ public class GameWebView extends WebView implements GameView{
     }
 
     private void detectGameStartAndFit(WebView view) {
-        if (view.getUrl() != null && view.getUrl().equals("http://" + hostNameOoi + "/poi")) {
+        if (view.getUrl() != null && view.getUrl().equals(hostNameOoi)) {
             fitGameLayout();
         }
         if (view.getUrl() != null && view.getUrl().equals(GameConnection.DMM_START_URL)) {
@@ -307,14 +311,14 @@ public class GameWebView extends WebView implements GameView{
 
     private void detectLoginExpireAndReload(String requestUrl, String respData){
         // For OOI only
-        if(requestUrl.contains("api_req_member/get_incentive") && requestUrl.contains("http://" + hostNameOoi + "/")){
+        if(requestUrl.contains("api_req_member/get_incentive") && requestUrl.contains(hostNameOoi.substring(0, hostNameOoi.length() - 3))){
             try {
                 JSONObject respDataJson = new JSONObject(respData.substring(7));
                 if(respDataJson.has("api_result") && respDataJson.getInt("api_result") != 1){
                     gameActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            GameWebView.this.loadUrl("http://" + hostNameOoi + "/");
+                            GameWebView.this.loadUrl(hostNameOoi.substring(0, hostNameOoi.length() - 3));
                         }
                     });
                     Toast.makeText(gameActivity, "登录过期，正在跳转到登录页面！", Toast.LENGTH_LONG).show();

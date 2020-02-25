@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Color;
 import android.net.Uri;
@@ -38,6 +39,7 @@ import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.xwalk.core.XWalkActivity;
 
@@ -55,6 +57,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -128,6 +131,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
     private Runnable dismissSubTitle;
     private boolean chatService;
     private String nickName;
+    private boolean modEnable;
 
     public native String stringFromJNI();
 
@@ -154,7 +158,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // For some system changes not captured by android:configChanges,
         // an instant is re-created but the system is still keeping/using resources of the old instant for a while
         // In this case, we do not finish the old view to avoid a crash
@@ -249,6 +252,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
         changeCookie = prefs.getBoolean("change_cookie_start", false);
         initCookieData();
 
+        //增加魔改开关
+        modEnable = prefs.getBoolean("mod_enable", true);
 
         subtitleHandler = new Handler();
         dismissSubTitle = new Runnable() {
@@ -268,10 +273,21 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
         registerReceiver(gameViewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_reload"));
     }
+    private void updateLanguage(Context context, Locale locale) {
+        Resources resources = context.getResources();
+        Configuration config = resources.getConfiguration();
+        DisplayMetrics dm = resources.getDisplayMetrics();
+        config.setLocale(locale);
+        context.createConfigurationContext(config);
+        resources.updateConfiguration(config, dm);
+    }
+
+
 
     @Override
     protected void onResume() {
         rotationObserver.startObserver();
+        updateLanguage(this, Locale.JAPAN);
         setScreenOrientation();
         if (danmakuView != null && danmakuView.isPrepared() && danmakuView.isPaused()) {
             danmakuView.resume();
@@ -636,9 +652,24 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 if (jsonObj.has(path)) {
                     currentVersion = jsonObj.getString(path);
                 }
+
+                //add read mod fil
+                if(path.contains(".png") && modEnable) {
+                    String modFilePath = Environment.getExternalStorageDirectory() + "/KanCollCache/mod" + path;
+                    File modFile = new File(modFilePath);
+                    if (modFile.exists()) {
+                        //从魔改目录直接返回客户端
+                        long length =  modFile.length();
+                        InputStream inputStream = new FileInputStream(modFile);
+                        Object[] response = createResponseObject(path, String.valueOf(length), inputStream);
+                        return response;
+                    }
+                }
+
                 String filePath = Environment.getExternalStorageDirectory() + "/KanCollCache" + path;
                 File tmp = new File(filePath);
 
+                Log.d("KCVA", "Local cache version："  + currentVersion + " ;server version: " + version + "us");
                 //版本不一致则删除老的cache
                 if (!version.equals(currentVersion)) {
                     tmp.delete();
@@ -666,6 +697,13 @@ public abstract class GameBaseActivity extends XWalkActivity {
                             fileContent = injectTouchLogic(fileContent);
                         }
 
+                        if(modEnable){
+                            String modJson = "var shipModJson = " + buildModJson() + ";";
+                            String modRead = "function changeMod(v,xhr){if(shipModJson!=null&&xhr.xhr.responseURL.indexOf(\"/kcsapi/api_start2/getData\")!=-1){var getData=JSON.parse(v.substring(7));var jsonShipArr=getData.api_data.api_mst_shipgraph;for(var i=0;i<shipModJson.length;i++){var modJson=shipModJson[i];for(var j=0;j<jsonShipArr.length;j++){var getDataShip=jsonShipArr[j];if(JSON.parse(modJson).api_id==getDataShip.api_id){jsonShipArr[j]=JSON.parse(modJson);}}}\n" +
+                                    "getData.api_data.api_mst_shipgraph=jsonShipArr;v=\"svdata=\"+JSON.stringify(getData);}\n" +
+                                    "return v;};hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];},responseText:{getter:changeMod},response:{getter:changeMod}});";
+                            fileContent = (new String(fileContent) + modJson + modRead).getBytes();
+                        }
                         length = fileContent.length;
                         inputStream = new ByteArrayInputStream(fileContent);
                     } else {
@@ -680,7 +718,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     Log.d("KCVA", "Local cache uri："  + uri + " after " + duration/1000 + "us");
                     return response;
                 } else {
-                    boolean needModify = path.contains("/kcs2/js/main.js") || path.contains("/gadget_html5/js/kcs_inspection.js");
+                    boolean needModify = path.contains("/kcs2/js/main.js") || path.contains("/gadget_html5/js/kcs_inspection.js") || path.contains("ooi_moe_t.png");
 
                     if (needModify) {
                         // Download the modify the result immediately
@@ -688,7 +726,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
                         if(serverResponse != null){
                             byte[] respByte = null;
                             if(path.contains("/kcs2/js/main.js")){
-                                String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];}});";
+                                String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);";
                                 respByte = newRespStr.getBytes();
                             } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
                                 String newRespStr = injectInspection(serverResponse.string());
@@ -705,6 +743,13 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                 respByte = injectTickerTimingMode(respByte);
                                 if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) {
                                     respByte = injectTouchLogic(respByte);
+                                }
+                                if(modEnable){
+                                    String modJson = "var shipModJson = " + buildModJson() + ";";
+                                    String modRead = "function changeMod(v,xhr){if(shipModJson!=null&&xhr.xhr.responseURL.indexOf(\"/kcsapi/api_start2/getData\")!=-1){var getData=JSON.parse(v.substring(7));var jsonShipArr=getData.api_data.api_mst_shipgraph;for(var i=0;i<shipModJson.length;i++){var modJson=shipModJson[i];for(var j=0;j<jsonShipArr.length;j++){var getDataShip=jsonShipArr[j];if(JSON.parse(modJson).api_id==getDataShip.api_id){jsonShipArr[j]=JSON.parse(modJson);}}}\n" +
+                                            "getData.api_data.api_mst_shipgraph=jsonShipArr;v=\"svdata=\"+JSON.stringify(getData);}\n" +
+                                            "return v;};hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];},responseText:{getter:changeMod},response:{getter:changeMod}});";
+                                    respByte = (new String(respByte) + modJson + modRead).getBytes();
                                 }
                             }
                             return createResponseObject(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
@@ -727,7 +772,40 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
         return null;
     }
+    public String buildModJson() {
 
+        String result = null;
+        try {
+            String pathDirStr = "/KanCollCache" + File.separator + "mod";
+            File modDirfile = new File(Environment.getExternalStorageDirectory(), pathDirStr);
+            if (!modDirfile.exists()) {
+                return null;
+            }
+            JSONArray jsonModShipArr = new JSONArray();
+            File[] subFiles = modDirfile.listFiles();
+            for(File f : subFiles){
+                if(f.getName().endsWith("json")){
+                    jsonModShipArr.put(new String(readFileToBytes(f)));
+                }
+            }
+            /*JSONObject shipObject = new JSONObject(oriData);
+            JSONArray jsonShipArr = shipObject.getJSONObject("api_data").getJSONArray("api_mst_shipgraph");
+            for (int i = 0; i < jsonModShipArr.length(); i++) {
+                JSONObject modShipJsonObj = jsonModShipArr.getJSONObject(i);
+                for (int j = 0; j < jsonShipArr.length(); j++) {
+                    JSONObject shipJsonObj = jsonShipArr.getJSONObject(j);
+                    if (shipJsonObj.getInt("api_id") == modShipJsonObj.getInt("api_id")) {
+                        jsonShipArr.put(j, modShipJsonObj);
+                        break;
+                    }
+                }
+            }*/
+            result = jsonModShipArr.toString();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
     private Object[] downloadAndCacheAsync(String path, Uri uri, Map<String, String> headerHeader, String version) {
         // In old chromium, shouldInterceptRequest() is called synchronously in the JS main thread
         // But after that the downloading of the content is async (not blocking UI)
@@ -807,7 +885,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
                 // Wait the okhttp request
                 try {
-                    if (!haveData.await(30, TimeUnit.SECONDS)){
+                    if (!haveData.await(90, TimeUnit.SECONDS)){
                         // Waited so long and don't have any data
                         // Instead of throwing exception, end the DL and  pretend it is finished
                         Log.d("KCVA", "Timeout to wait for OKHTTP："  + uri);
