@@ -751,6 +751,7 @@ public class KcaQuestTracker extends SQLiteOpenHelper {
                 JsonArray cond = questTrackInfo.getAsJsonArray("cond");
                 int type = questTrackInfo.get("type").getAsInt();
                 for (int i = 0; i < cond.size(); i++) {
+                    if (cond_value[i] == null || cond_value[i].equals("")) continue;
                     if(Integer.parseInt(cond_value[i]) >= Integer.parseInt(cond.get(i).getAsString())) {
                         if (!checkQuestValid(type, Integer.parseInt(key), time)) {
                             db.delete(qt_table_name, "KEY=?", new String[]{String.valueOf(key)});

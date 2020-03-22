@@ -743,10 +743,18 @@ public class KcaUtils {
             try {
                 bitmap = BitmapFactory.decodeStream(new FileInputStream(myImageFile), null, options);
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                setPreferences(context, PREF_DATALOAD_ERROR_FLAG, true);
-                if (helper != null) helper.recordErrorLog(ERROR_TYPE_DATALOAD, name, "getFairyImageFromStorage", "0", getStringFromException(e));
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.noti_icon_0);
+                try {
+                    int item_id =KcaUtils.getId(name, R.mipmap.class);
+                    bitmap = BitmapFactory.decodeResource(KcaApplication.getInstance().getResources(), item_id);
+                } catch (Exception ex){
+                    e.printStackTrace();
+                }
+                if(bitmap == null) {
+                    setPreferences(context, PREF_DATALOAD_ERROR_FLAG, true);
+                    if (helper != null)
+                        helper.recordErrorLog(ERROR_TYPE_DATALOAD, name, "getFairyImageFromStorage", "0", getStringFromException(e));
+                    bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.noti_icon_0);
+                }
             }
             if (bitmap == null) {
                 setPreferences(context, PREF_DATALOAD_ERROR_FLAG, true);
@@ -774,7 +782,13 @@ public class KcaUtils {
         } else if (FAIRY_SPECIAL_FLAG && fairy_id >= FAIRY_SPECIAL_PREFIX) {
             view.setImageResource(getId(name, R.mipmap.class));
         } else {
-            view.setImageResource(R.mipmap.noti_icon_0);
+            int item_id = R.mipmap.noti_icon_0;
+            try {
+                item_id =KcaUtils.getId(name, R.mipmap.class);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            view.setImageResource(item_id);
         }
     }
 

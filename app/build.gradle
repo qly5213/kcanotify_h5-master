@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 27
     buildToolsVersion '28.0.3'
 
     sourceSets {
@@ -11,9 +11,9 @@ android {
     }
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 27
         versionCode 2641
-        versionName "2.8_2.1.5"
+        versionName "2.8_2.1.8"
 
         multiDexEnabled true
         externalNativeBuild {

@@ -238,8 +238,12 @@ public class KcaExpeditionTableViewAdpater extends BaseAdapter {
         if (type == 0) {
             type_view.setImageResource(R.color.transparent);
         } else {
-            int item_id = KcaUtils.getId("common_itemicons_id_" + type, R.mipmap.class);
-            type_view.setImageResource(item_id);
+            try {
+                int item_id = KcaUtils.getId("common_itemicons_id_" + type, R.mipmap.class);
+                type_view.setImageResource(item_id);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
         if (count_view != null) {
             count_view.setText(KcaUtils.format("x%d", count));

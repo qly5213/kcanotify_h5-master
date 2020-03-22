@@ -171,11 +171,16 @@
             android:title="@string/clear_cookie_start_title" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="clear_cache_start"
+            android:summary="维护后频繁猫，缓存错误请勾选清除缓存启动"
+            android:title="清除缓存启动" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="change_cookie_start"
             android:summary="修改Cookie绕过dmm地域检测"
             android:title="修改Cookie" />
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="change_webview"
             android:summary="使用Crosswalk替换原生WebView"
             android:title="修改webview" />
@@ -194,6 +199,12 @@
             android:key="mod_enable"
             android:summary="开启魔改，可在魔改列表查找魔改并下载使用"
             android:title="开启魔改" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="mod_ui_enable"
+            android:dependency="mod_enable"
+            android:summary="开启UI魔改，UI出问题时请关闭UI魔改"
+            android:title="开启UI魔改" />
         <!--
         <Preference
         android:defaultValue=""

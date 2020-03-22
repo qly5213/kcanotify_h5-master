@@ -99,12 +99,20 @@ public class GameXWalkView extends XWalkView implements GameView {
         XWalkSettings mWebSettings = this.getSettings();
         mWebSettings.setUserAgentString(USER_AGENT);
         mWebSettings.setBuiltInZoomControls(true);
-        mWebSettings.setCacheMode(XWalkSettings.LOAD_NO_CACHE);
+        mWebSettings.setCacheMode(XWalkSettings.LOAD_DEFAULT);
         // 设置与Js交互的权限
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
         XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+
+
+        if(prefs.getBoolean("clear_cache_start", false)) {
+            this.clearCache(true);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("clear_cache_start", false);
+            editor.apply();
+        }
 
         //设置WebChromeClient类
         this.setUIClient(new XWalkUIClient(this) {

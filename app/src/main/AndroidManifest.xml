@@ -205,6 +205,7 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
+            android:process=":gameWeb"
             android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation|fontScale|uiMode|density">
         </activity>
 
@@ -215,6 +216,7 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
+            android:process=":gameWeb"
             android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation|fontScale|uiMode|density">
         </activity>
 
@@ -226,6 +228,7 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
+            android:process=":gameWeb"
             android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation|fontScale|uiMode|density">
         </activity>
 
@@ -236,6 +239,7 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
+            android:process=":gameWeb"
             android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation|fontScale|uiMode|density">
         </activity>
         <activity
@@ -253,6 +257,12 @@
             android:hardwareAccelerated="true"
             android:configChanges="locale|layoutDirection|screenSize|smallestScreenSize|screenLayout|orientation|keyboard|keyboardHidden|navigation">
         </activity>
+
+        <service
+            android:name=".MainRemoteService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
 
 
         <service

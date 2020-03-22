@@ -3,11 +3,13 @@ package com.antest1.kcanotify.h5;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -19,11 +21,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.LruCache;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -60,6 +64,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
@@ -81,6 +87,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public abstract class GameBaseActivity extends XWalkActivity {
+    private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
 
     private static final String[] SERVER_IP = new String[]{"203.104.209.71", "203.104.209.87", "125.6.184.215", "203.104.209.183", "203.104.209.150", "203.104.209.134", "203.104.209.167", "203.104.248.135", "125.6.189.7", "125.6.189.39", "125.6.189.71", "125.6.189.103", "125.6.189.135", "125.6.189.167", "125.6.189.215", "125.6.189.247", "203.104.209.23", "203.104.209.39", "203.104.209.55", "203.104.209.102"};
 
@@ -133,6 +140,14 @@ public abstract class GameBaseActivity extends XWalkActivity {
     private String nickName;
     private boolean modEnable;
 
+    private ExecutorService mExecutor;
+    private boolean proxyEnable;
+    private String proxyIP;
+
+    LruCache<String, byte[]> mLruCache;
+    ServiceConnection connection;
+    IWebviewBinder iWebviewBinder;
+
     public native String stringFromJNI();
 
     public native int nativeInit(int version, boolean proxyEnable, String ip);
@@ -165,10 +180,32 @@ public abstract class GameBaseActivity extends XWalkActivity {
             // Remove last game activity only after changing important settings (DMM/OOI, Crosswalk/WebView)
             KcaApplication.gameActivity.finish();
         }
+
+        int cacheSize = 150 * 1024 * 1024; // 150MiB
+        mLruCache = new LruCache<String, byte[]>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, byte[] value) {
+                return value.length;
+            }
+        };
+        bindService(
+                new Intent(this, MainRemoteService.class),
+                connection = new ServiceConnection() {
+                    @Override
+                    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                        iWebviewBinder = IWebviewBinder.Stub.asInterface(iBinder);
+                    }
+
+                    @Override
+                    public void onServiceDisconnected(ComponentName componentName) {
+
+                    }
+                },
+                Context.BIND_AUTO_CREATE);
         KcaApplication.gameActivity = this;
         rotationObserver = new GameBaseActivity.RotationObserver(new Handler());
         prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
-
+        mExecutor = Executors.newScheduledThreadPool(5);
         subTitleEnable = prefs.getBoolean("voice_sub_title", false);
         if(subTitleEnable) {
             //语言字幕初始化
@@ -190,8 +227,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
         battleResultVibrate = prefs.getBoolean("battle_result_vibrate", true);
 
         //proxy init
-        boolean proxyEnable = prefs.getBoolean("host_proxy_enable", false);
-        String proxyIP = prefs.getString("host_proxy_address", "167.179.91.86");
+        proxyEnable = prefs.getBoolean("host_proxy_enable", false);
+        proxyIP = prefs.getString("host_proxy_address", "167.179.91.86");
         if(proxyEnable) {
             AndHook.ensureNativeLibraryLoaded(null);
             System.loadLibrary("xhook");
@@ -598,11 +635,14 @@ public abstract class GameBaseActivity extends XWalkActivity {
     }
 
     public Object[] interceptRequest(Uri uri, String requestMethod, Map<String, String> requestHeader){
+        if ("POST".equals(requestMethod)){
+            return null;
+        }
         String path = uri.getPath();
         final long startTime = System.nanoTime();
         Log.d("KCVA", "requesting  uri：" + uri);
 
-        if(battleResultVibrate && path != null && (path.contains("battle_result") || path.contains("battleresult"))){
+        if(battleResultVibrate && path != null && (path.contains("battle_result_main.png"))){
             Vibrator vib = (Vibrator) GameBaseActivity.this.getSystemService(Service.VIBRATOR_SERVICE);
             vib.vibrate(200);
         }
@@ -622,7 +662,24 @@ public abstract class GameBaseActivity extends XWalkActivity {
             return null;
         }
 
-        if ("GET".equals(requestMethod) && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/") || path.startsWith("/gadget_html5/js/kcs_inspection.js"))) {
+        //Reverse Proxy
+        if(proxyEnable && uri.toString().startsWith("http://203.104.209.7/")){
+            try {
+                ResponseBody serverResponse = requestServer(uri, requestHeader);
+                byte[] respByte = null;
+                if(uri.toString().contains("/gadget_html5/js/kcs_inspection.js")){
+                    String newRespStr = injectInspection(serverResponse.string());
+                    respByte = newRespStr.getBytes();
+                } else {
+                    respByte = serverResponse.bytes();
+                }
+                return createResponseObject(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        if ("GET".equals(requestMethod) && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
             if(path.contains("version.json") || path.contains("index.php")){
                 return null;
             }
@@ -653,8 +710,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     currentVersion = jsonObj.getString(path);
                 }
 
-                //add read mod fil
-                if(path.contains(".png") && modEnable) {
+                //add read mod file
+                if(path.contains(".png") && modEnable && (prefs.getBoolean("mod_ui_enable", true) || path.contains("ship/"))) {
                     String modFilePath = Environment.getExternalStorageDirectory() + "/KanCollCache/mod" + path;
                     File modFile = new File(modFilePath);
                     if (modFile.exists()) {
@@ -671,56 +728,39 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
                 Log.d("KCVA", "Local cache version："  + currentVersion + " ;server version: " + version + "us");
                 //版本不一致则删除老的cache
-                if (!version.equals(currentVersion)) {
+                /*if (!version.equals(currentVersion)) {
                     tmp.delete();
-                }
-                if (tmp.exists()) {
+                }*/
+                if (version.equals(currentVersion) && tmp.exists()) {
                     //从缓存直接返回客户端，不请求服务器
                     long length = 0;
                     InputStream inputStream;
-
-                    if(path.contains("/gadget_html5/js/kcs_inspection.js")){
-                        byte[] fileContent = readFileToBytes(tmp);
-                        String newRespStr = injectInspection(new String(fileContent, "utf-8"));
-                        fileContent = newRespStr.getBytes("utf-8");
-
-                        length = fileContent.length;
-                        inputStream = new ByteArrayInputStream(fileContent);
-                    } else if(path.contains("/kcs2/js/main.js")) {
-                        // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
-                        byte[] fileContent = readFileToBytes(tmp);
-                        if (prefs.getBoolean("show_fps_counter", false)) {
-                            fileContent = injectFpsUpdater(fileContent);
+                    byte[] fileContent = mLruCache.get(path);//读取缓存
+                    if(fileContent == null){
+                        fileContent = readFileToBytes(tmp);
+                        if(path.contains("/kcs2/js/main.js")) {
+                            // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
+                            if (prefs.getBoolean("show_fps_counter", false)) {
+                                fileContent = injectFpsUpdater(fileContent);
+                            }
+                            fileContent = injectTickerTimingMode(fileContent);
+                            if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) { // TODO: it should be handled by gameView
+                                fileContent = injectTouchLogic(fileContent);
+                            }
+                            fileContent = injectHookAjax(fileContent);
                         }
-                        fileContent = injectTickerTimingMode(fileContent);
-                        if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) { // TODO: it should be handled by gameView
-                            fileContent = injectTouchLogic(fileContent);
-                        }
-
-                        if(modEnable){
-                            String modJson = "var shipModJson = " + buildModJson() + ";";
-                            String modRead = "function changeMod(v,xhr){if(shipModJson!=null&&xhr.xhr.responseURL.indexOf(\"/kcsapi/api_start2/getData\")!=-1){var getData=JSON.parse(v.substring(7));var jsonShipArr=getData.api_data.api_mst_shipgraph;for(var i=0;i<shipModJson.length;i++){var modJson=shipModJson[i];for(var j=0;j<jsonShipArr.length;j++){var getDataShip=jsonShipArr[j];if(JSON.parse(modJson).api_id==getDataShip.api_id){jsonShipArr[j]=JSON.parse(modJson);}}}\n" +
-                                    "getData.api_data.api_mst_shipgraph=jsonShipArr;v=\"svdata=\"+JSON.stringify(getData);}\n" +
-                                    "return v;};hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];},responseText:{getter:changeMod},response:{getter:changeMod}});";
-                            fileContent = (new String(fileContent) + modJson + modRead).getBytes();
-                        }
-                        length = fileContent.length;
-                        inputStream = new ByteArrayInputStream(fileContent);
-                    } else {
-                        // Nothing to inject to file content
-                        // Avoid extra reading and writing the stream
-                        length = tmp.length();
-                        inputStream = new FileInputStream(tmp);
+                        mLruCache.put(path, fileContent);
                     }
-
+                    length = fileContent.length;
+                    inputStream = new ByteArrayInputStream(fileContent);
                     Object[] response = createResponseObject(path, String.valueOf(length), inputStream);
                     final long duration = System.nanoTime() - startTime;
                     Log.d("KCVA", "Local cache uri："  + uri + " after " + duration/1000 + "us");
                     return response;
                 } else {
-                    boolean needModify = path.contains("/kcs2/js/main.js") || path.contains("/gadget_html5/js/kcs_inspection.js") || path.contains("ooi_moe_t.png");
+                    /*boolean needModify = path.contains("/kcs2/js/main.js") || path.contains("/gadget_html5/js/kcs_inspection.js") || path.contains("ooi_moe_t.png");
 
-                    if (needModify) {
+                    if (needModify) {*/
                         // Download the modify the result immediately
                         ResponseBody serverResponse = requestServer(uri, requestHeader);
                         if(serverResponse != null){
@@ -728,12 +768,26 @@ public abstract class GameBaseActivity extends XWalkActivity {
                             if(path.contains("/kcs2/js/main.js")){
                                 String newRespStr = serverResponse.string() + "!function(t){function r(i){if(n[i])return n[i].exports;var e=n[i]={exports:{},id:i,loaded:!1};return t[i].call(e.exports,e,e.exports,r),e.loaded=!0,e.exports}var n={};return r.m=t,r.c=n,r.p=\"\",r(0)}([function(t,r,n){n(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var n=this.hasOwnProperty(r+\"_\")?this[r+\"_\"]:this.xhr[r],i=(t[r]||{}).getter;return i&&i(n,this)||n}}function n(r){return function(n){var i=this.xhr,e=this,o=t[r];if(\"function\"==typeof o)i[r]=function(){t[r](e)||n.apply(i,arguments)};else{var h=(o||{}).setter;n=h&&h(n,e)||n;try{i[r]=n}catch(t){this[r+\"_\"]=n}}}}function i(r){return function(){var n=[].slice.call(arguments);if(!t[r]||!t[r].call(this,n,this.xhr))return this.xhr[r].apply(this.xhr,n)}}return window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){this.xhr=new window._ahrealxhr;for(var t in this.xhr){var e=\"\";try{e=typeof this.xhr[t]}catch(t){}\"function\"===e?this[t]=i(t):Object.defineProperty(this,t,{get:r(t),set:n(t)})}},window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);";
                                 respByte = newRespStr.getBytes();
-                            } else if(path.contains("/gadget_html5/js/kcs_inspection.js")){
-                                String newRespStr = injectInspection(serverResponse.string());
-                                respByte = newRespStr.getBytes();
+                            } else {
+                                respByte = serverResponse.bytes();
                             }
 
+                            //save file
                             saveFile(path, respByte);
+                            final String saveVersion = version;
+                            mExecutor.execute(() -> {
+                                try {
+                                    synchronized (jsonObj) {
+                                        jsonObj.put(path, saveVersion);
+                                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
+                                        writer.write(jsonObj.toString());
+                                        writer.flush();
+                                        writer.close();
+                                    }
+                                } catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            });
 
                             // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
                             if(path.contains("/kcs2/js/main.js")) {
@@ -744,26 +798,21 @@ public abstract class GameBaseActivity extends XWalkActivity {
                                 if (changeTouchEventPrefs && prefs.getBoolean("change_webview", false)) {
                                     respByte = injectTouchLogic(respByte);
                                 }
-                                if(modEnable){
-                                    String modJson = "var shipModJson = " + buildModJson() + ";";
-                                    String modRead = "function changeMod(v,xhr){if(shipModJson!=null&&xhr.xhr.responseURL.indexOf(\"/kcsapi/api_start2/getData\")!=-1){var getData=JSON.parse(v.substring(7));var jsonShipArr=getData.api_data.api_mst_shipgraph;for(var i=0;i<shipModJson.length;i++){var modJson=shipModJson[i];for(var j=0;j<jsonShipArr.length;j++){var getDataShip=jsonShipArr[j];if(JSON.parse(modJson).api_id==getDataShip.api_id){jsonShipArr[j]=JSON.parse(modJson);}}}\n" +
-                                            "getData.api_data.api_mst_shipgraph=jsonShipArr;v=\"svdata=\"+JSON.stringify(getData);}\n" +
-                                            "return v;};hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];},responseText:{getter:changeMod},response:{getter:changeMod}});";
-                                    respByte = (new String(respByte) + modJson + modRead).getBytes();
-                                }
+                                respByte = injectHookAjax(respByte);
                             }
+                            mLruCache.put(path, respByte);
                             return createResponseObject(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
                         } else {
                             return null;
                         }
-                    } else {
+                    /*} else {
                         // No need to modify the resource
                         // Do it in an async way
 
                         Object[] ob = downloadAndCacheAsync(path, uri, requestHeader, version);
                         Log.d("KCVA", "started asyncDL："  + uri);
                         return ob;
-                    }
+                    }*/
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1137,7 +1186,12 @@ public abstract class GameBaseActivity extends XWalkActivity {
     }
 
     private ResponseBody requestServer(Uri uri, Map<String, String> headerHeader){
-        Request.Builder builder = new Request.Builder().url(uri.toString());
+        //Reverse Proxy
+        String url = uri.toString();
+        if(proxyEnable && uri.toString().startsWith("http://203.104.209.7/")){
+            url = url.replace("203.104.209.7", proxyIP);
+        }
+        Request.Builder builder = new Request.Builder().url(url).removeHeader("User-Agent").addHeader("User-Agent",USER_AGENT);
         for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
             builder.addHeader(keySet.getKey(), keySet.getValue());
         }
@@ -1159,7 +1213,17 @@ public abstract class GameBaseActivity extends XWalkActivity {
     public void jsToJava(String requestUrl, String param, String respData){
         try {
             URL url = new URL(requestUrl);
-            KcaVpnData.renderToHander(url.getPath(), param, respData);
+//            KcaVpnData.renderToHander(url.getPath(), param, respData);
+            for(int i = 0; i< respData.length(); i=i+40960){
+                int end = i+40960;
+                boolean endFlag = false;
+                if(end > respData.length()){
+                    end = respData.length();
+                    endFlag = true;
+                }
+                String tempRespData = respData.substring(i, end);
+                iWebviewBinder.handleJsFunc(url.getPath(), param, tempRespData, endFlag);
+            }
             if(url.getPath().contains("/kcsapi/api_start2/getData") && subTitleEnable){
                 SubTitleUtils.initShipGraph(respData);
             }
@@ -1483,15 +1547,27 @@ public abstract class GameBaseActivity extends XWalkActivity {
         String s = new String(mainJs, StandardCharsets.UTF_8);
 
         // Replace the ticker timing mode to keep animation smooth even with a lot of events (i.e. touch taps)
-        s = s.replace("createjs.Ticker.TIMEOUT", "createjs.Ticker.RAF");
+        s = s.replaceAll("(createjs\\[[\\s\\S]{10,20}\\]\\[[\\s\\S]{10,20}\\])=createjs\\[[\\s\\S]{10,20}\\]\\[[\\s\\S]{10,20}\\]", "$1=createjs.Ticker.RAF");
 
-        s = s.replace("GC_MAX_CHECK_COUNT=180", "GC_MAX_CHECK_COUNT=180");
+        /*s = s.replace("GC_MAX_CHECK_COUNT=180", "GC_MAX_CHECK_COUNT=180");
         s = s.replace("PIXI.settings.GC_MAX_IDLE=360", "" +
             "PIXI.settings.GC_MAX_IDLE=360," +
-            "PIXI.settings.MIPMAP_TEXTURES=false"); // Save mem if an image is power of 2
+            "PIXI.settings.MIPMAP_TEXTURES=false"); // Save mem if an image is power of 2*/
 
         // Convert back to bytes
         return s.getBytes();
+    }
+
+    private byte[] injectHookAjax(byte[] respByte){
+        String modJson = "var shipModJson = [];";
+        if(modEnable){
+            modJson = "var shipModJson = " + buildModJson() + ";";
+        }
+        String modRead = "function changeMod(v,xhr){if(shipModJson!=null&&xhr.xhr.responseURL.indexOf(\"/kcsapi/api_start2/getData\")!=-1){var getData=JSON.parse(v.substring(7));var jsonShipArr=getData.api_data.api_mst_shipgraph;for(var i=0;i<shipModJson.length;i++){var modJson=shipModJson[i];for(var j=0;j<jsonShipArr.length;j++){var getDataShip=jsonShipArr[j];if(JSON.parse(modJson).api_id==getDataShip.api_id){jsonShipArr[j]=JSON.parse(modJson);}}}\n" +
+                "getData.api_data.api_mst_shipgraph=jsonShipArr;v=\"svdata=\"+JSON.stringify(getData);}\n" +
+                "return v;};hookAjax({onreadystatechange:function(xhr){var contentType=xhr.getResponseHeader(\"content-type\")||\"\";if(contentType.toLocaleLowerCase().indexOf(\"text/plain\")!==-1&&xhr.readyState==4&&xhr.status==200){window.androidJs.JsToJavaInterface(xhr.xhr.responseURL,xhr.xhr.requestParam,xhr.responseText);}},send:function(arg,xhr){xhr.requestParam=arg[0];},responseText:{getter:changeMod},response:{getter:changeMod}});";
+        respByte = (new String(respByte) + modJson + modRead).getBytes();
+        return respByte;
     }
 
 

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
@@ -16,6 +17,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
@@ -137,11 +139,18 @@ public class GameModActivity extends Activity {
                 return;
             }
             String configStr = serverResponse.string();
-            JSONObject configJson = new JSONObject(configStr);
-            saveFile(title + ".json", configStr.getBytes());
+            if(TextUtils.isEmpty(apiId)){
+                JSONArray configJsonArr = new JSONArray(configStr);
+                for(int i = 0; i<configJsonArr.length(); i++){
+                    downloadUIPng(modId, configJsonArr.getString(i));
+                }
+            } else {
+                JSONObject configJson = new JSONObject(configStr);
+                saveFile(title + "_" + modId + ".json", configStr.getBytes());
 
-            for(int i = 0; i< typeIdDataList.size(); i++){
-                downloadPng(typeIdDataList.get(i), typeDataList.get(i), modId, apiId, configJson);
+                for (int i = 0; i < typeIdDataList.size(); i++) {
+                    downloadShipPng(typeIdDataList.get(i), typeDataList.get(i), modId, apiId, configJson);
+                }
             }
             runOnUiThread(new Runnable() {
                 @Override
@@ -155,9 +164,20 @@ public class GameModActivity extends Activity {
         }
     }
 
-    public void downloadPng(String typeId, String typeName, String modId, String apiId, JSONObject configJson){
+    public void downloadShipPng(String typeId, String typeName, String modId, String apiId, JSONObject configJson){
         try {
             String path = "/kcs2/resources/ship/" + typeId + "/" + KanCollUtils.getShipImgName(typeId, apiId, configJson.getString("api_filename")) + ".png";
+            ResponseBody serverResponse = requestServer(host + "mod/" + modId + path);
+            if (serverResponse == null) {
+                return;
+            }
+            saveFile(path, serverResponse.bytes());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public void downloadUIPng(String modId, String path){
+        try {
             ResponseBody serverResponse = requestServer(host + "mod/" + modId + path);
             if (serverResponse == null) {
                 return;

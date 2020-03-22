@@ -103,7 +103,7 @@ public class KcaFairySelectActivity extends AppCompatActivity {
         List<String> fairy_id = new ArrayList<>();
 
         boolean fairy_downloaded = getBooleanPreferences(getApplicationContext(), PREF_FAIRY_DOWN_FLAG);
-        int fairy_size = fairy_downloaded ? icon_info.size() : 1;
+        int fairy_size = fairy_downloaded ? icon_info.size() : 332;
 
         if (FAIRY_SPECIAL_FLAG) {
             for (int i = 0; i < FAIRY_SPECIAL_COUNT; i++) {
