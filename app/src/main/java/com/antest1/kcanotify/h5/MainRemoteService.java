@@ -19,7 +19,7 @@ public class MainRemoteService extends Service {
     private IWebviewBinder.Stub serviceBinder = new IWebviewBinder.Stub() {
 
         @Override
-        public void handleJsFunc(String path, String params, String respData, boolean end) throws RemoteException { //方法执行在子线程中
+        public void handleJsFunc(String path, String params, String respData, boolean end) throws RemoteException {
             currRespData = currRespData + respData;
             if(!end){
                 return;

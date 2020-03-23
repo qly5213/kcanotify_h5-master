@@ -309,6 +309,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
         initChat();
 
         registerReceiver(gameViewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_reload"));
+        registerReceiver(gameViewBroadcastReceiver, new IntentFilter("com.antest1.kcanotify.h5.webview_finish"));
     }
     private void updateLanguage(Context context, Locale locale) {
         Resources resources = context.getResources();
@@ -631,6 +632,8 @@ public abstract class GameBaseActivity extends XWalkActivity {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("com.antest1.kcanotify.h5.webview_reload"))
                 gameView.reloadGame();
+            if (intent.getAction().equals("com.antest1.kcanotify.h5.webview_finish"))
+                GameBaseActivity.this.finish();
         }
     }
 
@@ -649,7 +652,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
         // Handle pixi.min.js. Need to patch but not cache
         if(path != null && path.contains("pixi.")) {
-            ResponseBody serverResponse = requestServer(uri, requestHeader);
+            ResponseBody serverResponse = requestServer(uri.toString(), requestHeader);
             if (serverResponse != null) {
                 try{
                     String patchedPixi = injectPixi(serverResponse.string());
@@ -662,12 +665,16 @@ public abstract class GameBaseActivity extends XWalkActivity {
             return null;
         }
 
-        //Reverse Proxy
-        if(proxyEnable && uri.toString().startsWith("http://203.104.209.7/")){
+        if(uri.toString().startsWith("http://203.104.209.7/")){
             try {
-                ResponseBody serverResponse = requestServer(uri, requestHeader);
+                String url = uri.toString();
+                //Reverse Proxy
+                if(proxyEnable){
+                    url = url.replace("203.104.209.7", proxyIP);
+                }
+                ResponseBody serverResponse = requestServer(url, requestHeader);
                 byte[] respByte = null;
-                if(uri.toString().contains("/gadget_html5/js/kcs_inspection.js")){
+                if(uri.toString().contains("/kcscontents/css/style.css")){
                     String newRespStr = injectInspection(serverResponse.string());
                     respByte = newRespStr.getBytes();
                 } else {
@@ -762,7 +769,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
                     if (needModify) {*/
                         // Download the modify the result immediately
-                        ResponseBody serverResponse = requestServer(uri, requestHeader);
+                        ResponseBody serverResponse = requestServer(uri.toString(), requestHeader);
                         if(serverResponse != null){
                             byte[] respByte = null;
                             if(path.contains("/kcs2/js/main.js")){
@@ -1185,12 +1192,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
         return new Object[]{mimeType, null, 200, "OK", map, is};
     }
 
-    private ResponseBody requestServer(Uri uri, Map<String, String> headerHeader){
-        //Reverse Proxy
-        String url = uri.toString();
-        if(proxyEnable && uri.toString().startsWith("http://203.104.209.7/")){
-            url = url.replace("203.104.209.7", proxyIP);
-        }
+    private ResponseBody requestServer(String url, Map<String, String> headerHeader){
         Request.Builder builder = new Request.Builder().url(url).removeHeader("User-Agent").addHeader("User-Agent",USER_AGENT);
         for(Map.Entry<String, String> keySet : headerHeader.entrySet()){
             builder.addHeader(keySet.getKey(), keySet.getValue());
@@ -1213,16 +1215,19 @@ public abstract class GameBaseActivity extends XWalkActivity {
     public void jsToJava(String requestUrl, String param, String respData){
         try {
             URL url = new URL(requestUrl);
-//            KcaVpnData.renderToHander(url.getPath(), param, respData);
-            for(int i = 0; i< respData.length(); i=i+40960){
-                int end = i+40960;
-                boolean endFlag = false;
-                if(end > respData.length()){
-                    end = respData.length();
-                    endFlag = true;
+            if(prefs.getBoolean("change_webview", false)) {
+                KcaVpnData.renderToHander(url.getPath(), param, respData);
+            } else {
+                for (int i = 0; i < respData.length(); i = i + 81920) {
+                    int end = i + 81920;
+                    boolean endFlag = false;
+                    if (end > respData.length()) {
+                        end = respData.length();
+                        endFlag = true;
+                    }
+                    String tempRespData = respData.substring(i, end);
+                    iWebviewBinder.handleJsFunc(url.getPath(), param, tempRespData, endFlag);
                 }
-                String tempRespData = respData.substring(i, end);
-                iWebviewBinder.handleJsFunc(url.getPath(), param, tempRespData, endFlag);
             }
             if(url.getPath().contains("/kcsapi/api_start2/getData") && subTitleEnable){
                 SubTitleUtils.initShipGraph(respData);
@@ -1442,7 +1447,11 @@ public abstract class GameBaseActivity extends XWalkActivity {
     }
 
     private String injectInspection(String inspection) {
-        return inspection + "window.onload=function(){document.body.style.background='#000',null==document.getElementById('spacing_top')||(document.getElementById('spacing_top').style.height='0px')};";
+        return inspection + "\ndiv#spacing_top {\n" +
+                "    height: 0px;\n" +
+                "    display: none;\n" +
+                "}\n" +
+                "body{background: #000;}";
     }
 
     private byte[] injectTouchLogic(byte[] mainJs){

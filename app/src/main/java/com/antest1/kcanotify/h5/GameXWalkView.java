@@ -104,7 +104,7 @@ public class GameXWalkView extends XWalkView implements GameView {
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
-        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, true);
+        XWalkPreferences.setValue(XWalkPreferences.REMOTE_DEBUGGING, false);
 
 
         if(prefs.getBoolean("clear_cache_start", false)) {

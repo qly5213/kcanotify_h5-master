@@ -7,7 +7,6 @@ public class GameWebViewActivity extends GameBaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         gameView.loadGame(prefs, GameConnection.Type.DMM);
     }
 

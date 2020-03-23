@@ -3,6 +3,7 @@ package com.antest1.kcanotify.h5;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.util.AttributeSet;
@@ -89,8 +90,13 @@ public class GameWebView extends WebView implements GameView{
             hostNameOoi = "http://" + hostNameOoi + "/poi";
         }
 
+        boolean backgroundPri = true;
         if (prefs.getBoolean("background_play", true)) {
             this.setActiveInBackground(true);
+            backgroundPri = false;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            setRendererPriorityPolicy(RENDERER_PRIORITY_IMPORTANT, backgroundPri);
         }
 
         CookieManager cookieManager = CookieManager.getInstance();
@@ -127,7 +133,7 @@ public class GameWebView extends WebView implements GameView{
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);
 
-        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(false);
 
         if(prefs.getBoolean("clear_cache_start", false)) {
             this.clearCache(true);

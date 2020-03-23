@@ -1,6 +1,7 @@
 package com.antest1.kcanotify.h5;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.widget.Toast;
 
 public class BackPressCloseHandler {
@@ -21,9 +22,7 @@ public class BackPressCloseHandler {
             return;
         }
         if (System.currentTimeMillis() <= pressedTime + INTERVAL) {
-            if(KcaApplication.gameActivity != null) {
-                KcaApplication.gameActivity.finish();
-            }
+            activity.sendBroadcast(new Intent("com.antest1.kcanotify.h5.webview_finish"));
             activity.finish();
 //            System.exit(0);
             toast.cancel();
