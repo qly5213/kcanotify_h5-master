@@ -77,6 +77,7 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="node_info_selectable" formatted="false">%s (能動分歧)</string>
     <string name="node_info_sendan" formatted="false">%s (大型資源點)</string>
     <string name="node_info_ecbattle" formatted="false">%s (深海聯合艦隊)</string>
+    <string name="node_info_anchorage" formatted="false">%s (泊地修理)</string>
     <string name="node_info_practice" formatted="false">演習</string>
     <!-- MainActivity Strings -->
     <string name="ma_vpn_toggleon">Sniffer ON</string>
@@ -176,10 +177,13 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="setting_menu_kand_desc_game_data_down">請於遊戲資料未自動載入時使用</string>
     <string name="setting_menu_kand_desc_fairy_select">選擇你想要攜帶的妖精</string>
     <string name="setting_menu_kand_title_fairy_select">選擇輔助妖精</string>
+    <string name="setting_menu_kand_title_fairy_size">選擇妖精大小</string>
+    <string name="setting_menu_kand_title_fairy_random">使用隨機妖精</string>
     <string name="setting_menu_kand_title_fairy_auto_hide">使妖精只顯示在艦これ屏幕上</string>
     <string name="setting_menu_kand_desc_fairy_auto_hide">在顯示/隱藏妖精時有短暫的延遲</string>
     <string name="current_fairy_changed_in_next">※妖精會於戰鬥劇透/任務瀏覽結束後更換</string>
     <string name="action_fairy_rev">水平翻轉</string>
+    <string name="action_fairy_init">刪除重置</string>
     <string name="setting_menu_kand_title_adv_network">進階網路設定</string>
     <string name="setting_menu_kand_warn_adv_network">警告：錯誤的設定可能會讓VPN失效。請在你清楚確定每個選項的作用時更改設定！更改設定後你需要重新啟用VPN來使設定生效</string>
     <string name="setting_menu_kand_title_socks5_enable">啟用SOCKS5代理</string>
@@ -378,13 +382,23 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="quest_category_6">工</string>
     <string name="quest_category_7">改</string>
     <string name="quest_category_8">出</string>
-    <string name="quest_category_9">他</string>
+    <string name="quest_category_9">出</string>
+    <string name="quest_category_10">他</string>
 
-    <string name="quest_type_1">日</string>
-    <string name="quest_type_2">周</string>
-    <string name="quest_type_3">月</string>
-    <string name="quest_type_4">單</string>
-    <string name="quest_type_5">他</string>
+    <string name="quest_label_type_1">單</string>
+    <string name="quest_label_type_2">日</string>
+    <string name="quest_label_type_3">周</string>
+    <string name="quest_label_type_4">_</string>
+    <string name="quest_label_type_5">_</string>
+    <string name="quest_label_type_6">月</string>
+    <string name="quest_label_type_7">他</string>
+    <string name="quest_label_type_100" formatted="false">年%d</string>
+
+    <string name="quest_class_1">出撃</string>
+    <string name="quest_class_2">演習</string>
+    <string name="quest_class_3">遠征</string>
+    <string name="quest_class_4">工廠</string>
+    <string name="quest_class_5">其他</string>
 
     <string name="questview_page" formatted="false">第 %d/%d 頁</string>
 
@@ -453,21 +467,25 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="ship_stat_sort_key_8">遠征</string>
     <string name="ship_stat_sort_key_9">修理</string>
     <string name="ship_stat_sort_key_10">増設</string>
-    <string name="ship_stat_sort_key_11">火力</string>
-    <string name="ship_stat_sort_key_12">雷裝</string>
-    <string name="ship_stat_sort_key_13">對空</string>
-    <string name="ship_stat_sort_key_14">裝甲</string>
-    <string name="ship_stat_sort_key_15">夜戰</string>
-    <string name="ship_stat_sort_key_16">對潛</string>
-    <string name="ship_stat_sort_key_17">迴避</string>
-    <string name="ship_stat_sort_key_18">索敵</string>
-    <string name="ship_stat_sort_key_19">運</string>
-    <string name="ship_stat_sort_key_20">速度</string>
-    <string name="ship_stat_sort_key_21">艦型</string>
-    <string name="ship_stat_sort_key_22">標貼</string>
+    <string name="ship_stat_sort_key_11">耐久</string>
+    <string name="ship_stat_sort_key_12">火力</string>
+    <string name="ship_stat_sort_key_13">雷裝</string>
+    <string name="ship_stat_sort_key_14">對空</string>
+    <string name="ship_stat_sort_key_15">裝甲</string>
+    <string name="ship_stat_sort_key_16">夜戰</string>
+    <string name="ship_stat_sort_key_17">對潛</string>
+    <string name="ship_stat_sort_key_18">迴避</string>
+    <string name="ship_stat_sort_key_19">索敵</string>
+    <string name="ship_stat_sort_key_20">運</string>
+    <string name="ship_stat_sort_key_21">速度</string>
+    <string name="ship_stat_sort_key_22">艦型</string>
+    <string name="ship_stat_sort_key_23">標貼</string>
 
     <string name="shipinfo_filt_list_dialog_title">選擇</string>
     <string name="shipinfo_criteria_count" formatted="false">已應用標籤：%d</string>
+    <string name="ship_exclude_label">船艦狀態篩選</string>
+    <string name="ship_exclude_type1">遠征中的船艦除外</string>
+    <string name="ship_exclude_type2">維修中的船艦除外</string>
     <string name="ship_stat_equip_stype_label">可以使用特殊裝備</string>
     <string name="ship_stat_equip_stype1">大發系</string>
     <string name="ship_stat_equip_stype2">内火艇</string>
@@ -476,12 +494,12 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="ship_stat_equip_stype5">探照灯(大)</string>
 
     <string name="ship_tag_0">沒有</string>
-    <string name="ship_tag_1">歐洲防衛艦隊(藍色)</string>
-    <string name="ship_tag_2">聯合艦隊(綠色)</string>
-    <string name="ship_tag_3">地中海艦隊(金色)</string>
-    <string name="ship_tag_4"> </string>
-    <string name="ship_tag_5"> </string>
-    <string name="ship_tag_6"> </string>
+    <string name="ship_tag_1">攻略護衛隊（粉色）</string>
+    <string name="ship_tag_2">空襲部隊（淺藍）</string>
+    <string name="ship_tag_3">蘭印部隊（藍色）</string>
+    <string name="ship_tag_4">馬來部隊 (綠色)</string>
+    <string name="ship_tag_5">哨戒部隊 (白色)</string>
+    <string name="ship_tag_6">決戦部隊 (橙色)</string>
 
     <string name="ship_fleet_0">沒有</string>
 
@@ -660,7 +678,7 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="fleetview_18spring_nori" formatted="false">苔 %02d</string>
     <string name="fleetview_18spring_tea" formatted="false">茶 %02d</string>
 
-    <string name="special_message">傑維斯和雅努斯在秋天</string>
+    <string name="special_message">享受春日的傑維斯</string>
 
     <string name="widget_timer_name">Kcanotify計時Widget</string>
     <string name="fleet_format">第%d艦隊</string>
@@ -703,6 +721,7 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="equipinfo_export_title">匯出到 艦隊分析</string>
     <string name="equipinfo_export_clipboard">复制到剪贴板</string>
     <string name="equipinfo_export_openpage">開啟擁有艦隊分析頁網站</string>
+    <string name="equipinfo_export_openpage2">開啟制空權模擬器</string>
 
     <string name="text_api_houg">火力</string>
     <string name="text_api_raig">雷裝</string>
@@ -725,4 +744,10 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="text_api_cost">配置費用</string>
     <string name="text_api_distance">行動半徑</string>
     <string name="ask_to_dev">艦これ 装備王</string>
+    <string name="fleetview_fish_text" formatted="false">[秋刀魚] %03d [沙丁魚] %03d</string>
+    <string name="fairy_size_value_4">大</string>
+    <string name="fairy_size_value_3">中</string>
+    <string name="fairy_size_value_2">小</string>
+    <string name="fairy_size_value_5">特大</string>
+    <string name="fairy_size_value_1">特小</string>
 </resources>

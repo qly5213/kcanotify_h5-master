@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import static android.text.TextUtils.concat;
 import static com.antest1.kcanotify.h5.KcaAlarmService.ALARM_DELAY;
 import static com.antest1.kcanotify.h5.KcaUtils.getTimeStr;
 
@@ -123,6 +122,11 @@ public class KcaExpedition2 {
         if (mission_no_value >= 100) {
             if ( mission_no_value < 110) mission_no_str = KcaUtils.format("A%d", (mission_no_value + 1) - 100);
             else if ( mission_no_value < 120) mission_no_str = KcaUtils.format("B%d", (mission_no_value + 1) - 110);
+            else if ( mission_no_value < 130) mission_no_str = KcaUtils.format("C%d", (mission_no_value + 1) - 120);
+            else if ( mission_no_value < 140) mission_no_str = KcaUtils.format("D%d", mission_no_value - 130);
+            else if ( mission_no_value < 150) mission_no_str = KcaUtils.format("E%d", mission_no_value - 140);
+            else if ( mission_no_value < 160) mission_no_str = KcaUtils.format("F%d", mission_no_value - 150);
+            else if ( mission_no_value < 170) mission_no_str = KcaUtils.format("G%d", mission_no_value - 160);
             else if (mission_no_value % 2 == 1) mission_no_str = "S1";
             else mission_no_str = "S2";
         } else {
@@ -134,7 +138,7 @@ public class KcaExpedition2 {
     public static String getExpeditionHeader(int mission_no) {
         String mission_no_head = "";
         String mission_no_value = getExpeditionStr(mission_no);
-        if (mission_no_value.contains("A") || mission_no_value.contains("B") || mission_no_value.contains("S")) {
+        if (mission_no_value.matches("[A-Z][0-9]+")) {
             mission_no_head = "[".concat(mission_no_value).concat("] ");
         } else {
             mission_no_head = KcaUtils.format("[%02d] ", mission_no);

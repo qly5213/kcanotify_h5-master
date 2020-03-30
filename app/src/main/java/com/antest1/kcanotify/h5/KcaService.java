@@ -268,7 +268,6 @@ public class KcaService extends Service {
         loadSimpleExpeditionInfoFromStorage(getApplicationContext());
         loadShipInitEquipCountFromStorage(getApplicationContext());
         loadQuestTrackDataFromStorage(dbHelper, getApplicationContext());
-        dbHelper.initQuestCheck();
         dbHelper.initExpScore();
 
         showDataLoadErrorToast(getApplicationContext(), getBaseContext(), getStringWithLocale(R.string.download_check_error));
@@ -974,7 +973,6 @@ public class KcaService extends Service {
                 } else if (jsonDataObj.has("api_data")) {
                     JsonObject api_data = jsonDataObj.getAsJsonObject("api_data");
                     KcaQuestViewService.setApiData(api_data);
-                    dbHelper.updateQuestCheck(api_tab_id, api_data);
                     startService(new Intent(getBaseContext(), KcaQuestViewService.class)
                             .setAction(REFRESH_QUESTVIEW_ACTION).putExtra("tab_id", api_tab_id));
                 }

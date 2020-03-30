@@ -13,7 +13,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 2641
-        versionName "2.8_2.1.9"
+        versionName "2.8_2.2.1"
 
         multiDexEnabled true
         externalNativeBuild {
@@ -53,7 +53,7 @@ android {
 
 dependencies {
     def appCenterSdkVersion = '2.4.0'
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'jnilib', include: ['*.jar'])
 
     implementation 'org.xwalk:xwalk_core_library:23+'
 
@@ -90,8 +90,9 @@ dependencies {
 
     implementation 'com.github.ctiao:ndkbitmap-armv5:0.9.21'
     implementation 'com.github.ctiao:ndkbitmap-x86:0.9.21'
-    implementation 'com.bilibili:boxing:1.0.4'
-    implementation 'com.bilibili:boxing-impl:1.0.4'
+    api 'com.github.xiaoyuanhu.boxing:boxing:1.0.4.1'
+    api 'com.github.xiaoyuanhu.boxing:boxing-impl:1.0.4.1'
     implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation fileTree(dir: 'src\\main\\jnilib', include: ['*.aar', '*.jar'], exclude: [])
     // testCompile 'junit:junit:4.12'
 }

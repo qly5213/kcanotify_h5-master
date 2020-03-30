@@ -71,6 +71,7 @@
     <string name="node_info_selectable" formatted="false">%s (能動分岐)</string>
     <string name="node_info_sendan" formatted="false">%s (船団護衛成功)</string>
     <string name="node_info_ecbattle" formatted="false">%s (敵連合艦隊)</string>
+    <string name="node_info_anchorage" formatted="false">%s (泊地修理)</string>
     <string name="node_info_practice" formatted="false">練習</string>
     <!-- MainActivity Strings -->
     <string name="ma_vpn_toggleon">Sniffer On</string>
@@ -353,13 +354,23 @@
     <string name="quest_category_6">工</string>
     <string name="quest_category_7">改</string>
     <string name="quest_category_8">出</string>
-    <string name="quest_category_9">他</string>
+    <string name="quest_category_9">出</string>
+    <string name="quest_category_10">他</string>
 
-    <string name="quest_type_1">日</string>
-    <string name="quest_type_2">週</string>
-    <string name="quest_type_3">月</string>
-    <string name="quest_type_4">単</string>
-    <string name="quest_type_5">他</string>
+    <string name="quest_label_type_1">単</string>
+    <string name="quest_label_type_2">日</string>
+    <string name="quest_label_type_3">週</string>
+    <string name="quest_label_type_4">_</string>
+    <string name="quest_label_type_5">_</string>
+    <string name="quest_label_type_6">月</string>
+    <string name="quest_label_type_7">他</string>
+    <string name="quest_label_type_100" formatted="false">年%d</string>
+
+    <string name="quest_class_1">出撃</string>
+    <string name="quest_class_2">演習</string>
+    <string name="quest_class_3">遠征</string>
+    <string name="quest_class_4">工廠</string>
+    <string name="quest_class_5">その他</string>
 
     <string name="questview_page" formatted="false">ページ %d/%d</string>
 
@@ -393,9 +404,12 @@
     <string name="filter_equip_all">全選択</string>
     <string name="setting_menu_kand_title_fairy_select">妖精選択</string>
     <string name="setting_menu_kand_desc_fairy_select">共にする妖精さんを選択</string>
+    <string name="setting_menu_kand_title_fairy_size">妖精のサイズ</string>
+    <string name="setting_menu_kand_title_fairy_random">妖精をランダムに選択</string>
     <string name="setting_menu_kand_title_fairy_auto_hide">妖精を艦これ画面でのみ表示する</string>
     <string name="setting_menu_kand_desc_fairy_auto_hide">妖精の表示/隠しに時間がかかります。</string>
     <string name="action_fairy_rev">反転</string>
+    <string name="action_fairy_init">リセット</string>
     <string name="current_fairy_changed_in_next">※現在戦闘予報/任務情報が終わった後に変更されます。</string>
     <string name="setting_menu_app_title_down">APKダウンロードサイトの設定</string>
     <string name="language_system">システム設定を使用</string>
@@ -445,21 +459,25 @@
     <string name="ship_stat_sort_key_8">修理</string>
     <string name="ship_stat_sort_key_9">遠征</string>
     <string name="ship_stat_sort_key_10">増設</string>
-    <string name="ship_stat_sort_key_11">火力</string>
-    <string name="ship_stat_sort_key_12">雷装</string>
-    <string name="ship_stat_sort_key_13">対空</string>
-    <string name="ship_stat_sort_key_14">装甲</string>
-    <string name="ship_stat_sort_key_15">夜戦</string>
-    <string name="ship_stat_sort_key_16">対潜</string>
-    <string name="ship_stat_sort_key_17">回避</string>
-    <string name="ship_stat_sort_key_18">索敵</string>
-    <string name="ship_stat_sort_key_19">運</string>
-    <string name="ship_stat_sort_key_20">速度</string>
-    <string name="ship_stat_sort_key_21">艦型</string>
-    <string name="ship_stat_sort_key_22">札</string>
+    <string name="ship_stat_sort_key_11">耐久</string>
+    <string name="ship_stat_sort_key_12">火力</string>
+    <string name="ship_stat_sort_key_13">雷装</string>
+    <string name="ship_stat_sort_key_14">対空</string>
+    <string name="ship_stat_sort_key_15">装甲</string>
+    <string name="ship_stat_sort_key_16">夜戦</string>
+    <string name="ship_stat_sort_key_17">対潜</string>
+    <string name="ship_stat_sort_key_18">回避</string>
+    <string name="ship_stat_sort_key_19">索敵</string>
+    <string name="ship_stat_sort_key_20">運</string>
+    <string name="ship_stat_sort_key_21">速度</string>
+    <string name="ship_stat_sort_key_22">艦型</string>
+    <string name="ship_stat_sort_key_23">札</string>
 
     <string name="shipinfo_filt_list_dialog_title">選択</string>
     <string name="shipinfo_criteria_count" formatted="false">適用されている基準：%d</string>
+    <string name="ship_exclude_label">艦娘状態フィルタ</string>
+    <string name="ship_exclude_type1">遠征中の艦娘を除外する</string>
+    <string name="ship_exclude_type2">修理中の艦娘を除外する</string>
     <string name="ship_stat_equip_stype_label">特殊装備フィルター</string>
     <string name="ship_stat_equip_stype1">大発系</string>
     <string name="ship_stat_equip_stype2">内火艇</string>
@@ -468,12 +486,12 @@
     <string name="ship_stat_equip_stype5">探照灯(大)</string>
 
     <string name="ship_tag_0">なし</string>
-    <string name="ship_tag_1">欧州防衛艦隊 (青)</string>
-    <string name="ship_tag_2">連合艦隊 (緑)</string>
-    <string name="ship_tag_3">地中海艦隊 (黄)</string>
-    <string name="ship_tag_4"> </string>
-    <string name="ship_tag_5"> </string>
-    <string name="ship_tag_6"> </string>
+    <string name="ship_tag_1">攻略護衛隊</string>
+    <string name="ship_tag_2">空襲部隊</string>
+    <string name="ship_tag_3">蘭印部隊</string>
+    <string name="ship_tag_4">馬来部隊</string>
+    <string name="ship_tag_5">哨戒部隊</string>
+    <string name="ship_tag_6">決戦部隊</string>
 
     <string name="ship_fleet_0">なし</string>
 
@@ -697,6 +715,7 @@
     <string name="equipinfo_export_title">艦隊分析へのコード変換</string>
     <string name="equipinfo_export_clipboard">クリップボードにコピー</string>
     <string name="equipinfo_export_openpage">艦隊分析ページを開く</string>
+    <string name="equipinfo_export_openpage2">制空権シミュレータを開く</string>
 
     <string name="text_api_houg">火力</string>
     <string name="text_api_raig">雷装</string>
@@ -718,7 +737,12 @@
     <string name="text_api_houk2">迎擊</string>
     <string name="text_api_cost">配置コスト</string>
     <string name="text_api_distance">行動半径</string>
-    <string name="special_message">秋のJervisとJanus</string>
+    <string name="special_message">ジャービス、春の外出中</string>
     <string name="ask_to_dev">艦これ 装備王</string>
-
+    <string name="fleetview_fish_text" formatted="false">[秋刀魚] %03d [鰯] %03d</string>
+    <string name="fairy_size_value_4">大</string>
+    <string name="fairy_size_value_3">中</string>
+    <string name="fairy_size_value_2">小</string>
+    <string name="fairy_size_value_5">最大</string>
+    <string name="fairy_size_value_1">最小</string>
 </resources>

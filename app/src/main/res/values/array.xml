@@ -144,6 +144,7 @@
         <item>@string/ship_stat_sort_key_19</item>
         <item>@string/ship_stat_sort_key_20</item>
         <item>@string/ship_stat_sort_key_21</item>
+        <item>@string/ship_stat_sort_key_22</item>
     </string-array>
 
     <string-array name="ship_filt_array">
@@ -168,7 +169,8 @@
         <item>@string/ship_stat_sort_key_18</item>
         <item>@string/ship_stat_sort_key_19</item>
         <item>@string/ship_stat_sort_key_20</item>
-        <item>@string/ship_stat_sort_key_22</item>
+        <item>@string/ship_stat_sort_key_21</item>
+        <item>@string/ship_stat_sort_key_23</item>
     </string-array>
 
     <string-array name="ship_operations" translatable="false">
@@ -200,5 +202,21 @@
     <string-array name="snifferOptionValue" translatable="false">
         <item>0</item>
         <item>1</item>
+    </string-array>
+
+    <string-array name="fairySizeOption">
+        <item>@string/fairy_size_value_1</item>
+        <item>@string/fairy_size_value_2</item>
+        <item>@string/fairy_size_value_3</item>
+        <item>@string/fairy_size_value_4</item>
+        <item>@string/fairy_size_value_5</item>
+    </string-array>
+
+    <string-array name="fairySizeOptionValue" translatable="false">
+        <item >1</item>
+        <item >2</item>
+        <item >3</item>
+        <item >4</item>
+        <item >5</item>
     </string-array>
 </resources>

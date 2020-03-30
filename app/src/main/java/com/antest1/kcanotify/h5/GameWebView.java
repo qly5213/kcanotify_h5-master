@@ -128,7 +128,7 @@ public class GameWebView extends WebView implements GameView{
         WebSettings mWebSettings = this.getSettings();
         mWebSettings.setUserAgentString(USER_AGENT);
         mWebSettings.setBuiltInZoomControls(true);
-        mWebSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        mWebSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         // 设置与Js交互的权限
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setMediaPlaybackRequiresUserGesture(false);

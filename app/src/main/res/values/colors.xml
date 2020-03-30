@@ -2,10 +2,10 @@
 <resources>
     <color name="colorPrimary">#313447</color>
     <color name="colorPrimaryDark">#2B2B30</color>
-    <color name="colorAccent">#CA5B0A</color>
+    <color name="colorAccent">#2196F3</color>
     <color name="colorActivityBack">#ffffff</color>
     <color name="colorActivityText">#888888</color>
-    <color name="colorMainBtn">#CA5B0A</color>
+    <color name="colorMainBtn">#2196F3</color>
     <color name="colorMainBtnText">#ffffff</color>
     <color name="colorToolbarText">#ffffff</color>
     <color name="colorBtn">#d6d6d6</color>
@@ -13,9 +13,9 @@
     <color name="colorBtnTextAccent">#ffffff</color>
     <color name="colorFleetInfoBtn">#313447</color>
 
-    <color name="colorGameStartBtn">#AA0108</color>
-    <color name="colorFairyShowBtn">#FD811F</color>
-    <color name="colorToolsBtn">#FACC5C</color>
+    <color name="colorGameStartBtn">#2F2F55</color>
+    <color name="colorFairyShowBtn">#D49A73</color>
+    <color name="colorToolsBtn">#A9302E</color>
 
     <color name="colorUpdate">#e8f5e9</color>
     <color name="colorUpdateText">#1b5e20</color>
@@ -25,7 +25,7 @@
     <color name="colorSpecialText">#a76400</color>
     <color name="colorWarn">#ffcdd2</color>
     <color name="colorWarnText">#68000a</color>
-    <color name="colorMenuBack">#80ffffff</color>
+    <color name="colorMenuBack">#40FFFFFF</color>
     <color name="black">#000000</color>
     <color name="lightgray">#d6d6d6</color>
     <color name="grey">#888888</color>
@@ -44,6 +44,7 @@
     <color name="colorNightBattle">#651fff</color>
     <color name="colorAirBattle">#4e342e</color>
     <color name="colorLdShooting">#ffa000</color>
+    <color name="colorAnchorage">#4ADFDF</color>
     <color name="colorPlaneWipedText">#ff5252</color>
     <color name="colorSubmarineNode">#60C1D4</color>
 
@@ -91,14 +92,18 @@
     <color name="colorQuestCategory6">#6d4c41</color>
     <color name="colorQuestCategory7">#af85e8</color>
     <color name="colorQuestCategory8">#d50000</color>
-    <color name="colorQuestCategory9">#757575</color>
+    <color name="colorQuestCategory9">#d50000</color>
+    <color name="colorQuestCategory10">#757575</color>
 
-    <color name="colorQuestType0">#616161</color>
-    <color name="colorQuestType1">#6ebbf6</color>
-    <color name="colorQuestType2">#77dde9</color>
-    <color name="colorQuestType3">#b5dd60</color>
-    <color name="colorQuestType4">#fbc02e</color>
-    <color name="colorQuestType5">#f98c27</color>
+    <color name="colorQuestLabel0">#616161</color>
+    <color name="colorQuestLabel1">#fbc02e</color>
+    <color name="colorQuestLabel2">#6ebbf6</color>
+    <color name="colorQuestLabel3">#77dde9</color>
+    <color name="colorQuestLabel4">#616161</color>
+    <color name="colorQuestLabel5">#616161</color>
+    <color name="colorQuestLabel6">#b5dd60</color>
+    <color name="colorQuestLabel7">#f98c27</color>
+    <color name="colorQuestLabel100">#3F51B5</color>
 
     <color name="colorQuestProgress1">#6bc613</color>
     <color name="colorQuestProgress2">#31834c</color>
@@ -189,12 +194,12 @@
     <color name="colorStatLocked">#4e7bff</color>
 
     <color name="colorStatSallyArea0">#00FFFFFF</color>
-    <color name="colorStatSallyArea1">#72B8FD</color>
-    <color name="colorStatSallyArea2">#AFD633</color>
-    <color name="colorStatSallyArea3">#FFE082</color>
-    <color name="colorStatSallyArea4">#90CAF9</color>
-    <color name="colorStatSallyArea5">#F48FB1</color>
-    <color name="colorStatSallyArea6">#B1E6B5</color>
+    <color name="colorStatSallyArea1">#FFA4BC</color>
+    <color name="colorStatSallyArea2">#48CAFF</color>
+    <color name="colorStatSallyArea3">#3D63FF</color>
+    <color name="colorStatSallyArea4">#66BB6A</color>
+    <color name="colorStatSallyArea5">#B6B6B6</color>
+    <color name="colorStatSallyArea6">#FFAB40</color>
 
     <color name="colorStatFighterPower">#16a085</color>
     <color name="colorStatSortCurrentBack">#c0bdbdbd</color>

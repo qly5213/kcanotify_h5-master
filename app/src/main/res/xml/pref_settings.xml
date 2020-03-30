@@ -205,6 +205,23 @@
             android:dependency="mod_enable"
             android:summary="开启UI魔改，UI出问题时请关闭UI魔改"
             android:title="开启UI魔改" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="change_cdn"
+            android:summary="静态资源替换CDN加速"
+            android:title="开启静态资源加速" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="png_to_webp"
+            android:summary="开启压图，可减少内存占用，加快游戏资源加载时间，压图质量默认80，大约可缩小80%-90%的图片大小"
+            android:title="开启压图" />
+        <EditTextPreference
+            android:defaultValue="80"
+            android:dependency="png_to_webp"
+            android:key="png_to_webp_quality"
+            android:summary="压图质量，0-100之间，默认80，大约可缩小80%-90%"
+            android:title="压图质量" />
         <!--
         <Preference
         android:defaultValue=""

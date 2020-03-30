@@ -3,25 +3,24 @@ package com.antest1.kcanotify.h5;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -41,6 +40,7 @@ import com.bilibili.boxing.Boxing;
 import com.bilibili.boxing.BoxingMediaLoader;
 import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.BaseMedia;
+import com.google.webp.libwebp;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -143,10 +143,10 @@ public abstract class GameBaseActivity extends XWalkActivity {
     private ExecutorService mExecutor;
     private boolean proxyEnable;
     private String proxyIP;
+    private boolean pngToWebp;
+    private int quality;
 
     LruCache<String, byte[]> mLruCache;
-    ServiceConnection connection;
-    IWebviewBinder iWebviewBinder;
 
     public native String stringFromJNI();
 
@@ -188,20 +188,6 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 return value.length;
             }
         };
-        bindService(
-                new Intent(this, MainRemoteService.class),
-                connection = new ServiceConnection() {
-                    @Override
-                    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                        iWebviewBinder = IWebviewBinder.Stub.asInterface(iBinder);
-                    }
-
-                    @Override
-                    public void onServiceDisconnected(ComponentName componentName) {
-
-                    }
-                },
-                Context.BIND_AUTO_CREATE);
         KcaApplication.gameActivity = this;
         rotationObserver = new GameBaseActivity.RotationObserver(new Handler());
         prefs = getSharedPreferences("pref", Context.MODE_PRIVATE);
@@ -225,6 +211,12 @@ public abstract class GameBaseActivity extends XWalkActivity {
         }
 
         battleResultVibrate = prefs.getBoolean("battle_result_vibrate", true);
+
+        pngToWebp = prefs.getBoolean("png_to_webp", true);
+        quality = Integer.parseInt(prefs.getString("png_to_webp_quality", "80"));
+        if(pngToWebp){
+            System.loadLibrary("webp");
+        }
 
         //proxy init
         proxyEnable = prefs.getBoolean("host_proxy_enable", false);
@@ -335,6 +327,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
     @Override
     protected void onPause() {
+        mLruCache.evictAll();
         rotationObserver.stopObserver();
         if (danmakuView != null && danmakuView.isPrepared()) {
             danmakuView.pause();
@@ -685,6 +678,17 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 e.printStackTrace();
             }
         }
+        if(uri.toString().startsWith("https://cdnjs.cloudflare.com") && prefs.getBoolean("change_cdn", true)){
+            try {
+                String url = uri.toString();
+                url = url.replace("cdnjs.cloudflare.com/ajax/libs", "cdn.bootcss.com");
+                ResponseBody serverResponse = requestServer(url, requestHeader);
+                byte[] respByte = serverResponse.bytes();
+                return createResponseObject(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 
         if ("GET".equals(requestMethod) && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
             if(path.contains("version.json") || path.contains("index.php")){
@@ -744,7 +748,28 @@ public abstract class GameBaseActivity extends XWalkActivity {
                     InputStream inputStream;
                     byte[] fileContent = mLruCache.get(path);//读取缓存
                     if(fileContent == null){
-                        fileContent = readFileToBytes(tmp);
+                        if(path.endsWith("png") && pngToWebp) {
+                            String webpUrlPath = path.replace("png", "webp");
+                            String webpPath = Environment.getExternalStorageDirectory() + "/KanCollCache/webp/" + quality + "/" + webpUrlPath;
+                            File webpTmp = new File(webpPath);
+                            if(webpTmp.exists()) {
+                                fileContent = readFileToBytes(new File(webpPath));
+                            } else {
+                                fileContent = readFileToBytes(tmp);
+                                final byte[] saveRespByte = fileContent;
+                                mExecutor.execute(() -> {
+                                    try {
+                                        byte[] webpData = bitmapToWebp(saveRespByte);
+                                        saveFile(webpPath, webpData);
+                                        mLruCache.put(path, webpData);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                });
+                            }
+                        } else {
+                            fileContent = readFileToBytes(tmp);
+                        }
                         if(path.contains("/kcs2/js/main.js")) {
                             // Inject code after caching, so it wont require re-downloading main.js after switching touch mode
                             if (prefs.getBoolean("show_fps_counter", false)) {
@@ -780,10 +805,18 @@ public abstract class GameBaseActivity extends XWalkActivity {
                             }
 
                             //save file
-                            saveFile(path, respByte);
                             final String saveVersion = version;
+                            final byte[] saveRespByte = respByte;
                             mExecutor.execute(() -> {
                                 try {
+                                    saveFile(Environment.getExternalStorageDirectory() + "/KanCollCache" + path, saveRespByte);
+                                    if(path.endsWith("png") && pngToWebp){
+                                        byte[] webpData = bitmapToWebp(saveRespByte);
+                                        String webpUrlPath = path.replace("png", "webp");
+                                        String webpPath = Environment.getExternalStorageDirectory() + "/KanCollCache/webp/" + quality + "/" + webpUrlPath;
+                                        saveFile(webpPath, webpData);
+                                        mLruCache.put(path, webpData);
+                                    }
                                     synchronized (jsonObj) {
                                         jsonObj.put(path, saveVersion);
                                         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheJsonFile, false), "UTF-8"));
@@ -1215,20 +1248,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
     public void jsToJava(String requestUrl, String param, String respData){
         try {
             URL url = new URL(requestUrl);
-            if(prefs.getBoolean("change_webview", false)) {
-                KcaVpnData.renderToHander(url.getPath(), param, respData);
-            } else {
-                for (int i = 0; i < respData.length(); i = i + 81920) {
-                    int end = i + 81920;
-                    boolean endFlag = false;
-                    if (end > respData.length()) {
-                        end = respData.length();
-                        endFlag = true;
-                    }
-                    String tempRespData = respData.substring(i, end);
-                    iWebviewBinder.handleJsFunc(url.getPath(), param, tempRespData, endFlag);
-                }
-            }
+            KcaVpnData.renderToHander(url.getPath(), param, respData);
             if(url.getPath().contains("/kcsapi/api_start2/getData") && subTitleEnable){
                 SubTitleUtils.initShipGraph(respData);
             }
@@ -1318,7 +1338,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
     private void saveFile(String path, byte[] fileContent){
         Log.e("KCA", "Save LocalRes:" + path);
-        File file = new File(Environment.getExternalStorageDirectory(),"/KanCollCache" + path);
+        File file = new File(path);
         FileOutputStream outputStream = null;
         BufferedOutputStream bufferedOutputStream = null;
         try {
@@ -1586,5 +1606,26 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 fpsCounter.setText(newFps);
             }
         });
+    }
+    private byte[] bitmapToWebp(byte[] fileBytes) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(fileBytes, 0, fileBytes.length);
+
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+        int stride = width * 4;
+
+        int[] bitmapPixels = new int[width * height];
+        bitmap.getPixels(bitmapPixels, 0, width, 0, 0, width, height);
+
+        byte[] bgra = new byte[width * height * 4];
+
+        for(int in = 0, out = 0; out<bgra.length; in++, out += 4){
+            bgra[out] = (byte) bitmapPixels[in];
+            bgra[out + 1] = (byte) (bitmapPixels[in] >> 8);
+            bgra[out + 2] = (byte) (bitmapPixels[in] >> 16);
+            bgra[out + 3] = (byte) (bitmapPixels[in] >> 24);
+        }
+        byte[] encoded = libwebp.WebPEncodeBGRA(bgra, width, height, stride, quality);
+        return encoded;
     }
 }

@@ -44,8 +44,6 @@ import static com.antest1.kcanotify.h5.KcaConstants.DB_KEY_SHIPIFNO;
 import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_DB;
 import static com.antest1.kcanotify.h5.KcaConstants.ERROR_TYPE_VPN;
 import static com.antest1.kcanotify.h5.KcaConstants.KCANOTIFY_QTDB_VERSION;
-import static com.antest1.kcanotify.h5.KcaQuestViewService.getPrevPageLastNo;
-import static com.antest1.kcanotify.h5.KcaQuestViewService.setPrevPageLastNo;
 import static com.antest1.kcanotify.h5.KcaUtils.getJapanCalendarInstance;
 import static com.antest1.kcanotify.h5.KcaUtils.getJapanSimpleDataFormat;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringFromException;
@@ -501,7 +499,7 @@ public class KcaDBHelper extends SQLiteOpenHelper {
     }
 
     // for kca_questlist
-    public void checkValidQuest(int page, int lastpage, JsonArray api_list, int type) {
+    public void checkValidQuest(JsonArray api_list, int type) {
         Date currentTime = getJapanCalendarInstance().getTime();
         SimpleDateFormat df = getJapanSimpleDataFormat("yy-MM-dd-HH");
         String[] current_time = df.format(currentTime).split("-");
@@ -522,29 +520,14 @@ public class KcaDBHelper extends SQLiteOpenHelper {
                     last_no = api_no;
                 }
             }
-            setPrevPageLastNo(last_no);
 
             String type_cond = "";
             if (type != -1 && type % 9 != 0) type_cond = " AND TYPE = ".concat(String.valueOf(type));
             if (questIdList.size() > 0) {
                 // remove invalid quest
-                if (page == 1) {
-                    setPrevPageLastNo(-1);
-                    db.delete(questlist_table_name, "KEY < ?".concat(type_cond), new String[]{String.valueOf(questIdList.get(0))});
-                    qt.deleteQuestTrackWithRange(-1, questIdList.get(0), type_cond);
-                    Log.e("KCA", KcaUtils.format("delete KEV < %d", questIdList.get(0)));
-                }
-                if (page == lastpage) {
-                    db.delete(questlist_table_name, "KEY > ?".concat(type_cond), new String[]{String.valueOf(last_no)});
-                    qt.deleteQuestTrackWithRange(last_no, -1, type_cond);
-                    Log.e("KCA", KcaUtils.format("delete KEV > %d".concat(type_cond), last_no));
-                }
-                if (getPrevPageLastNo() != -1) {
-                    db.delete(questlist_table_name, "KEY > ? AND KEY < ?".concat(type_cond),
-                            new String[]{String.valueOf(getPrevPageLastNo()), String.valueOf(questIdList.get(0))});
-                    qt.deleteQuestTrackWithRange(getPrevPageLastNo(), questIdList.get(0), type_cond);
-                    Log.e("KCA", KcaUtils.format("delete KEV > %d AND KEY < %d".concat(type_cond), getPrevPageLastNo(), questIdList.get(0)));
-                }
+                db.delete(questlist_table_name, "KEY < ?".concat(type_cond), new String[]{String.valueOf(questIdList.get(0))});
+                qt.deleteQuestTrackWithRange(-1, questIdList.get(0), type_cond);
+                Log.e("KCA", KcaUtils.format("delete KEV < %d", questIdList.get(0)));
 
                 for (int i = 0; i < questIdList.size() - 1; i++) {
                     db.delete(questlist_table_name, "KEY > ? AND KEY < ?".concat(type_cond),
@@ -552,6 +535,10 @@ public class KcaDBHelper extends SQLiteOpenHelper {
                     qt.deleteQuestTrackWithRange(questIdList.get(i), questIdList.get(i + 1), type_cond);
                     Log.e("KCA", KcaUtils.format("delete KEV > %d AND KEY < %d".concat(type_cond), questIdList.get(i), questIdList.get(i + 1)));
                 }
+
+                db.delete(questlist_table_name, "KEY > ?".concat(type_cond), new String[]{String.valueOf(last_no)});
+                qt.deleteQuestTrackWithRange(last_no, -1, type_cond);
+                Log.e("KCA", KcaUtils.format("delete KEV > %d".concat(type_cond), last_no));
             }
 
             if (questIdList.contains(212) && questIdList.contains(218)) {
@@ -572,8 +559,6 @@ public class KcaDBHelper extends SQLiteOpenHelper {
                     }
                 }
             }
-
-
         }
         test3();
     }
@@ -624,67 +609,6 @@ public class KcaDBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(questlist_table_name, "KEY=?", new String[]{String.valueOf(key)});
         qt.removeQuestTrack(key, false);
-    }
-
-    public JsonObject initQuestCheck() {
-        JsonObject q_data = new JsonObject();
-        q_data.add("total", new JsonObject());
-        q_data.add("count", new JsonObject());
-        putValue(DB_KEY_QUESTNCHK, q_data.toString());
-        return q_data;
-    }
-
-    public void updateQuestCheck(int tab, JsonObject data) {
-        String tab_key = String.valueOf(tab);
-        JsonObject q_data = getJsonObjectValue(DB_KEY_QUESTNCHK);
-        if (q_data == null) q_data = initQuestCheck();
-        if (!q_data.getAsJsonObject("total").has(tab_key)) {
-            q_data.getAsJsonObject("total").addProperty(tab_key, 0);
-            q_data.getAsJsonObject("count").add(tab_key, new JsonArray());
-        }
-        int page_count = data.get("api_page_count").getAsInt();
-        int disp_page = data.get("api_disp_page").getAsInt();
-        q_data.getAsJsonObject("total").addProperty(tab_key, page_count);
-        JsonArray count_list = q_data.getAsJsonObject("count").getAsJsonArray(tab_key);
-        if (disp_page > page_count) {
-            count_list.remove(new JsonPrimitive(disp_page));
-        } else if (!count_list.contains(new JsonPrimitive(disp_page))) {
-            count_list.add(disp_page);
-        }
-        putValue(DB_KEY_QUESTNCHK, q_data.toString());
-    }
-
-    public boolean checkQuestListValid() {
-        int flag = 0;
-        boolean checked = false;
-        boolean checked_part = false;
-        String[] key_list = {"0", "9", "1", "2", "3", "4", "5"};
-        int[] count_1 = {0, 0};
-        int[] count_2 = {0, 0};
-        JsonObject q_data = getJsonObjectValue(DB_KEY_QUESTNCHK);
-        if (q_data == null) q_data = initQuestCheck();
-        JsonObject q_total = q_data.getAsJsonObject("total");
-        JsonObject q_count = q_data.getAsJsonObject("count");
-
-        for (String key: key_list) {
-            if (q_total.has(key)) {
-                checked = true;
-                int total = q_total.get(key).getAsInt();
-                int count = q_count.getAsJsonArray(key).size();
-                if (key.equals("0") || key.equals("9")) {
-                    flag += 10;
-                    if (total == count) return true;
-                    count_1[0] += total;
-                    count_1[1] += count;
-                } else {
-                    checked_part = true;
-                    flag += 1;
-                    count_2[0] += total;
-                    count_2[1] += count;
-                }
-            }
-        }
-        return checked && flag % 5 == 0 && ((count_1[0] == count_1[1]) || (checked_part && (count_2[0] == count_2[1])));
     }
 
     public String getCurrentQuestCode() {

@@ -71,6 +71,7 @@
     <string name="node_info_selectable" formatted="false">%s (능동분기)</string>
     <string name="node_info_sendan" formatted="false">%s (선단호위 끝)</string>
     <string name="node_info_ecbattle" formatted="false">%s (적 연합함대)</string>
+    <string name="node_info_anchorage" formatted="false">%s (박지수리지점)</string>
     <string name="node_info_practice" formatted="false">연습전</string>
     <!-- MainActivity Strings -->
     <string name="ma_vpn_toggleon">스니퍼 On</string>
@@ -163,6 +164,8 @@
     <string name="setting_menu_kand_desc_set_noti_priority">체크 시 상태 바가 항상 위에 표시됨</string>
     <string name="setting_menu_kand_title_fairy_select">요정 선택</string>
     <string name="setting_menu_kand_desc_fairy_select">함께 할 요정님을 선택</string>
+    <string name="setting_menu_kand_title_fairy_size">요정 크기 선택</string>
+    <string name="setting_menu_kand_title_fairy_random">시작 시 요정을 랜덤하게 선택</string>
     <string name="setting_menu_kand_title_fairy_auto_hide">칸코레 화면에서만 요정 표시</string>
     <string name="setting_menu_kand_desc_fairy_auto_hide">요정을 표시하거나 숨길 때 약간의 지연이 있습니다.</string>
     <string name="setting_menu_kand_title_game_data_down">데이터/리소스 업데이트 확인</string>
@@ -357,13 +360,23 @@
     <string name="quest_category_6">공</string>
     <string name="quest_category_7">개</string>
     <string name="quest_category_8">출</string>
-    <string name="quest_category_9">타</string>
+    <string name="quest_category_9">출</string>
+    <string name="quest_category_10">타</string>
 
-    <string name="quest_type_1">일</string>
-    <string name="quest_type_2">주</string>
-    <string name="quest_type_3">월</string>
-    <string name="quest_type_4">단</string>
-    <string name="quest_type_5">타</string>
+    <string name="quest_label_type_1">단</string>
+    <string name="quest_label_type_2">일</string>
+    <string name="quest_label_type_3">주</string>
+    <string name="quest_label_type_4">_</string>
+    <string name="quest_label_type_5">_</string>
+    <string name="quest_label_type_6">월</string>
+    <string name="quest_label_type_7">타</string>
+    <string name="quest_label_type_100" formatted="false">연%d</string>
+
+    <string name="quest_class_1">출격</string>
+    <string name="quest_class_2">연습</string>
+    <string name="quest_class_3">원정</string>
+    <string name="quest_class_4">공창</string>
+    <string name="quest_class_5">기타</string>
 
     <string name="questview_page" formatted="false">페이지 %d/%d</string>
 
@@ -397,6 +410,7 @@
     <string name="filter_equip_all">전체선택</string>
     <string name="current_fairy_changed_in_next">※ 현재 전투예보/임무번역이 끝난 후 변경됩니다.</string>
     <string name="action_fairy_rev">반전</string>
+    <string name="action_fairy_init">초기화</string>
     <string name="setting_menu_app_title_down">APK 다운로드 사이트 설정</string>
     <string name="language_system">시스템 설정 사용</string>
     <string name="item_engine">네식엔진</string>
@@ -445,21 +459,25 @@
     <string name="ship_stat_sort_key_8">수리</string>
     <string name="ship_stat_sort_key_9">원정</string>
     <string name="ship_stat_sort_key_10">증설</string>
-    <string name="ship_stat_sort_key_11">화력</string>
-    <string name="ship_stat_sort_key_12">뇌장</string>
-    <string name="ship_stat_sort_key_13">대공</string>
-    <string name="ship_stat_sort_key_14">장갑</string>
-    <string name="ship_stat_sort_key_15">야전</string>
-    <string name="ship_stat_sort_key_16">대잠</string>
-    <string name="ship_stat_sort_key_17">회피</string>
-    <string name="ship_stat_sort_key_18">색적</string>
-    <string name="ship_stat_sort_key_19">운</string>
-    <string name="ship_stat_sort_key_20">속도</string>
-    <string name="ship_stat_sort_key_21">함급</string>
-    <string name="ship_stat_sort_key_22">딱지</string>
+    <string name="ship_stat_sort_key_11">내구</string>
+    <string name="ship_stat_sort_key_12">화력</string>
+    <string name="ship_stat_sort_key_13">뇌장</string>
+    <string name="ship_stat_sort_key_14">대공</string>
+    <string name="ship_stat_sort_key_15">장갑</string>
+    <string name="ship_stat_sort_key_16">야전</string>
+    <string name="ship_stat_sort_key_17">대잠</string>
+    <string name="ship_stat_sort_key_18">회피</string>
+    <string name="ship_stat_sort_key_19">색적</string>
+    <string name="ship_stat_sort_key_20">운</string>
+    <string name="ship_stat_sort_key_21">속도</string>
+    <string name="ship_stat_sort_key_22">함급</string>
+    <string name="ship_stat_sort_key_23">딱지</string>
 
     <string name="shipinfo_filt_list_dialog_title">선택</string>
     <string name="shipinfo_criteria_count" formatted="false">적용된 기준: %d개</string>
+    <string name="ship_exclude_label">함선 상태 필터</string>
+    <string name="ship_exclude_type1">원정중인 칸무스를 제외</string>
+    <string name="ship_exclude_type2">입거중인 칸무스를 제외</string>
 
     <string name="ship_stat_equip_stype_label">특수장비 필터</string>
     <string name="ship_stat_equip_stype1">대발계</string>
@@ -469,12 +487,12 @@
     <string name="ship_stat_equip_stype5">대형탐조등</string>
 
     <string name="ship_tag_0">없음</string>
-    <string name="ship_tag_1">구주방위함대 (청색)</string>
-    <string name="ship_tag_2">연합함대 (녹색)</string>
-    <string name="ship_tag_3">지중해함대 (황색)</string>
-    <string name="ship_tag_4"> </string>
-    <string name="ship_tag_5"> </string>
-    <string name="ship_tag_6"> </string>
+    <string name="ship_tag_1">공략호위대 (핑크색)</string>
+    <string name="ship_tag_2">공습부대 (하늘색)</string>
+    <string name="ship_tag_3">난인부대 (파란색)</string>
+    <string name="ship_tag_4">말레이부대 (녹색)</string>
+    <string name="ship_tag_5">초계부대 (흰색)</string>
+    <string name="ship_tag_6">결전부대 (주황색)</string>
 
     <string name="ship_fleet_0">없음</string>
 
@@ -655,7 +673,7 @@
     <string name="fleetview_18spring_nori" formatted="false">김 %02d</string>
     <string name="fleetview_18spring_tea" formatted="false">차 %02d</string>
 
-    <string name="special_message">가을의 저비스와 제너스</string>
+    <string name="special_message">봄나들이 중인 저비스</string>
 
     <string name="widget_timer_name">시제 깡들리티 타이머</string>
     <string name="fleet_format">제%d함대</string>
@@ -698,6 +716,7 @@
     <string name="equipinfo_export_title">함대분석 내보내기</string>
     <string name="equipinfo_export_clipboard">클립보드에 복사</string>
     <string name="equipinfo_export_openpage">함대분석 페이지 열기</string>
+    <string name="equipinfo_export_openpage2">제공권 시뮬레이터 열기</string>
 
     <string name="text_api_houg">화력</string>
     <string name="text_api_raig">뇌장</string>
@@ -720,5 +739,10 @@
     <string name="text_api_cost">배치비용</string>
     <string name="text_api_distance">행동반경</string>
     <string name="ask_to_dev">칸코레 장비왕</string>
-
+    <string name="fleetview_fish_text" formatted="false">[꽁치] %03d [정어리] %03d</string>
+    <string name="fairy_size_value_4">크게</string>
+    <string name="fairy_size_value_5">매우 크게</string>
+    <string name="fairy_size_value_3">보통</string>
+    <string name="fairy_size_value_2">작게</string>
+    <string name="fairy_size_value_1">매우 작게</string>
 </resources>
