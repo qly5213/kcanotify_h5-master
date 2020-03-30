@@ -689,6 +689,17 @@ public abstract class GameBaseActivity extends XWalkActivity {
                 e.printStackTrace();
             }
         }
+        if(uri.toString().startsWith("https://code.createjs.com/tweenjs-0.6.2.min.js") && prefs.getBoolean("change_cdn", true)){
+            try {
+                String url = uri.toString();
+                url = url.replace("https://code.createjs.com/tweenjs-0.6.2.min.js", "https://cdn.bootcss.com/tweenjs/0.6.2/tweenjs.min.js");
+                ResponseBody serverResponse = requestServer(url, requestHeader);
+                byte[] respByte = serverResponse.bytes();
+                return createResponseObject(path, String.valueOf(respByte.length), new ByteArrayInputStream(respByte));
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 
         if ("GET".equals(requestMethod) && path != null && (path.startsWith("/kcs2/") || path.startsWith("/kcs/"))) {
             if(path.contains("version.json") || path.contains("index.php")){
