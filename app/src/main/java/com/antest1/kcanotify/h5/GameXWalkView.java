@@ -14,6 +14,7 @@ import android.widget.Toast;
 import org.json.JSONObject;
 import org.xwalk.core.JavascriptInterface;
 import org.xwalk.core.XWalkCookieManager;
+import org.xwalk.core.XWalkHttpAuthHandler;
 import org.xwalk.core.XWalkPreferences;
 import org.xwalk.core.XWalkResourceClient;
 import org.xwalk.core.XWalkSettings;
@@ -137,6 +138,15 @@ public class GameXWalkView extends XWalkView implements GameView {
             @Override
             public void onProgressChanged(XWalkView view, int newProgress) {
                 gameActivity.setProgressBarProgress(newProgress);
+            }
+
+            @Override
+            public void onReceivedHttpAuthRequest(XWalkView view, XWalkHttpAuthHandler handler, String host, String realm) {
+                if(gameActivity.prefs.getBoolean("ooi_host_auth", false)) {
+                    handler.proceed(gameActivity.prefs.getString("ooi_host_auth_name", ""), gameActivity.prefs.getString("ooi_host_auth_pwd", ""));
+                } else {
+                    super.onReceivedHttpAuthRequest(view, handler, host, realm);
+                }
             }
 
             //设置加载前的函数

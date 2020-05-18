@@ -45,6 +45,7 @@ import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_PREF_CN_CHANGED;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_PREF_EXPVIEW_CHANGED;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_PREF_LANGUAGE_CHANGED;
 import static com.antest1.kcanotify.h5.KcaConstants.KCA_API_PREF_PRIORITY_CHANGED;
+import static com.antest1.kcanotify.h5.KcaConstants.OOI_HOST_AUTH_PWD;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_ALARM_DELAY;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_APK_DOWNLOAD_SITE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_DMM_PWD;
@@ -300,7 +301,7 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
                     }
                     etp.setDialogMessage(getStringWithLocale(R.string.setting_menu_stat_desc_kcaqsync_pass));
                 }
-                if (PREF_DMM_PWD.equals(pref.getKey())) {
+                if (PREF_DMM_PWD.equals(pref.getKey()) || OOI_HOST_AUTH_PWD.equals(pref.getKey())) {
                     pref.setSummary("******");
                 } else {
                     pref.setSummary(etp.getText());
@@ -424,7 +425,7 @@ public class MainPreferenceFragment extends PreferenceFragment implements Shared
         } else if (pref instanceof EditTextPreference) {
             EditTextPreference etp = (EditTextPreference) pref;
             pref.setSummary(etp.getText());
-            if (PREF_DMM_PWD.equals(pref.getKey())) {
+            if (PREF_DMM_PWD.equals(pref.getKey()) || OOI_HOST_AUTH_PWD.equals(pref.getKey())) {
                 pref.setSummary("******");
             } else {
                 pref.setSummary(etp.getText());

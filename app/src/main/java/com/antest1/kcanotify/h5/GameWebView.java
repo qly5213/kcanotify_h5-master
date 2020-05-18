@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
+import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -173,6 +174,15 @@ public class GameWebView extends WebView implements GameView{
                 detectGameStartAndFit(view);
                 detectLoginAndFill(view, prefs);
                 detectAndHandleLoginError(view, prefs);
+            }
+
+            @Override
+            public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+                if(gameActivity.prefs.getBoolean("ooi_host_auth", false)) {
+                    handler.proceed(gameActivity.prefs.getString("ooi_host_auth_name", ""), gameActivity.prefs.getString("ooi_host_auth_pwd", ""));
+                } else {
+                    super.onReceivedHttpAuthRequest(view, handler, host, realm);
+                }
             }
 
             @Override

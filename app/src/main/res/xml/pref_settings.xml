@@ -150,6 +150,22 @@
             android:summary="OOI模式时可以自定义游戏服务器域名，例如ooi.moe"
             android:title="自定义OOI游戏域名" />
         <CheckBoxPreference
+            android:dependency="ooi_host_name"
+            android:defaultValue="false"
+            android:key="ooi_host_auth"
+            android:summary="付费OOI模式需要填写账号密码"
+            android:title="付费OOI模式" />
+        <EditTextPreference
+            android:dependency="ooi_host_auth"
+            android:key="ooi_host_auth_name"
+            android:summary="付费OOI模式用户名"
+            android:title="付费OOI账号" />
+        <EditTextPreference
+            android:dependency="ooi_host_auth"
+            android:key="ooi_host_auth_pwd"
+            android:summary="付费OOI模式密码"
+            android:title="付费OOI密码" />
+        <CheckBoxPreference
             android:defaultValue="false"
             android:key="ooi_auto_user"
             android:summary="预填写用户名密码"

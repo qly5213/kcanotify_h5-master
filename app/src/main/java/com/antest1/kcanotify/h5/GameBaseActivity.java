@@ -81,10 +81,13 @@ import master.flame.danmaku.danmaku.model.android.DanmakuContext;
 import master.flame.danmaku.danmaku.model.android.Danmakus;
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.ui.widget.DanmakuView;
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.Route;
 
 public abstract class GameBaseActivity extends XWalkActivity {
     private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.81 Safari/537.36";
@@ -94,7 +97,7 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
     private GameViewBroadcastReceiver gameViewBroadcastReceiver = new GameViewBroadcastReceiver();
     private GameBaseActivity.RotationObserver rotationObserver;
-    protected SharedPreferences prefs = null;
+    public SharedPreferences prefs = null;
     private boolean chatDanmuku;
     private HashMap<String, String> serverMap;
     private boolean battleResultVibrate;
@@ -274,7 +277,18 @@ public abstract class GameBaseActivity extends XWalkActivity {
 
         resetWebView(false);
 
-        client = new OkHttpClient.Builder().build();
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+
+        if(prefs.getBoolean("ooi_host_auth", false)) {
+            clientBuilder.authenticator(new Authenticator() {
+                @Override
+                public Request authenticate(Route route, Response response) throws IOException {
+                    String credential = Credentials.basic(prefs.getString("ooi_host_auth_name", ""), prefs.getString("ooi_host_auth_pwd", ""));
+                    return response.request().newBuilder().header("Authorization", credential).build();
+                }
+            });
+        }
+        client = clientBuilder.build();
 
         clearCookie = prefs.getBoolean("clear_cookie_start", false);
         voicePlay = prefs.getBoolean("voice_play", false);

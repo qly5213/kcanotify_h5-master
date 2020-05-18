@@ -58,6 +58,7 @@ public final class KcaConstants {
     public static final String DB_KEY_MATERIALS = "key_materials";
     public static final String DB_KEY_KCMAINTNC = "key_kcmaintnc";
     public static final String PREF_DMM_PWD = "dmm_pwd";
+    public static final String OOI_HOST_AUTH_PWD = "ooi_host_auth_pwd";
 
     public static final String[] DB_KEY_ARRAY = {
             DB_KEY_STARTDATA,
