@@ -272,6 +272,18 @@ public abstract class GameBaseActivity extends XWalkActivity {
         chatNewMsgImageView = findViewById(R.id.chat_new_msg_image_view);
         chatImageView.setImageAlpha(50);
 
+        ImageView refreshView = findViewById(R.id.refresh_view);
+        refreshView.setImageAlpha(50);
+        refreshView.setOnClickListener(v -> {
+            ConfirmDialog confirmDialog =  new ConfirmDialog(this, (position)-> {
+                    if(position == 1) {
+                        gameView.reloadGame();
+                    }
+            });
+            confirmDialog.setContent("请确认是否刷新游戏？");
+            confirmDialog.show();
+        });
+
         initDanMuKu();
         initCache();
 

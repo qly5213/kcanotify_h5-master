@@ -28,6 +28,14 @@
         android:layout_height="30dp"
         android:visibility="gone"
         android:src="@drawable/chat_new_msg"/>
+
+    <ImageView
+        android:id="@+id/refresh_view"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@+id/chat_image_view"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/refresh" />
     <ProgressBar
         android:id="@+id/progressBar1"
         style="@android:style/Widget.ProgressBar.Horizontal"

@@ -20,8 +20,10 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -116,6 +118,8 @@ public class GameModActivity extends Activity {
             //设置结束加载函数
             @Override
             public void onPageFinished(WebView view, String url) {
+                String modJson = buildModJson();
+                webView.loadUrl("javascript:" + "var shipModJson = " + buildModJson() + ";");
             }
 
             @Override
@@ -129,9 +133,66 @@ public class GameModActivity extends Activity {
             }
         });
 
-        webView.loadUrl(host + "kancollmod.html");
+        webView.loadUrl(host);
     }
+    public String buildModJson() {
 
+        String result = null;
+        try {
+            String pathDirStr = "/KanCollCache" + File.separator + "mod";
+            File modDirfile = new File(Environment.getExternalStorageDirectory(), pathDirStr);
+            if (!modDirfile.exists()) {
+                return null;
+            }
+            JSONArray jsonModShipArr = new JSONArray();
+            File[] subFiles = modDirfile.listFiles();
+            for(File f : subFiles){
+                if(f.getName().endsWith("json")){
+                    jsonModShipArr.put(new JSONObject(new String(readFileToBytes(f))));
+                }
+            }
+            /*JSONObject shipObject = new JSONObject(oriData);
+            JSONArray jsonShipArr = shipObject.getJSONObject("api_data").getJSONArray("api_mst_shipgraph");
+            for (int i = 0; i < jsonModShipArr.length(); i++) {
+                JSONObject modShipJsonObj = jsonModShipArr.getJSONObject(i);
+                for (int j = 0; j < jsonShipArr.length(); j++) {
+                    JSONObject shipJsonObj = jsonShipArr.getJSONObject(j);
+                    if (shipJsonObj.getInt("api_id") == modShipJsonObj.getInt("api_id")) {
+                        jsonShipArr.put(j, modShipJsonObj);
+                        break;
+                    }
+                }
+            }*/
+            result = jsonModShipArr.toString();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+    private byte[] readFileToBytes(File file){
+        byte[] bytes = new byte[0];
+        if(!file.exists()){
+            return bytes;
+        }
+        BufferedInputStream buf = null;
+        try {
+            int fileSize = (int) file.length();
+            bytes = new byte[fileSize];
+            buf = new BufferedInputStream(new FileInputStream(file));
+            buf.read(bytes, 0, fileSize);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(buf != null){
+                    buf.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return bytes;
+    }
     public void androidDownloadMod(String modId, String title, String apiId){
         try{
             ResponseBody serverResponse = requestServer(host + "mod/" + modId + "/config.json");
@@ -166,7 +227,12 @@ public class GameModActivity extends Activity {
 
     public void downloadShipPng(String typeId, String typeName, String modId, String apiId, JSONObject configJson){
         try {
-            String path = "/kcs2/resources/ship/" + typeId + "/" + KanCollUtils.getShipImgName(typeId, apiId, configJson.getString("api_filename")) + ".png";
+            String path;
+            if(typeId.equals("full") || typeId.equals("full_dmg")){
+                path = "/kcs2/resources/ship/" + typeId + "/" + KanCollUtils.getShipImgName(typeId, apiId, configJson.getString("api_filename")) + ".png";
+            } else {
+                path = "/kcs2/resources/ship/" + typeId + "/" + KanCollUtils.getShipImgName(typeId, apiId, null) + ".png";
+            }
             ResponseBody serverResponse = requestServer(host + "mod/" + modId + path);
             if (serverResponse == null) {
                 return;
@@ -189,6 +255,8 @@ public class GameModActivity extends Activity {
     }
 
     private ResponseBody requestServer(String url){
+
+        Log.d("KCA", url);
         Request.Builder builder = new Request.Builder().url(url);
         Request serverRequest = builder.build();
 

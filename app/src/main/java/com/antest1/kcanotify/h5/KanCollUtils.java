@@ -1,5 +1,7 @@
 package com.antest1.kcanotify.h5;
 
+import android.text.TextUtils;
+
 import org.json.JSONObject;
 
 public class KanCollUtils {
@@ -17,7 +19,11 @@ public class KanCollUtils {
 		String seed = "ship_" + ntype;
 		String cipherNum = createCipherNum(apiId, seed);
 		String padApiId = String.format("%04d", Integer.parseInt(apiId));
-		return padApiId + "_" + cipherNum + "_" + apiShipName;
+		if(TextUtils.isEmpty(apiShipName)){
+            return padApiId + "_" + cipherNum;
+        } else {
+            return padApiId + "_" + cipherNum + "_" + apiShipName;
+        }
 	}
 
 	private static String createCipherNum(String apiId, String seed) {
