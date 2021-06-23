@@ -383,6 +383,7 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="quest_category_8">出</string>
     <string name="quest_category_9">出</string>
     <string name="quest_category_10">他</string>
+    <string name="quest_category_11">工</string>
 
     <string name="quest_label_type_1">单</string>
     <string name="quest_label_type_2">日</string>
@@ -500,6 +501,9 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="ship_tag_4">马来部队 (绿色)</string>
     <string name="ship_tag_5">哨戒部队 (白色)</string>
     <string name="ship_tag_6">决戦部队 (橙色)</string>
+
+    <string name="ship_tag_none">没有</string>
+    <string name="ship_tag_prefix">标贴#</string>
 
     <string name="ship_fleet_0">没有</string>
 

@@ -44,14 +44,14 @@ public class KcaShipListViewAdpater extends BaseAdapter {
 
     private static final String[] total_key_list = {
             "api_id", "api_lv", "api_stype", "api_cond", "api_locked",
-            "api_deck_id", "api_docking", "api_damage", "api_repair", "api_mission", "api_exslot",
+            "api_deck_id", "api_docking", "api_damage", "api_repair", "api_mission", "api_exslot", "api_maxhp",
             "api_karyoku", "api_raisou", "api_taiku", "api_soukou", "api_yasen",
             "api_taisen", "api_kaihi", "api_sakuteki", "api_lucky", "api_soku", "api_sort_id", "api_sally_area"};
 
     public long getTotalExp() { return exp_sum; }
 
-    private static int[] sort_table = {0, 1, 2, 3, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
-    private static int[] filt_table = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22};
+    private static int[] sort_table = {0, 1, 2, 3, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22};
+    private static int[] filt_table = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23};
 
     public static int getSortKeyIndex(int position) {
         return sort_table[position];
@@ -70,7 +70,7 @@ public class KcaShipListViewAdpater extends BaseAdapter {
     }
 
     public static boolean isList(int idx) {
-        int[] list = {2, 5, 7, 20, 22};  // ship_filt_array
+        int[] list = {2, 5, 7, 21, 23};  // ship_filt_array
         return (Arrays.binarySearch(list, idx) >= 0);
     }
 
@@ -421,8 +421,8 @@ public class KcaShipListViewAdpater extends BaseAdapter {
         ImageView ship_sally_area;
     }
 
-    public void setListViewItemList(JsonArray ship_list, JsonArray deck_list, String sort_key, String special_equip) {
-        setListViewItemList(ship_list, deck_list, sort_key, "|", special_equip);
+    public void setListViewItemList(JsonArray ship_list, JsonArray deck_list, String sort_key, String special_equip, String ship_status) {
+        setListViewItemList(ship_list, deck_list, sort_key, "|", special_equip, ship_status);
     }
 
     public String getKanmusuListText() {
@@ -495,7 +495,7 @@ public class KcaShipListViewAdpater extends BaseAdapter {
     *
     * */
 
-    private List<JsonObject> addShipInformation(List<JsonObject> data, String sp_eqlist) {
+    private List<JsonObject> addShipInformation(List<JsonObject> data, String sp_eqlist, String ship_status) {
         List<JsonObject> filteredShipInformation = new ArrayList<>();
         JsonObject deck_ship_info = new JsonObject();
         for (int i = 0; i < deckInfo.size(); i++) {
@@ -530,6 +530,22 @@ public class KcaShipListViewAdpater extends BaseAdapter {
             boolean name_matched = searchStringFromStart(name, searchQuery, false);
             boolean yomi_matched = searchStringFromStart(yomi, searchQuery, false);
             if (!name_matched && !yomi_matched) continue;
+
+
+            if (ship_status.trim().length() > 0) {
+                String[] ship_status_list = ship_status.split(",");
+                boolean match_flag = false;
+                for (String key: ship_status_list) {
+                    if (key.equals("type1")) { // expedition
+                        match_flag |= deck_ship_info.has(ship_id) &&
+                                deck_ship_info.getAsJsonObject(ship_id).get("mission").getAsInt() != 0;
+                    }
+                    if (key.equals("type2")) { // docking
+                        match_flag |= KcaDocking.checkShipInDock(Integer.parseInt(ship_id));
+                    }
+                }
+                if (match_flag) continue;
+            }
 
             if (sp_eqlist.trim().length() > 0) {
                 String[] special_eq_list = sp_eqlist.split(",");
@@ -570,13 +586,13 @@ public class KcaShipListViewAdpater extends BaseAdapter {
         return filteredShipInformation;
     }
 
-    public void setListViewItemList(JsonArray ship_list, JsonArray deck_list, String sort_key, final String filter, String special_equip) {
+    public void setListViewItemList(JsonArray ship_list, JsonArray deck_list, String sort_key, final String filter, String special_equip, String ship_status) {
         exp_sum = 0;
         deckInfo = deck_list;
         Type listType = new TypeToken<List<JsonObject>>() {}.getType();
         listViewItemList = new Gson().fromJson(ship_list, listType);
         if (listViewItemList == null) listViewItemList = new ArrayList<>();
-        listViewItemList = addShipInformation(listViewItemList, special_equip);
+        listViewItemList = addShipInformation(listViewItemList, special_equip, ship_status);
         if (!filter.equals("|") && listViewItemList.size() > 1) {
             listViewItemList = new ArrayList<>(Collections2.filter(listViewItemList, input -> {
                 String[] filter_list = filter.split("\\|");

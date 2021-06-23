@@ -386,7 +386,14 @@ public class KcaUtils {
                     + resourceName + " / " + c, e);
         }
     }
-
+    public static int getIdWithFallback(String resourceName, String fallbackResourceName, Class<?> c) {
+        try {
+            Field idField = c.getDeclaredField(resourceName);
+            return idField.getInt(idField);
+        } catch (Exception e) {
+            return getId(fallbackResourceName, c);
+        }
+    }
     public static int adjustAlpha(int color, float factor) {
         int alpha = Math.round(Color.alpha(color) * factor);
         int red = Color.red(color);

@@ -40,18 +40,20 @@ import static com.antest1.kcanotify.h5.KcaApiData.TAG_COUNT;
 import static com.antest1.kcanotify.h5.KcaApiData.loadTranslationData;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_KCA_LANGUAGE;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_FILTCOND;
+import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_SHIPSTAT;
 import static com.antest1.kcanotify.h5.KcaConstants.PREF_SHIPINFO_SPEQUIPS;
-import static com.antest1.kcanotify.h5.KcaUtils.getId;
 import static com.antest1.kcanotify.h5.KcaUtils.getStringPreferences;
 import static com.antest1.kcanotify.h5.KcaUtils.setPreferences;
 
 
 public class ShipInfoFilterActivity extends AppCompatActivity {
     public final static int SPECIAL_EQUIPMENT_COUNT = 5;
+    public final static int SHIP_STATUS_COUNT = 2;
 
     Toolbar toolbar;
     static Gson gson = new Gson();
     List<CheckBox> filterSpecialEquipment = new ArrayList<>();
+    List<CheckBox> filterShipStatus = new ArrayList<>();
     TextView listcounter;
     LinearLayout listview;
     public int count;
@@ -127,6 +129,27 @@ public class ShipInfoFilterActivity extends AppCompatActivity {
                 else specialEquipsFilterList.remove(key);
                 setPreferences(getApplicationContext(), PREF_SHIPINFO_SPEQUIPS,
                         KcaUtils.joinStr(specialEquipsFilterList, ","));
+            });
+        }
+
+        String pref_ship_stat = getStringPreferences(getApplicationContext(), PREF_SHIPINFO_SHIPSTAT);
+        List<String> shipStatusFilterList = new ArrayList<String>(Arrays.asList(pref_ship_stat.split(",")));
+
+        for (int i = 0; i < SHIP_STATUS_COUNT; i++) {
+            final String key = KcaUtils.format("type%d", i+1);
+            filterShipStatus.add(findViewById(
+                    KcaUtils.getId(KcaUtils.format("exclude_%s", key), R.id.class)
+            ));
+            CheckBox item = filterShipStatus.get(i);
+            item.setText(getStringWithLocale(
+                    KcaUtils.getId(KcaUtils.format("ship_exclude_%s", key), R.string.class)
+            ));
+            item.setChecked(shipStatusFilterList.contains(key));
+            item.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) shipStatusFilterList.add(key);
+                else shipStatusFilterList.remove(key);
+                setPreferences(getApplicationContext(), PREF_SHIPINFO_SHIPSTAT,
+                        KcaUtils.joinStr(shipStatusFilterList, ","));
             });
         }
 
@@ -344,10 +367,10 @@ public class ShipInfoFilterActivity extends AppCompatActivity {
             adapter = getFleetArray();
         } else if (position == 7) {
             adapter = getHPArray();
-        } else if (position == 20) {
+        } else if (position == 21) {
             adapter = getSpeedArray();
             fnc = 2;
-        } else if (position == 22) {
+        } else if (position == 23) {
             adapter = getTagArray();
         }
 
@@ -440,8 +463,9 @@ public class ShipInfoFilterActivity extends AppCompatActivity {
 
     private String[] getTagArray() {
         List<String> tag_list = new ArrayList<>();
-        for (int i = 0; i <= TAG_COUNT; i++) {
-            tag_list.add(getStringWithLocale(getId(KcaUtils.format("ship_tag_%d", i), R.string.class)));
+        tag_list.add(getStringWithLocale(R.string.ship_tag_none));
+        for (int i = 1; i <= TAG_COUNT; i++) {
+            tag_list.add(getStringWithLocale(R.string.ship_tag_prefix).concat(String.valueOf(i)));
         }
 
         String[] tag_arr = new String[tag_list.size()];

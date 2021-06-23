@@ -12,7 +12,7 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <!-- Application Information -->
     <string name="app_name">Kcanotify</string>
     <string name="app_brand" translatable="false" traslatable="false">시제 깡들리티</string> <!-- Do not translate here -->
-    <string name="app_version" translatable="false">2.8_2.2.3</string>
+    <string name="app_version" translatable="false">2.8_2.2.4</string>
     <string name="action_settings">Settings</string>
     <string name="action_errorlog">Error Log</string>
     <string name="action_download">Download</string>
@@ -448,6 +448,7 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="quest_category_8">SB</string>
     <string name="quest_category_9">B</string>
     <string name="quest_category_10">N</string>
+    <string name="quest_category_11">F</string>
 
     <string name="quest_label_type_0" formatted="false" translatable="false">\?</string>
     <string name="quest_label_type_1">O</string>
@@ -568,6 +569,9 @@ https://github.com/antest1/kcanotify/blob/master/app/src/main/res/values/strings
     <string name="ship_tag_4">Green Tag</string>
     <string name="ship_tag_5">White Tag</string>
     <string name="ship_tag_6">Orange Tag</string>
+
+    <string name="ship_tag_none">None</string>
+    <string name="ship_tag_prefix">Tag </string>
 
     <string name="ship_fleet_0">None</string>
 

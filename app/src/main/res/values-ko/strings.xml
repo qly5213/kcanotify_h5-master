@@ -362,6 +362,7 @@
     <string name="quest_category_8">출</string>
     <string name="quest_category_9">출</string>
     <string name="quest_category_10">타</string>
+    <string name="quest_category_11">공</string>
 
     <string name="quest_label_type_1">단</string>
     <string name="quest_label_type_2">일</string>
@@ -493,6 +494,9 @@
     <string name="ship_tag_4">말레이부대 (녹색)</string>
     <string name="ship_tag_5">초계부대 (흰색)</string>
     <string name="ship_tag_6">결전부대 (주황색)</string>
+
+    <string name="ship_tag_none">없음</string>
+    <string name="ship_tag_prefix">딱지 #</string>
 
     <string name="ship_fleet_0">없음</string>
 

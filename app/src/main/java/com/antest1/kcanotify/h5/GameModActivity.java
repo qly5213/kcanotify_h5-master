@@ -142,7 +142,7 @@ public class GameModActivity extends Activity {
             String pathDirStr = "/KanCollCache" + File.separator + "mod";
             File modDirfile = new File(Environment.getExternalStorageDirectory(), pathDirStr);
             if (!modDirfile.exists()) {
-                return null;
+                return "[]";
             }
             JSONArray jsonModShipArr = new JSONArray();
             File[] subFiles = modDirfile.listFiles();

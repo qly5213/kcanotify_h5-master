@@ -356,6 +356,7 @@
     <string name="quest_category_8">出</string>
     <string name="quest_category_9">出</string>
     <string name="quest_category_10">他</string>
+    <string name="quest_category_11">工</string>
 
     <string name="quest_label_type_1">単</string>
     <string name="quest_label_type_2">日</string>
@@ -492,6 +493,9 @@
     <string name="ship_tag_4">馬来部隊</string>
     <string name="ship_tag_5">哨戒部隊</string>
     <string name="ship_tag_6">決戦部隊</string>
+
+    <string name="ship_tag_none">なし</string>
+    <string name="ship_tag_prefix">札 #</string>
 
     <string name="ship_fleet_0">なし</string>
 
